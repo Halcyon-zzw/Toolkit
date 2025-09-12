@@ -3,164 +3,76 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>文件迁移与去重助手</title>
-  <style>
-    body {
-      font-family: PingFang SC, Songti SC, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #0b1020;
-      color: #e8eef8;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .tabs {
-      display: flex;
-      border-bottom: 1px solid #1f2a4a;
-      margin-bottom: 20px;
-    }
-    .tab {
-      background: transparent;
-      border: 0;
-      color: #9aa4b2;
-      padding: 10px 20px;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-    }
-    .tab.active {
-      color: #e8eef8;
-      border-color: #5aa9e6;
-    }
-    .tab-panel {
-      display: none;
-    }
-    .tab-panel.active {
-      display: block;
-    }
-    .field {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-    }
-    input[type="file"] {
-      margin-bottom: 5px;
-    }
-    button {
-      background: #5aa9e6;
-      color: white;
-      border: 0;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button.secondary {
-      background: transparent;
-      border: 1px solid #5aa9e6;
-      color: #5aa9e6;
-    }
-    .actions {
-      margin: 15px 0;
-    }
-    .result {
-      margin-top: 20px;
-    }
-    .group {
-      margin-bottom: 15px;
-      border: 1px solid #1f2a4a;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .group-header {
-      background: #121a33;
-      padding: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .group-body {
-      padding: 10px;
-    }
-    .file-row {
-      padding: 5px;
-      display: flex;
-      align-items: center;
-    }
-    .file-row:not(:last-child) {
-      border-bottom: 1px solid #1f2a4a;
-    }
-    .mono {
-      font-family: monospace;
-    }
-    .muted {
-      color: #9aa4b2;
-    }
-    .pill {
-      background: #1f2a4a;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 12px;
-    }
-    pre {
-      background: #121a33;
-      padding: 10px;
-      border-radius: 4px;
-      overflow: auto;
-      white-space: pre-wrap;
-    }
-  </style>
+  <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-  <h1>文件迁移与去重助手</h1>
-  
-  <div class="tabs">
-    <button class="tab active" data-tab="migrate">迁移文件</button>
-    <button class="tab" data-tab="dedupe">文件去重</button>
-  </div>
+  <div class="container">
+    <h1 class="text-center">文件迁移与去重助手</h1>
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="migrate">迁移文件</button>
+      <button class="tab" data-tab="dedupe">文件去重</button>
+    </div>
   
   <div id="tab-migrate" class="tab-panel active">
-    <div class="field">
-      <label for="srcDir">源目录</label>
-      <input type="file" id="srcDir" webkitdirectory>
-      <input type="text" id="srcRoot" placeholder="源目录绝对路径（将直接用于脚本）">
-    </div>
-    
-    <div class="field">
-      <label for="dstDir">目标目录</label>
-      <input type="file" id="dstDir" webkitdirectory>
-      <input type="text" id="dstRoot" placeholder="目标目录绝对路径（将直接用于脚本）">
-    </div>
-    
-    <div class="actions">
-      <button id="btnMigrate">开始迁移</button>
+    <div class="card">
+      <div class="form-group">
+        <label for="srcDir">源目录</label>
+        <div class="file-input-container">
+          <input type="file" id="srcDir" webkitdirectory class="file-input">
+          <label for="srcDir" class="file-input-label">选择文件夹</label>
+        </div>
+        <input type="text" id="srcRoot" class="text-input" placeholder="源目录绝对路径（将直接用于脚本）">
+      </div>
+      
+      <div class="form-group">
+        <label for="dstDir">目标目录</label>
+        <div class="file-input-container">
+          <input type="file" id="dstDir" webkitdirectory class="file-input">
+          <label for="dstDir" class="file-input-label">选择文件夹</label>
+        </div>
+        <input type="text" id="dstRoot" class="text-input" placeholder="目标目录绝对路径（将直接用于脚本）">
+      </div>
+      
+      <div class="actions">
+        <button id="btnMigrate" class="primary-btn">开始迁移</button>
+      </div>
     </div>
     
     <div class="result" id="migrateResult"></div>
     
-    <h3>脚本预览 · 复制（功能一）</h3>
-    <p class="muted">脚本头部将包含 SRC_ABS 与 DST_ABS 变量</p>
-    <pre id="migrateScript"># 运行"开始迁移"后显示脚本</pre>
+    <div class="script-preview">
+      <h3>脚本预览 · 复制（功能一）</h3>
+      <p class="muted">脚本头部将包含 SRC_ABS 与 DST_ABS 变量</p>
+      <pre id="migrateScript" class="code-block"># 运行"开始迁移"后显示脚本</pre>
+    </div>
   </div>
   
   <div id="tab-dedupe" class="tab-panel">
-    <div class="field">
-      <label for="scanDir">扫描目录</label>
-      <input type="file" id="scanDir" webkitdirectory>
-      <input type="text" id="scanRoot" placeholder="扫描目录绝对路径（将直接用于脚本）">
-    </div>
-    
-    <div class="actions">
-      <button id="btnScan">开始扫描</button>
+    <div class="card">
+      <div class="form-group">
+        <label for="scanDir">扫描目录</label>
+        <div class="file-input-container">
+          <input type="file" id="scanDir" webkitdirectory class="file-input">
+          <label for="scanDir" class="file-input-label">选择文件夹</label>
+        </div>
+        <input type="text" id="scanRoot" class="text-input" placeholder="扫描目录绝对路径（将直接用于脚本）">
+      </div>
+      
+      <div class="actions">
+        <button id="btnScan" class="primary-btn">开始扫描</button>
+      </div>
     </div>
     
     <div class="result" id="dedupeResult"></div>
     
-    <h3>脚本预览 · 删除重复文件（功能二）</h3>
-    <p class="muted">脚本头部将包含 SCAN 变量</p>
-    <pre id="dedupeScript"># 运行"开始扫描"后显示脚本</pre>
+    <div class="script-preview">
+      <h3>脚本预览 · 删除重复文件（功能二）</h3>
+      <p class="muted">脚本头部将包含 SCAN 变量</p>
+      <pre id="dedupeScript" class="code-block"># 运行"开始扫描"后显示脚本</pre>
+    </div>
   </div>
+</div>
   
   <script src="index.js"></script>
 </body>
