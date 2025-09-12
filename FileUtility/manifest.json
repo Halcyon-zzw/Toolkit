@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "文件迁移与去重助手",
+  "version": "0.1.0",
+  "description": "迁移文件（合并目录、跳过同名）与文件去重（哈希分组、可删除）",
+  "action": {
+    "default_title": "打开工具页"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "pages/index.html"
+}
+
