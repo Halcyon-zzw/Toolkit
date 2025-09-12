@@ -63,6 +63,22 @@ bindRootNameDisplay(document.getElementById('srcDir'), 'srcRoot');
 bindRootNameDisplay(document.getElementById('dstDir'), 'dstRoot');
 bindRootNameDisplay(document.getElementById('scanDir'), 'scanRoot');
 
+// 选择文件夹后展示文件数量与“完成(100%)”提示
+function bindFolderMeta(inputId, metaId) {
+  const inputEl = document.getElementById(inputId);
+  const metaEl = document.getElementById(metaId);
+  if (!inputEl || !metaEl) return;
+  inputEl.addEventListener('change', () => {
+    const files = Array.from(inputEl.files || []);
+    if (files.length === 0) { metaEl.textContent = ''; return; }
+    metaEl.textContent = `已选择 ${files.length} 个文件 · 100%`;
+  });
+}
+
+bindFolderMeta('srcDir', 'srcMeta');
+bindFolderMeta('dstDir', 'dstMeta');
+bindFolderMeta('scanDir', 'scanMeta');
+
 // 计算文件哈希（流式处理，减少内存消耗）
 async function computeFileHash(file) {
   try {
@@ -136,7 +152,7 @@ document.getElementById('btnMigrate').addEventListener('click', async () => {
   }
   if (warns.length) {
     const w = document.createElement('div');
-    w.className = 'muted';
+    w.className = 'muted warn';
     w.textContent = warns.join(' ');
     resultEl.appendChild(w);
   }
@@ -238,6 +254,9 @@ document.getElementById('btnMigrate').addEventListener('click', async () => {
   // 脚本预览
   const migrateScriptEl = document.getElementById('migrateScript');
   migrateScriptEl.textContent = buildMigrateScriptLines().join('\n') + '\n';
+  // 功能1：在预览处展示待迁移数量
+  const migrateCountEl = document.getElementById('migrateCount');
+  if (migrateCountEl) migrateCountEl.textContent = `待迁移文件数量：${mergedList.length}`;
 
   // 在脚本预览旁放置操作按钮（先清理旧的）
   const migrateScriptContainer = document.getElementById('migrateScript').parentElement;
@@ -296,21 +315,22 @@ document.getElementById('btnScan').addEventListener('click', async () => {
       return;
     }
 
-    const absPrefix = ''; // 方案A：不在页面采集绝对路径，由输入框直接用于脚本
+    const absPrefix = '';
 
     // 绝对路径与根名一致性提示（不拦截，仅提示）
     const SCAN = (document.getElementById('scanRoot').value || '').trim();
     const scanName = basename(SCAN);
     if (SCAN && scanEnhanced.root && scanName && scanName !== scanEnhanced.root) {
       const w = document.createElement('div');
-      w.className = 'muted';
+      w.className = 'muted warn';
       w.textContent = `扫描绝对路径末段"${scanName}"与所选目录根名"${scanEnhanced.root}"不一致，请确认。`;
       resultEl.appendChild(w);
     }
 
     // 计算哈希并分组（优化：减少批处理大小，增加进度提示）
     const groups = new Map(); // hash -> [{relPath, displayPath, file}]
-    const batch = 3; // 减少批处理大小，降低内存峰值
+    const batchInput = document.getElementById('batchSize');
+    const batch = Math.max(1, parseInt((batchInput && batchInput.value) ? batchInput.value : '10', 10));
     const totalFiles = scanEnhanced.files.length;
     
     // 创建进度条容器
@@ -330,17 +350,23 @@ document.getElementById('btnScan').addEventListener('click', async () => {
     progressBar.style.transition = 'width 0.3s';
     progressContainer.appendChild(progressBar);
     
-    // 创建进度文本
+    // 创建进度文本与右上角耗时
     const progressText = document.createElement('div');
     progressText.className = 'muted';
     progressText.textContent = `正在扫描 0/${totalFiles} 个文件...`;
+    const elapsedTip = document.createElement('div');
+    elapsedTip.className = 'muted';
+    elapsedTip.style.textAlign = 'right';
+    elapsedTip.textContent = '已用时 0.0s';
     
     resultEl.appendChild(progressText);
     resultEl.appendChild(progressContainer);
+    resultEl.appendChild(elapsedTip);
     
     // 处理文件的函数
     let processedFiles = 0;
     
+    const startTime = performance.now();
     for (let i = 0; i < totalFiles; i += batch) {
       const slice = scanEnhanced.files.slice(i, i + batch);
       
@@ -368,6 +394,8 @@ document.getElementById('btnScan').addEventListener('click', async () => {
       const progress = Math.min(100, Math.round(processedFiles / totalFiles * 100));
       progressBar.style.width = `${progress}%`;
       progressText.textContent = `正在扫描 ${processedFiles}/${totalFiles} 个文件... ${progress}%`;
+      const elapsed = (performance.now() - startTime) / 1000;
+      elapsedTip.textContent = `已用时 ${elapsed.toFixed(1)}s`;
       
       // 让出控制权，避免阻塞UI
       await new Promise(resolve => setTimeout(resolve, 10));
@@ -376,6 +404,7 @@ document.getElementById('btnScan').addEventListener('click', async () => {
     // 移除进度提示
     progressText.remove();
     progressContainer.remove();
+    elapsedTip.remove();
     
     // 恢复按钮状态
     scanButton.disabled = false;
@@ -386,7 +415,7 @@ document.getElementById('btnScan').addEventListener('click', async () => {
     if (dupes.length === 0) {
       // 在结果区域提示，并清空脚本预览
       const info = document.createElement('div');
-      info.className = 'muted';
+      info.className = 'muted warn';
       info.textContent = '未发现重复文件';
       resultEl.appendChild(info);
       const dedupeScriptElEmpty = document.getElementById('dedupeScript');
@@ -411,147 +440,168 @@ document.getElementById('btnScan').addEventListener('click', async () => {
     // 脚本预览元素
     const dedupeScriptEl = document.getElementById('dedupeScript');
     
-    // 防抖更新脚本预览
+    // 防抖更新脚本预览与数量
     const debouncedUpdateScript = debounce(() => {
       dedupeScriptEl.textContent = buildDedupeScriptLines().join('\n') + '\n';
+      const dedupeCountEl = document.getElementById('dedupeCount');
+      if (dedupeCountEl) dedupeCountEl.textContent = `待删除文件数量：${deletionSet.size}`;
     }, 300);
     
-    // 虚拟滚动优化：只渲染前10个重复组，其余折叠
-    const maxVisibleGroups = 10;
-    const visibleDupes = dupes.slice(0, maxVisibleGroups);
-    const hiddenDupes = dupes.slice(maxVisibleGroups);
-    
-    visibleDupes.forEach(([hash, arr], idx) => {
-      const group = document.createElement('div');
-      group.className = 'group';
-      group.innerHTML = `
-        <div class="group-header">
-          <div>
-            <strong>重复组 #${idx + 1}</strong>
-            <span class="muted mono">SHA256: ${hash.slice(0, 16)}…</span>
+    // 分页展示重复组
+    const perPageInput = document.getElementById('groupsPerPage');
+    const perPage = Math.max(1, parseInt((perPageInput && perPageInput.value) ? perPageInput.value : '10', 10));
+    let currentPage = 1;
+    const totalPages = Math.max(1, Math.ceil(dupes.length / perPage));
+    const pager = document.createElement('div');
+    pager.className = 'actions';
+    const listContainer = document.createElement('div');
+    function renderPager() {
+      pager.innerHTML = '';
+      const info = document.createElement('span');
+      info.className = 'muted';
+      info.textContent = `第 ${currentPage}/${totalPages} 页`;
+      const prev = document.createElement('button');
+      prev.className = 'secondary';
+      prev.textContent = '上一页';
+      prev.disabled = currentPage <= 1;
+      prev.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderList(); renderPager(); }});
+      const next = document.createElement('button');
+      next.className = 'secondary';
+      next.textContent = '下一页';
+      next.disabled = currentPage >= totalPages;
+      next.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; renderList(); renderPager(); }});
+      pager.appendChild(prev);
+      pager.appendChild(info);
+      pager.appendChild(next);
+    }
+    function renderList() {
+      listContainer.innerHTML = '';
+      const start = (currentPage - 1) * perPage;
+      const pageDupes = dupes.slice(start, start + perPage);
+      pageDupes.forEach(([hash, arr], idx) => {
+        const group = document.createElement('div');
+        group.className = 'group';
+        group.innerHTML = `
+          <div class="group-header">
+            <div>
+              <strong>重复组 #${start + idx + 1}</strong>
+              <span class="muted mono">SHA256: ${hash.slice(0, 16)}…</span>
+            </div>
+            <div class="pill">${arr.length} 文件</div>
           </div>
-          <div class="pill">${arr.length} 文件</div>
-        </div>
-        <div class="group-body"></div>
-      `;
-      const body = group.querySelector('.group-body');
-      const totalCount = arr.length;
-      let deletedInGroup = 0; // 当前组被标记删除的数量
-      
-      // 只渲染前5个文件，其余折叠
-      const maxVisibleFiles = 5;
-      const visibleFiles = arr.slice(0, maxVisibleFiles);
-      const hiddenFiles = arr.slice(maxVisibleFiles);
-    
-      visibleFiles.forEach((item, i) => {
-        const row = document.createElement('div');
-        row.className = 'file-row mono';
-        const keep = i === 0; // 默认保留第一份
-        row.innerHTML = `
-          <span class="path">${item.displayPath}</span>
-          <div class="ops">
-            <button class="${keep ? 'secondary' : 'danger'}" data-act="${keep ? 'keep' : 'delete'}">${keep ? '删除' : '已删除'}</button>
-          </div>
+          <div class="group-body"></div>
         `;
-        const btn = row.querySelector('button');
-        // 初始化：除第一条外默认加入删除计划
-        if (!keep) { deletionSet.add(item.relPath); deletedInGroup++; }
+        const body = group.querySelector('.group-body');
+        const totalCount = arr.length;
+        let deletedInGroup = 0; // 当前组被标记删除的数量
+        // 只渲染前5个文件，其余折叠
+        const maxVisibleFiles = 5;
+        const visibleFiles = arr.slice(0, maxVisibleFiles);
+        const hiddenFiles = arr.slice(maxVisibleFiles);
 
-        btn.addEventListener('click', () => {
-          if (btn.dataset.act === 'delete') {
-            // 当前为已删除 → 还原为未删除
-            btn.dataset.act = 'keep';
-            btn.textContent = '删除';
-            btn.className = 'secondary';
-            deletionSet.delete(item.relPath);
-            if (deletedInGroup > 0) deletedInGroup--;
-          } else {
-            // 当前为未删除 → 准备标记为已删除，校验是否会导致整组全删
-            if (deletedInGroup + 1 >= totalCount) {
-              alert('同一重复组中至少保留一个文件，不能全部删除');
-              return;
+        visibleFiles.forEach((item, i) => {
+          const row = document.createElement('div');
+          row.className = 'file-row mono';
+          const keep = i === 0; // 默认保留第一份
+          row.innerHTML = `
+            <span class="path">${item.displayPath}</span>
+            <div class="ops">
+              <button class="${keep ? 'secondary' : 'danger'}" data-act="${keep ? 'keep' : 'delete'}">${keep ? '删除' : '已删除'}</button>
+            </div>
+          `;
+          const btn = row.querySelector('button');
+          if (!keep) { deletionSet.add(item.relPath); deletedInGroup++; }
+          btn.addEventListener('click', () => {
+            if (btn.dataset.act === 'delete') {
+              btn.dataset.act = 'keep';
+              btn.textContent = '删除';
+              btn.className = 'secondary';
+              deletionSet.delete(item.relPath);
+              if (deletedInGroup > 0) deletedInGroup--;
+            } else {
+              if (deletedInGroup + 1 >= totalCount) {
+                const tip = document.createElement('div');
+                tip.className = 'muted warn';
+                tip.textContent = '同一重复组中至少保留一个文件，不能全部删除';
+                body.appendChild(tip);
+                return;
+              }
+              btn.dataset.act = 'delete';
+              btn.textContent = '已删除';
+              btn.className = 'danger';
+              deletionSet.add(item.relPath);
+              deletedInGroup++;
             }
-            // 通过校验，标记为已删除
-            btn.dataset.act = 'delete';
-            btn.textContent = '已删除';
-            btn.className = 'danger';
-            deletionSet.add(item.relPath);
-            deletedInGroup++;
-          }
-          // 防抖刷新脚本预览，减少频繁更新
-          debouncedUpdateScript();
+            debouncedUpdateScript();
+          });
+          body.appendChild(row);
         });
-        body.appendChild(row);
-      });
-      
-      // 处理隐藏的文件（自动加入删除计划，但不显示）
-      hiddenFiles.forEach((item, i) => {
-        if (i > 0) { // 除第一个外都加入删除计划
+
+        // 隐藏文件：默认全部加入删除计划（保持整组至少保留第一个）
+        hiddenFiles.forEach((item) => {
           deletionSet.add(item.relPath);
           deletedInGroup++;
-        }
-      });
-      
-      // 如果有隐藏文件，显示"更多"按钮
-      if (hiddenFiles.length > 0) {
-        const moreBtn = document.createElement('button');
-        moreBtn.className = 'secondary';
-        moreBtn.textContent = `更多 ${hiddenFiles.length} 个文件...`;
-        moreBtn.addEventListener('click', () => {
-          // 展开隐藏文件
-          hiddenFiles.forEach((item, i) => {
-            const row = document.createElement('div');
-            row.className = 'file-row mono';
-            const keep = i === 0;
-            row.innerHTML = `
-              <span class="path">${item.displayPath}</span>
-              <div class="ops">
-                <button class="${keep ? 'secondary' : 'danger'}" data-act="${keep ? 'keep' : 'delete'}">${keep ? '删除' : '已删除'}</button>
-              </div>
-            `;
-            const btn = row.querySelector('button');
-            if (!keep) { deletionSet.add(item.relPath); deletedInGroup++; }
-            
-            btn.addEventListener('click', () => {
-              if (btn.dataset.act === 'delete') {
-                btn.dataset.act = 'keep';
-                btn.textContent = '删除';
-                btn.className = 'secondary';
-                deletionSet.delete(item.relPath);
-                if (deletedInGroup > 0) deletedInGroup--;
-              } else {
-                if (deletedInGroup + 1 >= totalCount) {
-                  alert('同一重复组中至少保留一个文件，不能全部删除');
-                  return;
-                }
-                btn.dataset.act = 'delete';
-                btn.textContent = '已删除';
-                btn.className = 'danger';
-                deletionSet.add(item.relPath);
-                deletedInGroup++;
-              }
-              debouncedUpdateScript();
-            });
-            body.appendChild(row);
-          });
-          moreBtn.remove();
         });
-        body.appendChild(moreBtn);
-      }
 
-      resultEl.appendChild(group);
-    });
-    
-    // 如果有隐藏的重复组，显示折叠提示
-    if (hiddenDupes.length > 0) {
-      const hiddenInfo = document.createElement('div');
-      hiddenInfo.className = 'muted';
-      hiddenInfo.textContent = `还有 ${hiddenDupes.length} 个重复组未显示（共 ${hiddenDupes.reduce((sum, [, arr]) => sum + arr.length, 0)} 个文件）`;
-      resultEl.appendChild(hiddenInfo);
+        if (hiddenFiles.length > 0) {
+          const moreBtn = document.createElement('button');
+          moreBtn.className = 'secondary';
+          moreBtn.textContent = `更多 ${hiddenFiles.length} 个文件...`;
+          moreBtn.addEventListener('click', () => {
+            hiddenFiles.forEach((item) => {
+              const row = document.createElement('div');
+              row.className = 'file-row mono';
+              const keep = false; // 修正：更多展开后不再额外保留一个
+              row.innerHTML = `
+                <span class="path">${item.displayPath}</span>
+                <div class="ops">
+                  <button class="${keep ? 'secondary' : 'danger'}" data-act="${keep ? 'keep' : 'delete'}">${keep ? '删除' : '已删除'}</button>
+                </div>
+              `;
+              const btn = row.querySelector('button');
+              // 已在默认阶段加入删除计划，这里只处理反选
+              btn.addEventListener('click', () => {
+                if (btn.dataset.act === 'delete') {
+                  btn.dataset.act = 'keep';
+                  btn.textContent = '删除';
+                  btn.className = 'secondary';
+                  deletionSet.delete(item.relPath);
+                  if (deletedInGroup > 0) deletedInGroup--;
+                } else {
+                  if (deletedInGroup + 1 >= totalCount) {
+                    const tip = document.createElement('div');
+                    tip.className = 'muted warn';
+                    tip.textContent = '同一重复组中至少保留一个文件，不能全部删除';
+                    body.appendChild(tip);
+                    return;
+                  }
+                  btn.dataset.act = 'delete';
+                  btn.textContent = '已删除';
+                  btn.className = 'danger';
+                  deletionSet.add(item.relPath);
+                  deletedInGroup++;
+                }
+                debouncedUpdateScript();
+              });
+              body.appendChild(row);
+            });
+            moreBtn.remove();
+          });
+          body.appendChild(moreBtn);
+        }
+
+        listContainer.appendChild(group);
+      });
     }
+    renderList();
+    renderPager();
+    resultEl.appendChild(pager);
+    resultEl.appendChild(listContainer);
 
     // 初次渲染脚本预览（包含默认删除项）
     dedupeScriptEl.textContent = buildDedupeScriptLines().join('\n') + '\n';
+    const dedupeCountElInit = document.getElementById('dedupeCount');
+    if (dedupeCountElInit) dedupeCountElInit.textContent = `待删除文件数量：${deletionSet.size}`;
 
     // 在脚本预览旁放置操作按钮（删除脚本，先清理旧的）
     const dedupeScriptContainer = document.getElementById('dedupeScript').parentElement;

@@ -40,6 +40,7 @@ h1 { font-size: 28px; font-weight: 700; margin: 0 0 24px 0; }
 .file-input { position: absolute; left: -9999px; }
 .file-input-label { display: inline-block; padding: 10px 16px; background: var(--accent); color: #0a0f1f; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s ease; }
 .file-input-label:hover { background: #4a99d6; }
+.file-meta { margin-left: 10px; font-size: 13px; color: var(--muted); }
 
 /* 文本输入框样式 */
 .text-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 6px; background: rgba(15, 23, 42, 0.6); color: var(--text); font-size: 15px; }
@@ -62,6 +63,8 @@ button.danger:hover { background: #ff5252; }
 .group-header { background: #0f1730; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .group-body { padding: 10px 16px; background: #0d152b; }
 .muted { color: var(--muted); }
+.muted.warn { color: var(--danger); }
+.hint-red { color: var(--danger); }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 .file-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; }
 .file-row .path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

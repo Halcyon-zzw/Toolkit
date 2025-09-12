@@ -21,6 +21,7 @@
         <div class="file-input-container">
           <input type="file" id="srcDir" webkitdirectory class="file-input">
           <label for="srcDir" class="file-input-label">选择文件夹</label>
+          <span id="srcMeta" class="file-meta"></span>
         </div>
         <input type="text" id="srcRoot" class="text-input" placeholder="源目录绝对路径（将直接用于脚本）">
       </div>
@@ -30,6 +31,7 @@
         <div class="file-input-container">
           <input type="file" id="dstDir" webkitdirectory class="file-input">
           <label for="dstDir" class="file-input-label">选择文件夹</label>
+          <span id="dstMeta" class="file-meta"></span>
         </div>
         <input type="text" id="dstRoot" class="text-input" placeholder="目标目录绝对路径（将直接用于脚本）">
       </div>
@@ -43,7 +45,7 @@
     
     <div class="script-preview">
       <h3>脚本预览 · 复制（功能一）</h3>
-      <p class="muted">脚本头部将包含 SRC_ABS 与 DST_ABS 变量</p>
+      <p id="migrateCount" class="muted"></p>
       <pre id="migrateScript" class="code-block"># 运行"开始迁移"后显示脚本</pre>
     </div>
   </div>
@@ -55,8 +57,22 @@
         <div class="file-input-container">
           <input type="file" id="scanDir" webkitdirectory class="file-input">
           <label for="scanDir" class="file-input-label">选择文件夹</label>
+          <span id="scanMeta" class="file-meta"></span>
         </div>
         <input type="text" id="scanRoot" class="text-input" placeholder="扫描目录绝对路径（将直接用于脚本）">
+      </div>
+      <div class="form-group">
+        <label>扫描设置</label>
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap: wrap;">
+          <div>
+            <input type="number" id="batchSize" class="text-input" min="1" step="1" value="10" style="width:140px;">
+            <div class="path-display">分块大小（batch），默认 10</div>
+          </div>
+          <div>
+            <input type="number" id="groupsPerPage" class="text-input" min="1" step="1" value="10" style="width:160px;">
+            <div class="path-display">每页重复组数量，默认 10</div>
+          </div>
+        </div>
       </div>
       
       <div class="actions">
@@ -68,7 +84,7 @@
     
     <div class="script-preview">
       <h3>脚本预览 · 删除重复文件（功能二）</h3>
-      <p class="muted">脚本头部将包含 SCAN 变量</p>
+      <p id="dedupeCount" class="muted"></p>
       <pre id="dedupeScript" class="code-block"># 运行"开始扫描"后显示脚本</pre>
     </div>
   </div>
