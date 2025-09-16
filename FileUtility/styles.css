@@ -85,3 +85,8 @@ button.danger:hover { background: #ff5252; }
 .progress-bar { height: 20px; background-color: var(--accent-2); transition: width 0.3s ease; }
 .error { color: var(--danger); padding: 8px; border-left: 3px solid var(--danger); background-color: rgba(255, 107, 107, 0.1); margin: 10px 0; }
 
+/* 重复组滚动区域与分页 */
+.dup-scroll { max-height: 420px; overflow: auto; border: 1px dashed var(--border); border-radius: 8px; padding: 8px; }
+.pager { display: flex; gap: 12px; align-items: center; justify-content: flex-end; margin: 10px 0; }
+.pager .select { background: #273455; color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; }
+

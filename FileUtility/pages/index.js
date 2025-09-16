@@ -23,26 +23,31 @@ function collectFilesFromInputEnhanced(inputEl) {
   if (files.length === 0) return { files: [], root: '' };
   const first = files[0];
   const firstPath = first.webkitRelativePath || first.name;
-  const root = firstPath.includes('/') ? firstPath.split('/')[0] : '';
+  // 支持 Windows 分隔符解析
+  const normalizedFirst = firstPath.replace(/\\/g, '/');
+  const root = normalizedFirst.includes('/') ? normalizedFirst.split('/')[0] : '';
   const toRel = (p) => {
     if (!root) return p;
-    const idx = p.indexOf('/');
-    return idx >= 0 ? p.slice(idx + 1) : p;
+    const np = (p || '').replace(/\\/g, '/');
+    const idx = np.indexOf('/');
+    return idx >= 0 ? np.slice(idx + 1) : np;
   };
   return {
     root,
     files: files.map(f => {
-      const raw = f.webkitRelativePath || f.name;
-      return { file: f, displayPath: raw, relPath: toRel(raw) };
+      const raw = (f.webkitRelativePath || f.name);
+      const disp = raw.replace(/\\/g, '/');
+      return { file: f, displayPath: disp, relPath: toRel(disp) };
     })
   };
 }
 
 function basename(path) {
   if (!path) return '';
-  const noTrail = path.replace(/\/+$/, '');
-  const idx = noTrail.lastIndexOf('/');
-  return idx >= 0 ? noTrail.slice(idx + 1) : noTrail;
+  const noTrail = path.replace(/[\\/]+$/, '');
+  const uni = noTrail.replace(/\\/g, '/');
+  const idx = uni.lastIndexOf('/');
+  return idx >= 0 ? uni.slice(idx + 1) : uni;
 }
 
 // 根名展示绑定
@@ -71,7 +76,8 @@ function bindFolderMeta(inputId, metaId) {
   inputEl.addEventListener('change', () => {
     const files = Array.from(inputEl.files || []);
     if (files.length === 0) { metaEl.textContent = ''; return; }
-    metaEl.textContent = `已选择 ${files.length} 个文件 · 100%`;
+    // 去除 100% 展示
+    metaEl.textContent = `已选择 ${files.length} 个文件`;
   });
 }
 
@@ -157,13 +163,15 @@ document.getElementById('btnMigrate').addEventListener('click', async () => {
     resultEl.appendChild(w);
   }
 
-  // 记录目标已存在的相对路径集合（归一化后，用于判断是否跳过同步）
+  // 记录目标已存在的路径集合：不仅同相对路径视为存在，且凡是目标中存在同名文件（不论子路径）也视为存在
   const dstPathSet = new Set(dstEnhanced.files.map(x => x.relPath));
+  const dstFileNameSet = new Set(dstEnhanced.files.map(x => (x.relPath.split('/').pop())));
   const conflicts = [];
   const mergedList = []; // { file, relPath, displayPath }
 
   for (const s of srcEnhanced.files) {
-    if (dstPathSet.has(s.relPath)) {
+    const srcName = s.relPath.split('/').pop();
+    if (dstPathSet.has(s.relPath) || dstFileNameSet.has(srcName)) {
       // 目标目录中存在相同相对路径的文件，跳过同步
       conflicts.push(s.displayPath);
     } else {
@@ -372,6 +380,8 @@ document.getElementById('btnScan').addEventListener('click', async () => {
       
       // 并行处理每批文件
       const hashPromises = slice.map(async (x) => {
+        // 排除文件夹（在 <input webkitdirectory> 场景下一般都是文件，但额外保护）
+        if (!x.file || typeof x.file.size !== 'number') return 'skip-dir';
         try {
           return await computeFileHash(x.file);
         } catch (error) {
@@ -385,6 +395,7 @@ document.getElementById('btnScan').addEventListener('click', async () => {
       for (let j = 0; j < slice.length; j++) {
         const item = slice[j];
         const hash = hashes[j];
+        if (hash === 'skip-dir') continue; // 忽略目录
         if (!groups.has(hash)) groups.set(hash, []);
         groups.get(hash).push({ relPath: item.relPath, displayPath: item.displayPath, file: item.file });
       }
@@ -447,32 +458,52 @@ document.getElementById('btnScan').addEventListener('click', async () => {
       if (dedupeCountEl) dedupeCountEl.textContent = `待删除文件数量：${deletionSet.size}`;
     }, 300);
     
-    // 分页展示重复组
-    const perPageInput = document.getElementById('groupsPerPage');
-    const perPage = Math.max(1, parseInt((perPageInput && perPageInput.value) ? perPageInput.value : '10', 10));
+    // 分页展示重复组（下拉选择 10/30/50/100），分页条置于重复组下方
+    let perPage = 10;
     let currentPage = 1;
-    const totalPages = Math.max(1, Math.ceil(dupes.length / perPage));
-    const pager = document.createElement('div');
-    pager.className = 'actions';
     const listContainer = document.createElement('div');
+    listContainer.className = 'dup-scroll';
+    const pager = document.createElement('div');
+    pager.className = 'pager';
+    const perSelect = document.createElement('select');
+    perSelect.className = 'select';
+    ;[10,30,50,100].forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = String(v);
+      opt.textContent = String(v);
+      if (v === 10) opt.selected = true;
+      perSelect.appendChild(opt);
+    });
+    perSelect.addEventListener('change', () => {
+      perPage = Math.max(1, parseInt(perSelect.value, 10));
+      currentPage = 1;
+      renderList();
+      renderPager();
+    });
+    const pageInfo = document.createElement('span');
+    pageInfo.className = 'muted';
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'secondary';
+    prevBtn.textContent = '上一页';
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'secondary';
+    nextBtn.textContent = '下一页';
+    function totalPages() { return Math.max(1, Math.ceil(dupes.length / perPage)); }
     function renderPager() {
       pager.innerHTML = '';
-      const info = document.createElement('span');
-      info.className = 'muted';
-      info.textContent = `第 ${currentPage}/${totalPages} 页`;
-      const prev = document.createElement('button');
-      prev.className = 'secondary';
-      prev.textContent = '上一页';
-      prev.disabled = currentPage <= 1;
-      prev.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderList(); renderPager(); }});
-      const next = document.createElement('button');
-      next.className = 'secondary';
-      next.textContent = '下一页';
-      next.disabled = currentPage >= totalPages;
-      next.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; renderList(); renderPager(); }});
-      pager.appendChild(prev);
-      pager.appendChild(info);
-      pager.appendChild(next);
+      pageInfo.textContent = `每页 `;
+      const infoText = document.createElement('span');
+      infoText.className = 'muted';
+      infoText.textContent = `第 ${currentPage}/${totalPages()} 页`;
+      prevBtn.disabled = currentPage <= 1;
+      nextBtn.disabled = currentPage >= totalPages();
+      prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderList(); renderPager(); } };
+      nextBtn.onclick = () => { if (currentPage < totalPages()) { currentPage++; renderList(); renderPager(); } };
+      pager.appendChild(pageInfo);
+      pager.appendChild(perSelect);
+      pager.appendChild(infoText);
+      pager.appendChild(prevBtn);
+      pager.appendChild(nextBtn);
     }
     function renderList() {
       listContainer.innerHTML = '';
@@ -485,7 +516,7 @@ document.getElementById('btnScan').addEventListener('click', async () => {
           <div class="group-header">
             <div>
               <strong>重复组 #${start + idx + 1}</strong>
-              <span class="muted mono">SHA256: ${hash.slice(0, 16)}…</span>
+              <span class="muted mono">文件名: ${(arr[0] && arr[0].relPath ? (arr[0].relPath.split('/').pop()) : '未知')}</span>
             </div>
             <div class="pill">${arr.length} 文件</div>
           </div>
@@ -504,7 +535,7 @@ document.getElementById('btnScan').addEventListener('click', async () => {
           row.className = 'file-row mono';
           const keep = i === 0; // 默认保留第一份
           row.innerHTML = `
-            <span class="path">${item.displayPath}</span>
+            <span class="path" title="${item.displayPath}">${item.displayPath}</span>
             <div class="ops">
               <button class="${keep ? 'secondary' : 'danger'}" data-act="${keep ? 'keep' : 'delete'}">${keep ? '删除' : '已删除'}</button>
             </div>
@@ -553,7 +584,7 @@ document.getElementById('btnScan').addEventListener('click', async () => {
               row.className = 'file-row mono';
               const keep = false; // 修正：更多展开后不再额外保留一个
               row.innerHTML = `
-                <span class="path">${item.displayPath}</span>
+                <span class="path" title="${item.displayPath}">${item.displayPath}</span>
                 <div class="ops">
                   <button class="${keep ? 'secondary' : 'danger'}" data-act="${keep ? 'keep' : 'delete'}">${keep ? '删除' : '已删除'}</button>
                 </div>
@@ -595,8 +626,8 @@ document.getElementById('btnScan').addEventListener('click', async () => {
     }
     renderList();
     renderPager();
-    resultEl.appendChild(pager);
     resultEl.appendChild(listContainer);
+    resultEl.appendChild(pager);
 
     // 初次渲染脚本预览（包含默认删除项）
     dedupeScriptEl.textContent = buildDedupeScriptLines().join('\n') + '\n';
