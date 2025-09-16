@@ -90,3 +90,18 @@ button.danger:hover { background: #ff5252; }
 .pager { display: flex; gap: 12px; align-items: center; justify-content: flex-end; margin: 10px 0; }
 .pager .select { background: #273455; color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; }
 
+/* 顶部浮动提示 */
+.top-toast {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 107, 107, 0.95);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+  z-index: 9999;
+  font-weight: 600;
+}
+

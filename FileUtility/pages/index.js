@@ -78,6 +78,9 @@ function bindFolderMeta(inputId, metaId) {
     if (files.length === 0) { metaEl.textContent = ''; return; }
     // 去除 100% 展示
     metaEl.textContent = `已选择 ${files.length} 个文件`;
+    // 选择后显示上传中提示
+    const statusSpan = inputId === 'scanDir' ? document.getElementById('scanStatus') : (inputId === 'srcDir' || inputId === 'dstDir') ? document.getElementById('migrateStatus') : null;
+    if (statusSpan) statusSpan.textContent = '上传中…';
   });
 }
 
@@ -132,6 +135,8 @@ function debounce(func, wait) {
 
 // 迁移逻辑（基于源/目标快照计算冲突与合并结果）
 document.getElementById('btnMigrate').addEventListener('click', async () => {
+  const migrateStatus = document.getElementById('migrateStatus');
+  if (migrateStatus) migrateStatus.textContent = '处理中…';
   const srcEnhanced = collectFilesFromInputEnhanced(document.getElementById('srcDir'));
   // 目标目录可能为空：只要用户选择了目录，即认为有效
   const dstInput = document.getElementById('dstDir');
@@ -302,6 +307,7 @@ document.getElementById('btnMigrate').addEventListener('click', async () => {
   migrateActions.appendChild(migrateExportBtn);
   // 将按钮放到预览区下方
   migrateScriptContainer.appendChild(migrateActions);
+  if (migrateStatus) migrateStatus.textContent = '';
 });
 
 // 去重逻辑
@@ -310,6 +316,8 @@ document.getElementById('btnScan').addEventListener('click', async () => {
   // 禁用按钮，防止重复点击
   scanButton.disabled = true;
   scanButton.textContent = '扫描中...';
+  const scanStatus = document.getElementById('scanStatus');
+  if (scanStatus) scanStatus.textContent = '处理中…';
   
   try {
     const scanInput = document.getElementById('scanDir');
@@ -338,7 +346,9 @@ document.getElementById('btnScan').addEventListener('click', async () => {
     // 计算哈希并分组（优化：减少批处理大小，增加进度提示）
     const groups = new Map(); // hash -> [{relPath, displayPath, file}]
     const batchInput = document.getElementById('batchSize');
-    const batch = Math.max(1, parseInt((batchInput && batchInput.value) ? batchInput.value : '10', 10));
+    // 根据硬件环境给出相对保守的默认并发：CPU核数*2 或 8 中的较小值
+    const defaultBatch = Math.max(2, Math.min(8, (navigator.hardwareConcurrency || 4) * 2));
+    const batch = Math.max(1, parseInt((batchInput && batchInput.value) ? batchInput.value : String(defaultBatch), 10));
     const totalFiles = scanEnhanced.files.length;
     
     // 创建进度条容器
@@ -371,8 +381,9 @@ document.getElementById('btnScan').addEventListener('click', async () => {
     resultEl.appendChild(progressContainer);
     resultEl.appendChild(elapsedTip);
     
-    // 处理文件的函数
+    // 处理文件的函数（优化：小文件优先，平滑内存峰值）
     let processedFiles = 0;
+    scanEnhanced.files.sort((a,b) => (a.file?.size||0) - (b.file?.size||0));
     
     const startTime = performance.now();
     for (let i = 0; i < totalFiles; i += batch) {
@@ -420,6 +431,7 @@ document.getElementById('btnScan').addEventListener('click', async () => {
     // 恢复按钮状态
     scanButton.disabled = false;
     scanButton.textContent = '开始扫描';
+    if (scanStatus) scanStatus.textContent = '';
 
     // 展示重复分组（至少 2 个文件）
     const dupes = [...groups.entries()].filter(([, arr]) => arr.length > 1);
