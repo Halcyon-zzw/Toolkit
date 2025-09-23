@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "说课",
+  "version": "2.0",
+  "description": "从文本中提取说客英语账号密码并自动填充",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": [
+    "https://www.talk915.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.talk915.com/teacher/login*"],
+      "js": ["content.js"]
+    }
+  ]
+}
