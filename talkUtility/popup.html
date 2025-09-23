@@ -140,6 +140,17 @@
       background: #5a6268;
     }
 
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn-group button {
+      flex: 1;
+      margin-top: 0;
+    }
+
     #scheduleList {
       display: none;
       margin-top: 20px;
@@ -171,13 +182,48 @@
 
     .empty-state {
       text-align: center;
-      padding: 40px 20px;
+      padding: 20px 0;
       color: #6c757d;
     }
 
     .empty-state h2 {
       margin-bottom: 10px;
       color: #495057;
+    }
+
+    .upload-section {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .uploaded-content {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 12px;
     }
 
     .tab-content {
@@ -227,12 +273,24 @@
     </div>
   </div>
 
-  <!-- 功能二内容（空页面） -->
+  <!-- 功能二内容 -->
   <div id="featureTwo" class="tab-content">
-    <div class="empty-state">
-      <h2>功能二</h2>
-      <p>新功能正在开发中，敬请期待</p>
+    <div class="upload-section">
+      <h2>表格处理功能</h2>
+      <p>请上传Excel文件进行处理</p>
+
+      <div class="btn-group">
+        <button id="downloadTemplate">下载文件模板</button>
+      </div>
+
+      <div class="file-input-wrapper">
+        <button class="secondary-btn">选择Excel文件</button>
+        <input type="file" id="excelFile" accept=".xlsx,.xls">
+      </div>
+      <p id="fileName" style="margin-top: 10px; font-size: 14px; color: #6c757d;"></p>
     </div>
+
+    <div id="fileContent" class="uploaded-content" style="display: none;"></div>
   </div>
 </div>
 
@@ -252,6 +310,41 @@
     document.getElementById('featureOneBtn').classList.remove('active');
     document.getElementById('featureTwo').classList.add('active');
     document.getElementById('featureOne').classList.remove('active');
+  });
+
+  // 下载模板功能
+  document.getElementById('downloadTemplate').addEventListener('click', function() {
+    // 创建一个隐藏的a标签用于下载
+    const a = document.createElement('a');
+    a.href = 'talk_template.xlsx'; // 相对路径，Chrome扩展会正确解析
+    a.download = 'talk_template.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+
+  // 文件上传处理
+  document.getElementById('excelFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      document.getElementById('fileName').textContent = '已选择: ' + file.name;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        // 这里只是简单地将文件内容转为文本显示
+        // 实际项目中你可能需要使用xlsx库来解析Excel文件
+        const content = e.target.result;
+        const contentDisplay = document.getElementById('fileContent');
+        contentDisplay.textContent = '文件已上传，大小: ' + (content.byteLength || content.length) + ' 字节';
+        contentDisplay.style.display = 'block';
+      };
+
+      // 读取为ArrayBuffer，便于后续处理
+      reader.readAsArrayBuffer(file);
+    } else {
+      document.getElementById('fileName').textContent = '';
+      document.getElementById('fileContent').style.display = 'none';
+    }
   });
 </script>
 </body>
