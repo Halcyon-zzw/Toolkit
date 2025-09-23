@@ -1,238 +1,337 @@
+
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+  <style>    * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
 
-    body {
-      width: 400px;
-      padding: 0;
-      background-color: #f8f9fa;
-      color: #333;
-    }
+  body {
+    width: 400px;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #333;
+  }
 
-    .header {
-      background: linear-gradient(135deg, #409EFF, #3675d6);
-      color: white;
-      padding: 15px;
-      border-radius: 8px 8px 0 0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
+  .header {
+    background: linear-gradient(135deg, #409EFF, #3675d6);
+    color: white;
+    padding: 15px;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+    min-height: 50px; /* 确保有足够的高度 */
+  }
 
-    .header h1 {
-      font-size: 18px;
-      font-weight: 500;
-    }
+  .header h1 {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
 
-    .tab-buttons {
-      display: flex;
-      background-color: #e9ecef;
-      border-radius: 0 0 8px 8px;
-    }
+  .tab-buttons {
+    display: flex;
+    background-color: #e9ecef;
+    border-radius: 0 0 8px 8px;
+  }
 
-    .tab-buttons button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      color: #6c757d;
-    }
+  .tab-buttons button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    color: #6c757d;
+  }
 
-    .tab-buttons button.active {
-      background: white;
-      color: #409EFF;
-      border-top: 2px solid #409EFF;
-    }
+  .tab-buttons button.active {
+    background: white;
+    color: #409EFF;
+    border-top: 2px solid #409EFF;
+  }
 
-    .container {
-      padding: 20px;
-      background: white;
-      min-height: 300px;
-    }
+  .download-template-btn {
+    width: 50%; /* 功能二按钮的一半宽度 */
+    margin: 10px 0 0 auto; /* 移到最右边 */
+    padding: 6px 12px;
+    font-size: 13px;
+    background: #409EFF;
+    border-radius: 4px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: none; /* 默认隐藏 */
+  }
 
-    textarea {
-      width: 100%;
-      height: 120px;
-      margin-bottom: 15px;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      resize: vertical;
-      font-size: 14px;
-      transition: border-color 0.3s;
-    }
+  .download-template-btn:hover {
+    background: #337ecc;
+  }
 
-    textarea:focus {
-      outline: none;
-      border-color: #409EFF;
-      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-    }
+  .download-template-btn.show {
+    display: block; /* 当需要显示时添加.show类 */
+  }
 
-    .result {
-      margin: 15px 0;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 6px;
-      border-left: 4px solid #409EFF;
-    }
+  .container {
+    padding: 20px;
+    background: white;
+    min-height: 300px;
+  }
 
-    .result-title {
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: #495057;
-    }
+  textarea {
+    width: 100%;
+    height: 120px;
+    margin-bottom: 15px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    resize: vertical;
+    font-size: 14px;
+    transition: border-color 0.3s;
+  }
 
-    .result-content {
-      line-height: 1.6;
-    }
+  textarea:focus {
+    outline: none;
+    border-color: #409EFF;
+    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  }
 
-    .result-item {
-      margin-bottom: 5px;
-    }
+  .result {
+    margin: 15px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #409EFF;
+  }
 
-    .result-label {
-      font-weight: 500;
-      color: #495057;
-    }
+  .result-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #495057;
+  }
 
-    .result-value {
-      color: #212529;
-      font-family: monospace;
-    }
+  .result-content {
+    line-height: 1.6;
+  }
 
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #409EFF;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
-      font-weight: 500;
-      transition: background 0.3s;
-      box-shadow: 0 2px 4px rgba(64, 158, 255, 0.3);
-    }
+  .result-item {
+    margin-bottom: 5px;
+  }
 
-    button:hover {
-      background: #337ecc;
-    }
+  .result-label {
+    font-weight: 500;
+    color: #495057;
+  }
 
-    button:active {
-      transform: translateY(1px);
-    }
+  .result-value {
+    color: #212529;
+    font-family: monospace;
+  }
 
-    .secondary-btn {
-      background: #6c757d;
-      box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
-    }
+  button {
+    width: 100%;
+    padding: 12px;
+    background: #409EFF;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-weight: 500;
+    transition: background 0.3s;
+    box-shadow: 0 2px 4px rgba(64, 158, 255, 0.3);
+  }
 
-    .secondary-btn:hover {
-      background: #5a6268;
-    }
+  button:hover {
+    background: #337ecc;
+  }
 
-    .btn-group {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
+  button:active {
+    transform: translateY(1px);
+  }
 
-    .btn-group button {
-      flex: 1;
-      margin-top: 0;
-    }
+  .secondary-btn {
+    background: #6c757d;
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+  }
 
-    #scheduleList {
-      display: none;
-      margin-top: 20px;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 6px;
-    }
+  .secondary-btn:hover {
+    background: #5a6268;
+  }
 
-    #scheduleTitle {
-      font-size: 16px;
-      margin-bottom: 10px;
-      color: #495057;
-      font-weight: 600;
-    }
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
 
-    #scheduleItems {
-      list-style: none;
-      padding: 0;
-    }
+  .btn-group button {
+    flex: 1;
+    margin-top: 0;
+  }
 
-    #scheduleItems li {
-      padding: 8px 0;
-      border-bottom: 1px solid #e9ecef;
-    }
+  #scheduleList {
+    display: none;
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+  }
 
-    #scheduleItems li:last-child {
-      border-bottom: none;
-    }
+  #scheduleTitle {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #495057;
+    font-weight: 600;
+  }
 
-    .empty-state {
-      text-align: center;
-      padding: 20px 0;
-      color: #6c757d;
-    }
+  #scheduleItems {
+    list-style: none;
+    padding: 0;
+  }
 
-    .empty-state h2 {
-      margin-bottom: 10px;
-      color: #495057;
-    }
+  #scheduleItems li {
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+  }
 
-    .upload-section {
-      margin: 20px 0;
-      text-align: center;
-    }
+  #scheduleItems li:last-child {
+    border-bottom: none;
+  }
 
-    .file-input-wrapper {
-      position: relative;
-      display: inline-block;
-      overflow: hidden;
-      margin-bottom: 15px;
-    }
+  .empty-state {
+    text-align: center;
+    padding: 20px 0;
+    color: #6c757d;
+  }
 
-    .file-input-wrapper input[type=file] {
-      position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
+  .empty-state h2 {
+    margin-bottom: 10px;
+    color: #495057;
+  }
 
-    .uploaded-content {
-      margin-top: 20px;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 6px;
-      text-align: left;
-      max-height: 200px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      font-family: monospace;
-      font-size: 12px;
-    }
+  .upload-section {
+    margin: 20px 0;
+    text-align: center;
+  }
 
-    .tab-content {
-      display: none;
-    }
+  .file-input-wrapper {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    margin-bottom: 15px;
+    width: 100%;
+  }
 
-    .tab-content.active {
-      display: block;
-    }
+  .file-input-wrapper input[type=file] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .uploaded-content {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-align: left;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 12px;
+  }
+
+  .column-data {
+    margin-top: 20px;
+    text-align: left;
+  }
+
+  .column-data h3 {
+    margin-bottom: 10px;
+    color: #495057;
+  }
+
+  .column-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    background: white;
+  }
+
+  .column-list div {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .column-list div:last-child {
+    border-bottom: none;
+  }
+
+  .error-message {
+    color: #dc3545;
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8d7da;
+    border-radius: 4px;
+  }
+
+  .success-message {
+    color: #155724;
+    margin-top: 10px;
+    padding: 10px;
+    background: #d4edda;
+    border-radius: 4px;
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .action-row button {
+    flex: 1;
+    margin-top: 0;
+  }
+
+  #parseBtn {
+    background: #28a745;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+  }
+
+  #parseBtn:hover {
+    background: #218838;
+  }
+
+  #parseBtn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+  }
   </style>
 </head>
 <body>
@@ -244,6 +343,8 @@
   <button id="featureOneBtn" class="active">功能一</button>
   <button id="featureTwoBtn">功能二</button>
 </div>
+
+<button id="downloadTemplate" class="download-template-btn">下载模板</button>
 
 <div class="container">
   <!-- 功能一内容（原页面内容） -->
@@ -279,73 +380,156 @@
       <h2>表格处理功能</h2>
       <p>请上传Excel文件进行处理</p>
 
-      <div class="btn-group">
-        <button id="downloadTemplate">下载文件模板</button>
-      </div>
-
       <div class="file-input-wrapper">
         <button class="secondary-btn">选择Excel文件</button>
-        <input type="file" id="excelFile" accept=".xlsx,.xls">
+        <input type="file" id="excelFile" accept=".xlsx">
       </div>
       <p id="fileName" style="margin-top: 10px; font-size: 14px; color: #6c757d;"></p>
-    </div>
 
-    <div id="fileContent" class="uploaded-content" style="display: none;"></div>
+      <div class="action-row">
+        <button id="parseBtn" disabled>开始解析</button>
+      </div>
+
+      <div id="messageArea"></div>
+
+      <div id="columnData" class="column-data hidden">
+        <h3>第一列数据</h3>
+        <div class="column-list" id="columnList"></div>
+      </div>
+    </div>
   </div>
 </div>
 
+<!-- 引入xlsx库用于处理Excel文件 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="popup.js"></script>
 
-<script>
-  // 添加功能切换逻辑
-  document.getElementById('featureOneBtn').addEventListener('click', function() {
-    document.getElementById('featureOneBtn').classList.add('active');
-    document.getElementById('featureTwoBtn').classList.remove('active');
-    document.getElementById('featureOne').classList.add('active');
-    document.getElementById('featureTwo').classList.remove('active');
-  });
+<script>    // 添加功能切换逻辑
+document.getElementById('featureOneBtn').addEventListener('click', function() {
+  document.getElementById('featureOneBtn').classList.add('active');
+  document.getElementById('featureTwoBtn').classList.remove('active');
+  document.getElementById('featureOne').classList.add('active');
+  document.getElementById('featureTwo').classList.remove('active');
 
-  document.getElementById('featureTwoBtn').addEventListener('click', function() {
-    document.getElementById('featureTwoBtn').classList.add('active');
-    document.getElementById('featureOneBtn').classList.remove('active');
-    document.getElementById('featureTwo').classList.add('active');
-    document.getElementById('featureOne').classList.remove('active');
-  });
+  // 切换到功能一时隐藏下载模板按钮
+  document.getElementById('downloadTemplate').classList.remove('show');
+});
 
-  // 下载模板功能
-  document.getElementById('downloadTemplate').addEventListener('click', function() {
-    // 创建一个隐藏的a标签用于下载
-    const a = document.createElement('a');
-    a.href = 'talk_template.xlsx'; // 相对路径，Chrome扩展会正确解析
-    a.download = 'talk_template.xlsx';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  });
+document.getElementById('featureTwoBtn').addEventListener('click', function() {
+  document.getElementById('featureTwoBtn').classList.add('active');
+  document.getElementById('featureOneBtn').classList.remove('active');
+  document.getElementById('featureTwo').classList.add('active');
+  document.getElementById('featureOne').classList.remove('active');
 
-  // 文件上传处理
-  document.getElementById('excelFile').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      document.getElementById('fileName').textContent = '已选择: ' + file.name;
+  // 切换到功能二时显示下载模板按钮
+  document.getElementById('downloadTemplate').classList.add('show');
+});
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        // 这里只是简单地将文件内容转为文本显示
-        // 实际项目中你可能需要使用xlsx库来解析Excel文件
-        const content = e.target.result;
-        const contentDisplay = document.getElementById('fileContent');
-        contentDisplay.textContent = '文件已上传，大小: ' + (content.byteLength || content.length) + ' 字节';
-        contentDisplay.style.display = 'block';
-      };
+// 下载模板功能
+document.getElementById('downloadTemplate').addEventListener('click', function() {
+  // 创建一个隐藏的a标签用于下载
+  const a = document.createElement('a');
+  a.href = 'talk_template.xlsx'; // 相对路径，Chrome扩展会正确解析
+  a.download = 'talk_template.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
 
-      // 读取为ArrayBuffer，便于后续处理
-      reader.readAsArrayBuffer(file);
-    } else {
-      document.getElementById('fileName').textContent = '';
-      document.getElementById('fileContent').style.display = 'none';
+// 文件上传处理
+let uploadedFile = null;
+
+document.getElementById('excelFile').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  const fileNameDisplay = document.getElementById('fileName');
+  const parseBtn = document.getElementById('parseBtn');
+
+  // 清除之前的消息和数据
+  document.getElementById('messageArea').innerHTML = '';
+  document.getElementById('columnData').classList.add('hidden');
+  fileNameDisplay.textContent = '';
+
+  if (!file) {
+    parseBtn.disabled = true;
+    uploadedFile = null;
+    return;
+  }
+
+  // 检查文件类型
+  if (!file.name.endsWith('.xlsx')) {
+    document.getElementById('messageArea').innerHTML = '<div class="error-message">错误：请上传.xlsx格式的Excel文件</div>';
+    parseBtn.disabled = true;
+    uploadedFile = null;
+    return;
+  }
+
+  fileNameDisplay.textContent = '已选择: ' + file.name;
+  uploadedFile = file;
+  parseBtn.disabled = false;
+});
+
+// 开始解析按钮处理
+document.getElementById('parseBtn').addEventListener('click', function() {
+  if (!uploadedFile) {
+    return;
+  }
+
+  const messageArea = document.getElementById('messageArea');
+  const columnData = document.getElementById('columnData');
+  const columnList = document.getElementById('columnList');
+
+  // 清除之前的消息和数据
+  messageArea.innerHTML = '';
+  columnData.classList.add('hidden');
+
+  // 使用xlsx库读取Excel文件
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, {type: 'array'});
+
+      // 获取第一个工作表
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+
+      // 将工作表转换为JSON格式
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+
+      if (jsonData.length === 0) {
+        messageArea.innerHTML = '<div class="error-message">错误：Excel文件为空</div>';
+        return;
+      }
+
+      // 获取第一列数据
+      const firstColumnData = [];
+      for (let i = 0; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        firstColumnData.push(row[0] !== undefined ? row[0] : '');
+      }
+
+      // 显示第一列数据
+      columnList.innerHTML = '';
+      firstColumnData.forEach((value, index) => {
+        const rowElement = document.createElement('div');
+        rowElement.textContent = `${index === 0 ? '标题: ' : `第${index}行: `}${value}`;
+        columnList.appendChild(rowElement);
+      });
+
+      columnData.classList.remove('hidden');
+      messageArea.innerHTML = '<div class="success-message">文件解析成功！</div>';
+    } catch (error) {
+      messageArea.innerHTML = `<div class="error-message">错误：文件解析失败 - ${error.message}</div>`;
     }
-  });
+  };
+
+  reader.onerror = function() {
+    messageArea.innerHTML = '<div class="error-message">错误：文件读取失败</div>';
+  };
+
+  // 读取为ArrayBuffer
+  reader.readAsArrayBuffer(uploadedFile);
+});
 </script>
 </body>
 </html>
