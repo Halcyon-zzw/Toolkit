@@ -112,6 +112,7 @@
 
 ```
 For each teaName in teaNameList:
+  前置检查：如果teaName为空或者空字符，跳过；
   a. 在 teaListResp1 的 resultData 中匹配 teaName，获取对应 teaId1
   b. 若 teaId1 为空，则从 teaListResp2 中匹配 teaName，获取 teaId2
   c. 若 teaId1 和 teaId2 均未匹配到，跳过当前 teaName
@@ -126,7 +127,7 @@ For each teaName in teaNameList:
      - 列2: openedClass
      - 列3: ✅ 若 openedClass ≥ 20，否则 ❎
      - 列4: finishedClass
-  h. 将数据加载到页面；
+  h. 将数据实时加载到页面，保证页面能实时看到处理后的数据；
      - 列1： 序号（从1开始自增）
      - 列2: teaName
      - 列3: openedClass
