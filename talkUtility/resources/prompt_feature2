@@ -1,0 +1,134 @@
+# 接口说明与处理流程
+
+## 接口1：登录获取Token
+- **URL**: `https://www.talk915.com/users/user/login`
+- **请求方式**: POST
+- **账号密码**：
+  - 账号1: userName:`ta-peng`，password:`tapeng123456`
+  - 账号2: userName:`ta-fonpeng`，password: `fonpeng123456`
+- **入参格式**：参考功能1（未提供具体格式，默认使用账号密码登录）
+```json
+  {
+    "password": ${password},
+    "loginId": ${userName},
+    "isApp": 2,
+    "loginMode": 1
+  }
+  ```
+  ```json
+  {
+    "resultCode": 0,
+    "resultMessage": "操作成功",
+    "resultData": {
+      "token": "5432543fagra"
+    },
+    "showPermission": false
+  }
+  ```
+- **出参示例**：
+  ```json
+  {
+    "resultCode": 0,
+    "resultMessage": "操作成功",
+    "resultData": {
+      "token": "5432543fagra"
+    },
+    "showPermission": false
+  }
+  ```
+
+## 接口2：查询课程统计列表
+- **URL**: `https://www.talk915.com/users/teacherProxy/queryClassStatisticsPageList`
+- **请求方式**: POST
+- **请求头**: `token: ${token}`
+- **入参格式**：
+  ```json
+  {
+    "area": 0,
+    "tutorName": "",
+    "tutorStatus": 2,
+    "classStartDate": "2025-09-16",
+    "classEndDate": "2025-09-22",
+    "currPage": 1,
+    "pageSize": 10,
+    "teacherId": ${teaId},
+    "exportStatus": 0
+  }
+  ```
+- **出参示例**：
+  ```json
+  {
+    "resultCode": 0,
+    "resultMessage": "操作成功",
+    "resultData": {
+      "classStatisticsRespDTO": [
+        {
+          "teacherId": 1498212,
+          "name": "Amber Tang",
+          "openedClass": 13,
+          "finishedClass": 8
+        }
+      ],
+      "classStatisticsNumRespDTO": { ... }
+    },
+    "totalCount": 1,
+    "pageSize": 10,
+    "showPermission": false
+  }
+  ```
+
+## 接口3：获取老师列表
+- **URL**: `https://www.talk915.com/users/teacherProxy/queryScheduledClassesSelectList`
+- **请求方式**: POST
+- **请求头**: `token: ${token}`
+- **出参示例**：
+  ```json
+  {
+    "resultCode": 0,
+    "resultMessage": "操作成功",
+    "resultData": [
+      {
+        "teaId": 13624,
+        "teaName": "Gene",
+        "teaType": "1"
+      }
+    ],
+    "showPermission": false
+  }
+  ```
+
+## 功能二流程
+
+### 1. 初始化
+- 点击开始解析按钮后，读取Excel第一列数据，作为 `teaNameList`，注意过滤excel标题；
+- 原始内容不再展示在页面；
+- 生成的excel内容实时加载在页面，每3s自动刷新一次；
+- 时间范围：`classStartDate` 取自输入框1，`classEndDate` 取自输入框2
+
+### 2. Token获取
+- 使用账号1登录接口1，获取 `token1`。使用 `token1` 调用接口3，获取老师列表 `teaListResp1`
+- 使用账号2登录接口1，获取 `token2`。使用 `token2` 调用接口3，获取老师列表 `teaListResp2`
+
+### 3. 遍历处理每个老师名称
+
+```
+For each teaName in teaNameList:
+  a. 在 teaListResp1 的 resultData 中匹配 teaName，获取对应 teaId1
+  b. 若 teaId1 为空，则从 teaListResp2 中匹配 teaName，获取 teaId2
+  c. 若 teaId1 和 teaId2 均未匹配到，跳过当前 teaName
+  d. 选择 token 和 teaId 的规则：
+     - 若 teaId1 存在，使用 token1 和 teaId1
+     - 否则使用 token2 和 teaId2
+  e. 调用接口2（传入 teaId、日期范围），获取 teaClassStatisticsResp
+  f. 若 resultData.classStatisticsRespDTO 为空，跳过
+  g. 提取列表中第一个元素的 openedClass 和 finishedClass 值
+  h. 填充Excel：
+     - 列2: openedClass
+     - 列3: ✅ 若 openedClass ≥ 20，否则 ❎
+     - 列4: finishedClass
+  i. 休眠0.5s
+```
+
+### 4. 结果展示及导出
+- 将表格内容展示在下方
+- 提供"下载结果文件"按钮，生成文件名：`talk_statistics_${classEndDate}.xlsx`
