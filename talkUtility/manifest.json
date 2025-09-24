@@ -10,8 +10,7 @@
     "downloads"
   ],
   "host_permissions": [
-    "https://www.talk915.com/*",
-    "https://cdnjs.cloudflare.com/*"
+    "https://www.talk915.com/*"
   ],
   "web_accessible_resources": [
     {
@@ -19,9 +18,6 @@
       "matches": ["<all_urls>"]
     }
   ],
-  "content_security_policy": {
-    "extension_pages": "script-src 'self';"
-  },
   "action": {
     "default_popup": "popup.html"
   },
