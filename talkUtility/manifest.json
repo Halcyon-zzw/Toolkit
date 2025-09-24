@@ -14,7 +14,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["talk_template.xlsx"],
+      "resources": ["talk_template.xlsx", "xlsx.full.min.js"],
       "matches": ["<all_urls>"]
     }
   ],
