@@ -325,7 +325,7 @@
                     results.push({
                         name: teaName,
                         openedClass: '',
-                        status: '',
+                        opendClassGte20: '',
                         finishedClass: ''
                     });
                     continue;
@@ -342,9 +342,9 @@
                 if (!statistics || statistics.length === 0) {
                     results.push({
                         name: teaName,
-                        openedClass: '',
-                        status: '',
-                        finishedClass: ''
+                        openedClass: 0,
+                        opendClassGte20: '❎',
+                        finishedClass: 0
                     });
                     continue;
                 }
@@ -353,12 +353,12 @@
                 const stat = statistics[0];
                 const openedClass = stat.openedClass || 0;
                 const finishedClass = stat.finishedClass || 0;
-                const status = openedClass >= 20 ? '✅' : '❎';
+                const opendClassGte20 = openedClass >= 20 ? '✅' : '❎';
 
                 results.push({
                     name: teaName,
                     openedClass: openedClass,
-                    status: status,
+                    opendClassGte20: opendClassGte20,
                     finishedClass: finishedClass
                 });
                 displayResults(results);
@@ -388,7 +388,7 @@
         headerRow.style.border = '1px solid #ddd';
 
         // 根据是否显示序号动态设置表头
-        const headers = showIndex ? ['序号', '教师姓名', '开课数', '状态', '完课数'] : ['教师姓名', '开课数', '状态', '完课数'];
+        const headers = showIndex ? ['序号', '教师姓名', '开课数', '开课数大于等于20', '完课数'] : ['教师姓名', '开课数', '开课数大于等于20', '完课数'];
 
         headers.forEach(headerText => {
             const th = document.createElement('th');
@@ -417,8 +417,8 @@
 
             // 根据是否显示序号动态设置列数据
             const columns = showIndex
-                ? [index + 1, result.name, result.openedClass, result.status, result.finishedClass]
-                : [result.name, result.openedClass, result.status, result.finishedClass];
+                ? [index + 1, result.name, result.openedClass, result.opendClassGte20, result.finishedClass]
+                : [result.name, result.openedClass, result.opendClassGte20, result.finishedClass];
 
             columns.forEach(cellText => {
                 const td = document.createElement('td');
@@ -437,7 +437,6 @@
 
     // 显示结果
     function displayResults(results) {
-        const messageArea = document.getElementById('messageArea');
         const container = document.querySelector('.container');
 
         // 移除之前的结果表格（如果存在）
@@ -462,21 +461,7 @@
         const messageArea = document.getElementById('messageArea');
         const container = document.querySelector('.container');
 
-        // 移除之前的结果表格（如果存在）
-        const existingTable = document.getElementById('resultsTable');
-        const existingDownloadBtn = document.getElementById('downloadResultsBtn');
-        if (existingTable) {
-            existingTable.remove();
-        }
-        if (existingDownloadBtn) {
-            existingDownloadBtn.remove();
-        }
-
-        // 创建结果表格
-        const table = createResultsTable(results);
-
-        // 添加到页面
-        container.appendChild(table);
+        displayResults(results)
 
         // 添加下载按钮
         const downloadBtn = document.createElement('button');
@@ -503,11 +488,11 @@
 
         // 准备数据（包含标题行）
         const wsData = [
-            ['教师姓名', '开课数', '状态', '完课数'], // 表头
+            ['教师姓名', '开课数', '开课数大于等于20', '完课数'], // 表头
             ...results.map(result => [
                 result.name,
                 result.openedClass,
-                result.status,
+                result.opendClassGte20,
                 result.finishedClass
             ])
         ];
