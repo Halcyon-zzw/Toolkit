@@ -175,8 +175,9 @@
                             const results = await processTeacherData(firstColumnData, startDate, endDate);
 
                             // 显示结果
-                            displayResultsAndDown(results, endDate);
-
+                            displayResults(results);
+                            //展示下载按钮
+                            showDownButton(results, endDate);
                         } catch (error) {
                             if (messageArea) {
                                 messageArea.innerHTML = `<div class="error-message">错误：文件解析失败 - ${error.message}</div>`;
@@ -457,11 +458,9 @@
     }
 
     // 显示结果
-    function displayResultsAndDown(results, endDate) {
+    function showDownButton(results, endDate) {
         const messageArea = document.getElementById('messageArea');
         const container = document.querySelector('.container');
-
-        displayResults(results)
 
         // 添加下载按钮
         const downloadBtn = document.createElement('button');
