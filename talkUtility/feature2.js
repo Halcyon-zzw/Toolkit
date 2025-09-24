@@ -175,7 +175,7 @@
                             const results = await processTeacherData(firstColumnData, startDate, endDate);
 
                             // 显示结果
-                            displayResults(results, endDate);
+                            displayResultsAndDown(results, endDate);
 
                         } catch (error) {
                             if (messageArea) {
@@ -361,7 +361,7 @@
                     status: status,
                     finishedClass: finishedClass
                 });
-
+                displayResults(results);
                 // 休眠0.5秒
                 await new Promise(resolve => setTimeout(resolve, 500));
             }
@@ -372,22 +372,8 @@
         }
     }
 
-    // 显示结果
-    function displayResults(results, endDate) {
-        const messageArea = document.getElementById('messageArea');
-        const container = document.querySelector('.container');
-
-        // 移除之前的结果表格（如果存在）
-        const existingTable = document.getElementById('resultsTable');
-        const existingDownloadBtn = document.getElementById('downloadResultsBtn');
-        if (existingTable) {
-            existingTable.remove();
-        }
-        if (existingDownloadBtn) {
-            existingDownloadBtn.remove();
-        }
-
-        // 创建结果表格
+    // 提取创建表格的方法
+    function createResultsTable(results, showIndex = false) {
         const table = document.createElement('table');
         table.id = 'resultsTable';
         table.style.width = '100%';
@@ -401,7 +387,9 @@
         headerRow.style.backgroundColor = '#f8f9fa';
         headerRow.style.border = '1px solid #ddd';
 
-        const headers = ['教师姓名', '开课数', '状态', '完课数'];
+        // 根据是否显示序号动态设置表头
+        const headers = showIndex ? ['序号', '教师姓名', '开课数', '状态', '完课数'] : ['教师姓名', '开课数', '状态', '完课数'];
+
         headers.forEach(headerText => {
             const th = document.createElement('th');
             th.textContent = headerText;
@@ -427,12 +415,10 @@
                 row.style.backgroundColor = '#f8f9fa';
             }
 
-            const columns = [
-                result.name,
-                result.openedClass,
-                result.status,
-                result.finishedClass
-            ];
+            // 根据是否显示序号动态设置列数据
+            const columns = showIndex
+                ? [index + 1, result.name, result.openedClass, result.status, result.finishedClass]
+                : [result.name, result.openedClass, result.status, result.finishedClass];
 
             columns.forEach(cellText => {
                 const td = document.createElement('td');
@@ -446,6 +432,48 @@
         });
 
         table.appendChild(tbody);
+        return table;
+    }
+
+    // 显示结果
+    function displayResults(results) {
+        const messageArea = document.getElementById('messageArea');
+        const container = document.querySelector('.container');
+
+        // 移除之前的结果表格（如果存在）
+        const existingTable = document.getElementById('resultsTable');
+        const existingDownloadBtn = document.getElementById('downloadResultsBtn');
+        if (existingTable) {
+            existingTable.remove();
+        }
+        if (existingDownloadBtn) {
+            existingDownloadBtn.remove();
+        }
+
+        // 创建结果表格
+        const table = createResultsTable(results, true);
+
+        // 添加到页面
+        container.appendChild(table);
+    }
+
+    // 显示结果
+    function displayResultsAndDown(results, endDate) {
+        const messageArea = document.getElementById('messageArea');
+        const container = document.querySelector('.container');
+
+        // 移除之前的结果表格（如果存在）
+        const existingTable = document.getElementById('resultsTable');
+        const existingDownloadBtn = document.getElementById('downloadResultsBtn');
+        if (existingTable) {
+            existingTable.remove();
+        }
+        if (existingDownloadBtn) {
+            existingDownloadBtn.remove();
+        }
+
+        // 创建结果表格
+        const table = createResultsTable(results);
 
         // 添加到页面
         container.appendChild(table);

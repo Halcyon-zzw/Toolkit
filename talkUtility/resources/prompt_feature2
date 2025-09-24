@@ -127,7 +127,7 @@ For each teaName in teaNameList:
      - 列2: openedClass
      - 列3: ✅ 若 openedClass ≥ 20，否则 ❎
      - 列4: finishedClass
-  h. 将数据实时加载到页面，保证页面能实时看到处理后的数据；
+  h. 将数据实时加载到页面，保证页面能实时看到处理后的数据，注意，当前逻辑无法正常看到处理后的数据；
      - 列1： 序号（从1开始自增）
      - 列2: teaName
      - 列3: openedClass
