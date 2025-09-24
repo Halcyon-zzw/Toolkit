@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <style>
+    /* 原有样式保持不变 */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -81,19 +82,6 @@
   <iframe id="featureFrame" src="popup_feature1.html"></iframe>
 </div>
 
-<script>
-  // 功能切换逻辑
-  document.getElementById('featureOneBtn').addEventListener('click', function() {
-    document.getElementById('featureOneBtn').classList.add('active');
-    document.getElementById('featureTwoBtn').classList.remove('active');
-    document.getElementById('featureFrame').src = 'popup_feature1.html';
-  });
-
-  document.getElementById('featureTwoBtn').addEventListener('click', function() {
-    document.getElementById('featureTwoBtn').classList.add('active');
-    document.getElementById('featureOneBtn').classList.remove('active');
-    document.getElementById('featureFrame').src = 'popup_feature2.html';
-  });
-</script>
+<script src="popup.js"></script>
 </body>
 </html>

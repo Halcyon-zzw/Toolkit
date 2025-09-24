@@ -50,18 +50,17 @@
         }
     }
 
-    // 下载模板功能
+    // 下载模板功能 - 使用Chrome扩展API
     function setupDownloadTemplate() {
         const downloadBtn = document.getElementById('downloadTemplate');
         if (downloadBtn) {
             downloadBtn.addEventListener('click', function() {
-                // 创建一个隐藏的a标签用于下载
-                const a = document.createElement('a');
-                a.href = 'talk_template.xlsx'; // 相对路径，Chrome扩展会正确解析
-                a.download = 'talk_template.xlsx';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                // 使用 Chrome 下载 API
+                chrome.runtime.getURL('talk_template.xlsx');
+                chrome.downloads.download({
+                    url: chrome.runtime.getURL('talk_template.xlsx'),
+                    filename: 'talk_template.xlsx'
+                });
             });
         }
     }
