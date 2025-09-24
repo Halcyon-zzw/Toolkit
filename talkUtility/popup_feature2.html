@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      width: 400px;
+      padding: 0;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #409EFF, #3675d6);
+      color: white;
+      padding: 15px;
+      border-radius: 8px 8px 0 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+      min-height: 50px;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    .download-template-btn {
+      width: 50%;
+      margin: 10px 0 0 auto;
+      padding: 6px 12px;
+      font-size: 13px;
+      background: #409EFF;
+      border-radius: 4px;
+      border: none;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+      display: block;
+    }
+
+    .download-template-btn:hover {
+      background: #337ecc;
+    }
+
+    .container {
+      padding: 20px;
+      background: white;
+      min-height: 300px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #409EFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-weight: 500;
+      transition: background 0.3s;
+      box-shadow: 0 2px 4px rgba(64, 158, 255, 0.3);
+    }
+
+    button:hover {
+      background: #337ecc;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .secondary-btn {
+      background: #6c757d;
+      box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+    }
+
+    .secondary-btn:hover {
+      background: #5a6268;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn-group button {
+      flex: 1;
+      margin-top: 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 20px 0;
+      color: #6c757d;
+    }
+
+    .empty-state h2 {
+      margin-bottom: 10px;
+      color: #495057;
+    }
+
+    .upload-section {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+      overflow: hidden;
+      margin-bottom: 15px;
+      width: 100%;
+    }
+
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .uploaded-content {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .column-data {
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .column-data h3 {
+      margin-bottom: 10px;
+      color: #495057;
+    }
+
+    .column-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      background: white;
+    }
+
+    .column-list div {
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .column-list div:last-child {
+      border-bottom: none;
+    }
+
+    .error-message {
+      color: #dc3545;
+      margin-top: 10px;
+      padding: 10px;
+      background: #f8d7da;
+      border-radius: 4px;
+    }
+
+    .success-message {
+      color: #155724;
+      margin-top: 10px;
+      padding: 10px;
+      background: #d4edda;
+      border-radius: 4px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .action-row button {
+      flex: 1;
+      margin-top: 0;
+    }
+
+    #parseBtn {
+      background: #28a745;
+      box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    }
+
+    #parseBtn:hover {
+      background: #218838;
+    }
+
+    #parseBtn:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+    
+    .date-controls-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    
+    .date-label {
+      font-weight: 500;
+      color: #495057;
+      white-space: nowrap;
+    }
+    
+    .date-input-wrapper {
+      flex: 1;
+    }
+    
+    .date-picker {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+<div class="header">
+  <h1>工具箱 Utility - 功能二</h1>
+</div>
+
+<button id="downloadTemplate" class="download-template-btn">下载模板</button>
+
+<div class="container">
+  <div class="upload-section">
+    <h2>表格处理功能</h2>
+    <p>请上传Excel文件进行处理</p>
+    
+    <!-- 时间范围控件在同一行 -->
+    <div class="date-controls-row">
+      <span class="date-label">时间范围:</span>
+      <div class="date-input-wrapper">
+        <input type="date" id="startDate" class="date-picker">
+      </div>
+      <div class="date-input-wrapper">
+        <input type="date" id="endDate" class="date-picker">
+      </div>
+    </div>
+
+    <div class="file-input-wrapper">
+      <button class="secondary-btn">选择Excel文件</button>
+      <input type="file" id="excelFile" accept=".xlsx">
+    </div>
+    <p id="fileName" style="margin-top: 10px; font-size: 14px; color: #6c757d;"></p>
+
+    <div class="action-row">
+      <button id="parseBtn" disabled>开始解析</button>
+    </div>
+
+    <div id="messageArea"></div>
+
+    <div id="columnData" class="column-data hidden">
+      <h3>第一列数据</h3>
+      <div class="column-list" id="columnList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 引入xlsx库用于处理Excel文件 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="popup.js"></script>
+
+<script>
+  // 设置默认日期
+  function setDefaultDates() {
+    const today = new Date();
+    const endDate = new Date();
+    endDate.setDate(today.getDate() + 6); // 7天后（包含当天，所以是+6）
+    
+    // 格式化日期为 YYYY-MM-DD
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
+    document.getElementById('startDate').value = formatDate(today);
+    document.getElementById('endDate').value = formatDate(endDate);
+  }
+  
+  // 初始化默认日期
+  setDefaultDates();
+  
+  // 当结束日期改变时，自动更新开始日期为结束日期的7天前
+  document.getElementById('endDate').addEventListener('change', function() {
+    const endDate = new Date(this.value);
+    if (!isNaN(endDate)) {
+      const startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - 6); // 7天前（包含当天，所以是-6）
+      
+      // 格式化日期为 YYYY-MM-DD
+      const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
+      document.getElementById('startDate').value = formatDate(startDate);
+    }
+  });
+
+  // 下载模板功能
+  document.getElementById('downloadTemplate').addEventListener('click', function() {
+    // 创建一个隐藏的a标签用于下载
+    const a = document.createElement('a');
+    a.href = 'talk_template.xlsx'; // 相对路径，Chrome扩展会正确解析
+    a.download = 'talk_template.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+
+  // 文件上传处理
+  let uploadedFile = null;
+
+  document.getElementById('excelFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const fileNameDisplay = document.getElementById('fileName');
+    const parseBtn = document.getElementById('parseBtn');
+
+    // 清除之前的消息和数据
+    document.getElementById('messageArea').innerHTML = '';
+    document.getElementById('columnData').classList.add('hidden');
+    fileNameDisplay.textContent = '';
+
+    if (!file) {
+      parseBtn.disabled = true;
+      uploadedFile = null;
+      return;
+    }
+
+    // 检查文件类型
+    if (!file.name.endsWith('.xlsx')) {
+      document.getElementById('messageArea').innerHTML = '<div class="error-message">错误：请上传.xlsx格式的Excel文件</div>';
+      parseBtn.disabled = true;
+      uploadedFile = null;
+      return;
+    }
+
+    fileNameDisplay.textContent = '已选择: ' + file.name;
+    uploadedFile = file;
+    parseBtn.disabled = false;
+  });
+
+  // 开始解析按钮处理
+  document.getElementById('parseBtn').addEventListener('click', function() {
+    if (!uploadedFile) {
+      return;
+    }
+
+    const messageArea = document.getElementById('messageArea');
+    const columnData = document.getElementById('columnData');
+    const columnList = document.getElementById('columnList');
+
+    // 清除之前的消息和数据
+    messageArea.innerHTML = '';
+    columnData.classList.add('hidden');
+
+    // 使用xlsx库读取Excel文件
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+
+        // 获取第一个工作表
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+
+        // 将工作表转换为JSON格式
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+
+        if (jsonData.length === 0) {
+          messageArea.innerHTML = '<div class="error-message">错误：Excel文件为空</div>';
+          return;
+        }
+
+        // 获取第一列数据
+        const firstColumnData = [];
+        for (let i = 0; i < jsonData.length; i++) {
+          const row = jsonData[i];
+          firstColumnData.push(row[0] !== undefined ? row[0] : '');
+        }
+
+        // 显示第一列数据
+        columnList.innerHTML = '';
+        firstColumnData.forEach((value, index) => {
+          const rowElement = document.createElement('div');
+          rowElement.textContent = `${index === 0 ? '标题: ' : `第${index}行: `}${value}`;
+          columnList.appendChild(rowElement);
+        });
+
+        columnData.classList.remove('hidden');
+        messageArea.innerHTML = '<div class="success-message">文件解析成功！</div>';
+      } catch (error) {
+        messageArea.innerHTML = `<div class="error-message">错误：文件解析失败 - ${error.message}</div>`;
+      }
+    };
+
+    reader.onerror = function() {
+      messageArea.innerHTML = '<div class="error-message">错误：文件读取失败</div>';
+    };
+
+    // 读取为ArrayBuffer
+    reader.readAsArrayBuffer(uploadedFile);
+  });
+</script>
+</body>
+</html>
