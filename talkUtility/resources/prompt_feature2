@@ -101,15 +101,14 @@
 
 ### 1. 初始化
 - 点击开始解析按钮后，读取Excel第一列数据，作为 `teaNameList`，注意过滤excel标题；
-- 原始内容不再展示在页面；
-- 生成的excel内容实时加载在页面，每3s自动刷新一次；
+- 第一列内容不再展示在页面；
 - 时间范围：`classStartDate` 取自输入框1，`classEndDate` 取自输入框2
 
 ### 2. Token获取
 - 使用账号1登录接口1，获取 `token1`。使用 `token1` 调用接口3，获取老师列表 `teaListResp1`
 - 使用账号2登录接口1，获取 `token2`。使用 `token2` 调用接口3，获取老师列表 `teaListResp2`
 
-### 3. 遍历处理每个老师名称
+### 3. 遍历处理每个元素
 
 ```
 For each teaName in teaNameList:
@@ -120,12 +119,19 @@ For each teaName in teaNameList:
      - 若 teaId1 存在，使用 token1 和 teaId1
      - 否则使用 token2 和 teaId2
   e. 调用接口2（传入 teaId、日期范围），获取 teaClassStatisticsResp
-  f. 若 resultData.classStatisticsRespDTO 为空，跳过
-  g. 提取列表中第一个元素的 openedClass 和 finishedClass 值
-  h. 填充Excel：
+  f. 若 resultData.classStatisticsRespDTO 为空，openedClass=0，finishedClass=0；
+     否则提取resultData.classStatisticsRespDTO列表中第一个元素的 openedClass 和 finishedClass 值
+  g. 填充Excel：
+     - 列1: teaName
      - 列2: openedClass
      - 列3: ✅ 若 openedClass ≥ 20，否则 ❎
      - 列4: finishedClass
+  h. 将数据加载到页面；
+     - 列1： 序号（从1开始自增）
+     - 列2: teaName
+     - 列3: openedClass
+     - 列4: ✅ 若 openedClass ≥ 20，否则 ❎
+     - 列5: finishedClass
   i. 休眠0.5s
 ```
 
