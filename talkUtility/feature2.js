@@ -1,5 +1,20 @@
 // 功能二的独立JavaScript文件
 (function() {
+    // 全局状态变量
+    let analysisState = {
+        isAnalyzing: false,
+        results: [],
+        currentIndex: 0,
+        teaNameList: [],
+        startDate: '',
+        endDate: '',
+        totalTeachers: 0,
+        token1: null,
+        token2: null,
+        teaListResp1: [],
+        teaListResp2: []
+    };
+
     // 设置默认日期
     function setDefaultDates() {
         const today = new Date();
@@ -112,6 +127,9 @@
         const parseBtn = document.getElementById('parseBtn');
         if (parseBtn) {
             parseBtn.addEventListener('click', async function() {
+                // 清除之前的分析状态
+                clearAnalysisState();
+
                 if (!uploadedFile) {
                     return;
                 }
@@ -287,36 +305,58 @@
     // 处理教师数据
     async function processTeacherData(teaNameList, startDate, endDate) {
         const messageArea = document.getElementById('messageArea');
-        const results = [];
+        let results = [...analysisState.results]; // 从保存的结果开始
 
         try {
-            // 步骤1: 获取token和教师列表
-            if (messageArea) {
-                messageArea.innerHTML = '<div class="success-message">正在获取认证信息...</div>';
+            // 如果不是从中断恢复，初始化状态
+            if (!analysisState.isAnalyzing) {
+                analysisState.isAnalyzing = true;
+                analysisState.results = [];
+                analysisState.currentIndex = 1; // 从索引1开始（跳过标题行）
+                analysisState.teaNameList = teaNameList;
+                analysisState.startDate = startDate;
+                analysisState.endDate = endDate;
+                analysisState.totalTeachers = teaNameList.length - 1; // 减去标题行
+                results = [];
             }
 
-            const token1 = await login('ta-peng', 'tapeng123456');
-            const teaListResp1 = token1 ? await getTeacherList(token1) : [];
+            // 步骤1: 获取token和教师列表（如果需要）
+            if (!analysisState.token1 || !analysisState.token2 ||
+                analysisState.teaListResp1.length === 0 || analysisState.teaListResp2.length === 0) {
+                if (messageArea) {
+                    messageArea.innerHTML = '<div class="success-message">正在获取认证信息...</div>';
+                }
 
-            const token2 = await login('ta-fonpeng', 'fonpeng123456');
-            const teaListResp2 = token2 ? await getTeacherList(token2) : [];
+                const token1 = await login('ta-peng', 'tapeng123456');
+                const teaListResp1 = token1 ? await getTeacherList(token1) : [];
 
-            // 步骤2: 遍历处理每个教师（注意过滤标题行）
-            for (let i = 1; i < teaNameList.length; i++) {
+                const token2 = await login('ta-fonpeng', 'fonpeng123456');
+                const teaListResp2 = token2 ? await getTeacherList(token2) : [];
+
+                // 保存tokens和教师列表到分析状态
+                analysisState.token1 = token1;
+                analysisState.token2 = token2;
+                analysisState.teaListResp1 = teaListResp1;
+                analysisState.teaListResp2 = teaListResp2;
+                saveAnalysisState();
+            }
+
+            // 从当前索引继续处理
+            for (let i = analysisState.currentIndex; i < teaNameList.length; i++) {
                 const teaName = teaNameList[i];
 
                 // 更新进度
                 if (messageArea) {
-                    messageArea.innerHTML = `<div class="success-message">正在处理第 ${i}/${teaNameList.length - 1} 位教师: ${teaName}</div>`;
+                    messageArea.innerHTML = `<div class="success-message">正在处理第 ${i}/${analysisState.totalTeachers} 位教师: ${teaName}</div>`;
                 }
 
                 // 匹配教师ID
-                const teacher1 = teaListResp1.find(t => t.teaName === teaName);
+                const teacher1 = analysisState.teaListResp1.find(t => t.teaName === teaName);
                 const teaId1 = teacher1?.teaId;
 
                 let teaId2 = null;
                 if (!teaId1) {
-                    const teacher2 = teaListResp2.find(t => t.teaName === teaName);
+                    const teacher2 = analysisState.teaListResp2.find(t => t.teaName === teaName);
                     teaId2 = teacher2?.teaId;
                 }
 
@@ -328,11 +368,15 @@
                         opendClassGte20: '',
                         finishedClass: ''
                     });
+                    analysisState.results = results;
+                    analysisState.currentIndex = i + 1;
+                    saveAnalysisState();
+                    displayResults(results);
                     continue;
                 }
 
                 // 选择token和teaId
-                const token = teaId1 ? token1 : token2;
+                const token = teaId1 ? analysisState.token1 : analysisState.token2;
                 const teaId = teaId1 ? teaId1 : teaId2;
 
                 // 查询课程统计数据
@@ -346,6 +390,12 @@
                         opendClassGte20: '❎',
                         finishedClass: 0
                     });
+                    analysisState.results = results;
+                    analysisState.currentIndex = i + 1;
+                    saveAnalysisState();
+                    displayResults(results);
+                    // 休眠0.5秒
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     continue;
                 }
 
@@ -361,14 +411,112 @@
                     opendClassGte20: opendClassGte20,
                     finishedClass: finishedClass
                 });
+
+                analysisState.results = results;
+                analysisState.currentIndex = i + 1;
+                saveAnalysisState();
                 displayResults(results);
+
                 // 休眠0.5秒
                 await new Promise(resolve => setTimeout(resolve, 500));
             }
 
+            // 分析完成，清除状态
+            clearAnalysisState();
+
+            // 显示完成消息
+            if (messageArea) {
+                messageArea.innerHTML = '<div class="success-message">数据处理完成！</div>';
+            }
+
+            // 展示下载按钮
+            showDownButton(results, endDate);
+
             return results;
         } catch (error) {
+            // 保存当前状态以便恢复
+            saveAnalysisState();
             throw new Error(`处理教师数据失败: ${error.message}`);
+        }
+    }
+
+    // 保存分析状态到chrome.storage
+    function saveAnalysisState() {
+        chrome.storage.local.set({ analysisState: analysisState });
+    }
+
+    // 清除分析状态
+    function clearAnalysisState() {
+        analysisState = {
+            isAnalyzing: false,
+            results: [],
+            currentIndex: 0,
+            teaNameList: [],
+            startDate: '',
+            endDate: '',
+            totalTeachers: 0,
+            token1: null,
+            token2: null,
+            teaListResp1: [],
+            teaListResp2: []
+        };
+        chrome.storage.local.remove(['analysisState']);
+    }
+
+    // 加载分析状态
+    function loadAnalysisState() {
+        chrome.storage.local.get(['analysisState'], function(result) {
+            if (result.analysisState && result.analysisState.isAnalyzing) {
+                analysisState = result.analysisState;
+                // 恢复显示结果
+                if (analysisState.results.length > 0) {
+                    displayResults(analysisState.results);
+                }
+                // 显示继续分析按钮
+                showContinueAnalysisButton();
+            }
+        });
+    }
+
+    // 显示继续分析按钮
+    function showContinueAnalysisButton() {
+        const container = document.querySelector('.container');
+        const messageArea = document.getElementById('messageArea');
+
+        // 移除已存在的继续分析按钮
+        const existingContinueBtn = document.getElementById('continueAnalysisBtn');
+        if (existingContinueBtn) {
+            existingContinueBtn.remove();
+        }
+
+        // 添加继续分析按钮
+        const continueBtn = document.createElement('button');
+        continueBtn.id = 'continueAnalysisBtn';
+        continueBtn.textContent = '继续分析';
+        continueBtn.style.marginTop = '10px';
+        continueBtn.style.background = '#ffc107';
+        continueBtn.style.color = '#212529';
+
+        continueBtn.addEventListener('click', function() {
+            continueBtn.disabled = true;
+            continueBtn.textContent = '正在继续分析...';
+
+            // 继续分析过程
+            processTeacherData(
+                analysisState.teaNameList,
+                analysisState.startDate,
+                analysisState.endDate
+            ).catch(error => {
+                if (messageArea) {
+                    messageArea.innerHTML = `<div class="error-message">错误：${error.message}</div>`;
+                }
+            });
+        });
+
+        container.appendChild(continueBtn);
+
+        if (messageArea) {
+            messageArea.innerHTML = '<div class="success-message">检测到未完成的分析任务，您可以选择继续分析</div>';
         }
     }
 
@@ -514,5 +662,7 @@
         setupDateListeners();
         setupDownloadTemplate();
         setupFileUpload();
+        // 加载之前保存的分析状态
+        loadAnalysisState();
     });
 })();
