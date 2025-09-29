@@ -133,7 +133,7 @@
                 // 清除之前的分析状态
                 clearAnalysisState();
 
-                // 点击开始分析后，移除可能存在的“继续分析”按钮（需求2）
+                // 点击开始分析后，移除可能存在的“继续统计”按钮（需求2）
                 const _continueBtn = document.getElementById('continueAnalysisBtn');
                 if (_continueBtn) _continueBtn.remove();
 
@@ -444,7 +444,7 @@
             // 保存最近一次完成的结果（需求1）
             saveLastResults(results, endDate);
 
-            // 分析完成后不再展示“正在继续分析”按钮（需求3）
+            // 分析完成后不再展示“正在继续统计”按钮（需求3）
             const _continueBtnDone = document.getElementById('continueAnalysisBtn');
             if (_continueBtnDone) _continueBtnDone.remove();
 
@@ -482,7 +482,7 @@
     // 加载分析状态
     function loadAnalysisState() {
         chrome.storage.local.get(['analysisState', LAST_RESULTS_KEY], function(result) {
-            // 未完成任务优先显示继续分析
+            // 未完成任务优先显示继续统计
             if (result.analysisState && result.analysisState.isAnalyzing) {
                 analysisState = result.analysisState;
                 if (analysisState.results.length > 0) {
@@ -505,28 +505,28 @@
         });
     }
 
-    // 显示继续分析按钮
+    // 显示继续统计按钮
     function showContinueAnalysisButton() {
         const container = document.querySelector('.container');
         const messageArea = document.getElementById('messageArea');
 
-        // 移除已存在的继续分析按钮
+        // 移除已存在的继续统计按钮
         const existingContinueBtn = document.getElementById('continueAnalysisBtn');
         if (existingContinueBtn) {
             existingContinueBtn.remove();
         }
 
-        // 添加继续分析按钮（统一样式）
+        // 添加继续统计按钮（统一样式）
         const continueBtn = document.createElement('button');
         continueBtn.id = 'continueAnalysisBtn';
-        continueBtn.textContent = '继续分析';
+        continueBtn.textContent = '继续统计';
         continueBtn.className = 'btn btn-warning';
 
         continueBtn.addEventListener('click', function() {
             continueBtn.disabled = true;
-            continueBtn.textContent = '正在继续分析...';
+            continueBtn.textContent = '正在继续统计...';
 
-            // 继续分析过程
+            // 继续统计过程
             processTeacherData(
                 analysisState.teaNameList,
                 analysisState.startDate,
@@ -541,7 +541,7 @@
         container.appendChild(continueBtn);
 
         if (messageArea) {
-            messageArea.innerHTML = '<div class="success-message">检测到未完成的分析任务，您可以选择继续分析</div>';
+            messageArea.innerHTML = '<div class="success-message">检测到未完成的分析任务，您可以选择继续统计</div>';
         }
     }
 

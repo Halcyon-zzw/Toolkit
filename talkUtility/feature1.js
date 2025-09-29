@@ -131,17 +131,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // 修改 feature1.js 中的复制按钮事件处理函数
     // 为复制按钮添加事件监听器
     if (copyUsernameButton) {
         copyUsernameButton.addEventListener('click', function() {
             const username = usernameSpan.textContent;
             if (username && username !== '-') {
                 copyToClipboard(username);
-                // 可以添加一些视觉反馈，比如按钮文字变化
+                // 保存原始文本
                 const originalText = this.textContent;
                 this.textContent = '已复制';
+
+                // 使用箭头函数保持 this 指向
+                const button = this;
                 setTimeout(() => {
-                    this.textContent = originalText;
+                    // 确保按钮仍然存在且文本是"已复制"时才重置
+                    if (button && button.textContent === '已复制') {
+                        button.textContent = originalText;
+                    }
                 }, 1000);
             }
         });
@@ -152,15 +159,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const password = passwordSpan.textContent;
             if (password && password !== '-') {
                 copyToClipboard(password);
-                // 可以添加一些视觉反馈，比如按钮文字变化
+                // 保存原始文本
                 const originalText = this.textContent;
                 this.textContent = '已复制';
+
+                // 使用箭头函数保持 this 指向
+                const button = this;
                 setTimeout(() => {
-                    this.textContent = originalText;
+                    // 确保按钮仍然存在且文本是"已复制"时才重置
+                    if (button && button.textContent === '已复制') {
+                        button.textContent = originalText;
+                    }
                 }, 1000);
             }
         });
     }
+
 
     // 修改 feature1.js 文件中的 extractAndFillButton 事件处理函数
     extractAndFillButton.addEventListener('click', function() {
