@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - 功能二支持再次进入页面继续统计
-- 增加了账号密码提取后的复制功能
+- 功能一增加了账号密码提取后的复制功能
 
 ### Changed
 - 调整页面风格
