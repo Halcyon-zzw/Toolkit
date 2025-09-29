@@ -1,3 +1,4 @@
+// 在 feature1.js 文件中添加复制功能
 document.addEventListener('DOMContentLoaded', function() {
     const extractAndFillButton = document.getElementById('extractAndFill');
     const getScheduleButton = document.getElementById('getSchedule');
@@ -7,6 +8,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const scheduleList = document.getElementById('scheduleList');
     const scheduleTitle = document.getElementById('scheduleTitle');
     const scheduleItems = document.getElementById('scheduleItems');
+
+    // 添加复制按钮元素
+    const copyUsernameButton = document.getElementById('copyUsername');
+    const copyPasswordButton = document.getElementById('copyPassword');
 
     // 获取当前时间段
     function getCurrentTimeRange() {
@@ -117,7 +122,52 @@ document.addEventListener('DOMContentLoaded', function() {
         return data.resultData?.scheduledCoursesRespDTO || [];
     }
 
+    // 复制文本到剪贴板
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            console.log('复制成功');
+        }).catch(err => {
+            console.error('复制失败:', err);
+        });
+    }
+
+    // 为复制按钮添加事件监听器
+    if (copyUsernameButton) {
+        copyUsernameButton.addEventListener('click', function() {
+            const username = usernameSpan.textContent;
+            if (username && username !== '-') {
+                copyToClipboard(username);
+                // 可以添加一些视觉反馈，比如按钮文字变化
+                const originalText = this.textContent;
+                this.textContent = '已复制';
+                setTimeout(() => {
+                    this.textContent = originalText;
+                }, 1000);
+            }
+        });
+    }
+
+    if (copyPasswordButton) {
+        copyPasswordButton.addEventListener('click', function() {
+            const password = passwordSpan.textContent;
+            if (password && password !== '-') {
+                copyToClipboard(password);
+                // 可以添加一些视觉反馈，比如按钮文字变化
+                const originalText = this.textContent;
+                this.textContent = '已复制';
+                setTimeout(() => {
+                    this.textContent = originalText;
+                }, 1000);
+            }
+        });
+    }
+
+    // 修改 feature1.js 文件中的 extractAndFillButton 事件处理函数
     extractAndFillButton.addEventListener('click', function() {
+        // 隐藏复制按钮，等待重新提取后显示
+        copyUsernameButton.style.display = 'none';
+        copyPasswordButton.style.display = 'none';
+
         const text = inputText.value;
 
         // 使用正则表达式提取账号密码
@@ -131,6 +181,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // 显示提取结果
             usernameSpan.textContent = username;
             passwordSpan.textContent = password;
+
+            // 显示复制按钮（仅在有值时显示）
+            if (username && username !== '-') {
+                copyUsernameButton.style.display = 'inline-block';
+            }
+            if (password && password !== '-') {
+                copyPasswordButton.style.display = 'inline-block';
+            }
 
             // 保存到 Chrome 存储并自动填充
             chrome.storage.sync.set({
@@ -153,6 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
 
     getScheduleButton.addEventListener('click', async function() {
         const text = inputText.value;

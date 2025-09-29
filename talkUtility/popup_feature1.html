@@ -1,4 +1,4 @@
-<!-- 修改 popup_feature1.html 文件中的按钮样式 -->
+<!-- 修改 popup_feature1.html 文件 -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,17 +16,17 @@
       <div class="result-item">
         <span class="result-label">账号：</span>
         <span id="username" class="result-value">-</span>
+        <button id="copyUsername" class="btn btn-outline-primary btn-small" style="display: none;">复制</button>
       </div>
       <div class="result-item">
         <span class="result-label">密码：</span>
         <span id="password" class="result-value">-</span>
+        <button id="copyPassword" class="btn btn-outline-primary btn-small" style="display: none;">复制</button>
       </div>
     </div>
   </div>
 
-  <!-- 保持 btn-success 不变 -->
   <button id="extractAndFill" class="btn btn-success">提取并自动填充</button>
-  <!-- 将 btn-secondary 改为 btn-primary -->
   <button id="getSchedule" class="btn btn-primary">获取课程列表</button>
 
   <div id="scheduleList">
