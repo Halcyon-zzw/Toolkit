@@ -2,244 +2,19 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      width: 400px;
-      padding: 0;
-      background-color: #f8f9fa;
-      color: #333;
-    }
-
-    .download-template-btn {
-      width: 50%;
-      margin: 10px 0 0 auto;
-      padding: 6px 12px;
-      font-size: 13px;
-      background: #409EFF;
-      border-radius: 4px;
-      border: none;
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s;
-      display: block;
-    }
-
-    .download-template-btn:hover {
-      background: #337ecc;
-    }
-
-    .container {
-      padding: 20px;
-      background: white;
-      min-height: 300px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #409EFF;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
-      font-weight: 500;
-      transition: background 0.3s;
-      box-shadow: 0 2px 4px rgba(64, 158, 255, 0.3);
-    }
-
-    button:hover {
-      background: #337ecc;
-    }
-
-    button:active {
-      transform: translateY(1px);
-    }
-
-    .secondary-btn {
-      background: #6c757d;
-      box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
-    }
-
-    .secondary-btn:hover {
-      background: #5a6268;
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .btn-group button {
-      flex: 1;
-      margin-top: 0;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 20px 0;
-      color: #6c757d;
-    }
-
-    .empty-state h2 {
-      margin-bottom: 10px;
-      color: #495057;
-    }
-
-    .upload-section {
-      margin: 20px 0;
-      text-align: center;
-    }
-
-    .file-input-wrapper {
-      position: relative;
-      display: inline-block;
-      overflow: hidden;
-      margin-bottom: 15px;
-      width: 100%;
-    }
-
-    .file-input-wrapper input[type=file] {
-      position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
-
-    .uploaded-content {
-      margin-top: 20px;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 6px;
-      text-align: left;
-      max-height: 200px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      font-family: monospace;
-      font-size: 12px;
-    }
-
-    .column-data {
-      margin-top: 20px;
-      text-align: left;
-    }
-
-    .column-data h3 {
-      margin-bottom: 10px;
-      color: #495057;
-    }
-
-    .column-list {
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 10px;
-      background: white;
-    }
-
-    .column-list div {
-      padding: 5px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    .column-list div:last-child {
-      border-bottom: none;
-    }
-
-    .error-message {
-      color: #dc3545;
-      margin-top: 10px;
-      padding: 10px;
-      background: #f8d7da;
-      border-radius: 4px;
-    }
-
-    .success-message {
-      color: #155724;
-      margin-top: 10px;
-      padding: 10px;
-      background: #d4edda;
-      border-radius: 4px;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .action-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-
-    .action-row button {
-      flex: 1;
-      margin-top: 0;
-    }
-
-    #parseBtn {
-      background: #28a745;
-      box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
-    }
-
-    #parseBtn:hover {
-      background: #218838;
-    }
-
-    #parseBtn:disabled {
-      background: #6c757d;
-      cursor: not-allowed;
-    }
-
-    .date-controls-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 15px 0;
-    }
-
-    .date-label {
-      font-weight: 500;
-      color: #495057;
-      white-space: nowrap;
-    }
-
-    .date-input-wrapper {
-      flex: 1;
-    }
-
-    .date-picker {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<button id="downloadTemplate" class="download-template-btn">下载模板</button>
+<button id="downloadTemplate" class="btn btn-outline-primary btn-right">下载模板</button>
 
 <div class="container">
   <div class="upload-section">
-    <h2>表格处理功能</h2>
+    <div class="section-title">功能二 · 表格处理</div>
     <p>请上传Excel文件进行处理</p>
 
     <!-- 时间范围控件在同一行 -->
-    <div class="date-controls-row">
-      <span class="date-label">时间范围:</span>
+    <div class="form-row date-controls-row">
+      <span class="label">时间范围:</span>
       <div class="date-input-wrapper">
         <input type="date" id="startDate" class="date-picker">
       </div>
@@ -249,13 +24,13 @@
     </div>
 
     <div class="file-input-wrapper">
-      <button class="secondary-btn">选择Excel文件</button>
+      <button class="btn btn-secondary">选择Excel文件</button>
       <input type="file" id="excelFile" accept=".xlsx">
     </div>
     <p id="fileName" style="margin-top: 10px; font-size: 14px; color: #6c757d;"></p>
 
     <div class="action-row">
-      <button id="parseBtn" disabled>开始解析</button>
+      <button id="parseBtn" class="btn btn-success" disabled>开始解析</button>
     </div>
 
     <div id="messageArea"></div>

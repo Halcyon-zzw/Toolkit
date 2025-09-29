@@ -516,13 +516,11 @@
             existingContinueBtn.remove();
         }
 
-        // 添加继续分析按钮
+        // 添加继续分析按钮（统一样式）
         const continueBtn = document.createElement('button');
         continueBtn.id = 'continueAnalysisBtn';
         continueBtn.textContent = '继续分析';
-        continueBtn.style.marginTop = '10px';
-        continueBtn.style.background = '#ffc107';
-        continueBtn.style.color = '#212529';
+        continueBtn.className = 'btn btn-warning';
 
         continueBtn.addEventListener('click', function() {
             continueBtn.disabled = true;
@@ -640,12 +638,11 @@
         const existed = document.getElementById('downloadResultsBtn');
         if (existed) existed.remove();
 
-        // 添加下载按钮
+        // 添加下载按钮（统一样式）
         const downloadBtn = document.createElement('button');
         downloadBtn.id = 'downloadResultsBtn';
         downloadBtn.textContent = `下载结果文件 talk_statistics_${endDate}.xlsx`;
-        downloadBtn.style.marginTop = '20px';
-        downloadBtn.style.background = '#28a745';
+        downloadBtn.className = 'btn btn-success mt-20';
         downloadBtn.addEventListener('click', function() {
             downloadResults(results, endDate);
         });
