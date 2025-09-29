@@ -15,6 +15,9 @@
         teaListResp2: []
     };
 
+    // 最近一次完成结果存储键（用于2小时内回显）
+    const LAST_RESULTS_KEY = 'feature2LastResults';
+
     // 设置默认日期
     function setDefaultDates() {
         const today = new Date();
@@ -130,6 +133,10 @@
                 // 清除之前的分析状态
                 clearAnalysisState();
 
+                // 点击开始分析后，移除可能存在的“继续分析”按钮（需求2）
+                const _continueBtn = document.getElementById('continueAnalysisBtn');
+                if (_continueBtn) _continueBtn.remove();
+
                 if (!uploadedFile) {
                     return;
                 }
@@ -195,6 +202,8 @@
                             displayResults(results);
                             //展示下载按钮
                             showDownButton(results, endDate);
+                            // 保存最近一次完成的结果（需求1）
+                            saveLastResults(results, endDate);
                         } catch (error) {
                             if (messageArea) {
                                 messageArea.innerHTML = `<div class="error-message">错误：文件解析失败 - ${error.message}</div>`;
@@ -426,11 +435,18 @@
 
             // 显示完成消息
             if (messageArea) {
-                messageArea.innerHTML = '<div class="success-message">数据处理完成！</div>';
+                messageArea.innerHTML = '<div class="success-message">数据处理完成</div>';
             }
 
             // 展示下载按钮
             showDownButton(results, endDate);
+
+            // 保存最近一次完成的结果（需求1）
+            saveLastResults(results, endDate);
+
+            // 分析完成后不再展示“正在继续分析”按钮（需求3）
+            const _continueBtnDone = document.getElementById('continueAnalysisBtn');
+            if (_continueBtnDone) _continueBtnDone.remove();
 
             return results;
         } catch (error) {
@@ -465,15 +481,26 @@
 
     // 加载分析状态
     function loadAnalysisState() {
-        chrome.storage.local.get(['analysisState'], function(result) {
+        chrome.storage.local.get(['analysisState', LAST_RESULTS_KEY], function(result) {
+            // 未完成任务优先显示继续分析
             if (result.analysisState && result.analysisState.isAnalyzing) {
                 analysisState = result.analysisState;
-                // 恢复显示结果
                 if (analysisState.results.length > 0) {
                     displayResults(analysisState.results);
                 }
-                // 显示继续分析按钮
                 showContinueAnalysisButton();
+                return;
+            }
+
+            // 2小时内进入则展示上次完成结果并展示下载按钮（需求1）
+            const last = result[LAST_RESULTS_KEY];
+            if (last && Array.isArray(last.results) && last.results.length > 0 && last.savedAt) {
+                const now = Date.now();
+                const TWO_HOURS = 2 * 60 * 60 * 1000;
+                if (now - last.savedAt <= TWO_HOURS) {
+                    displayResults(last.results);
+                    showDownButton(last.results, last.endDate || '');
+                }
             }
         });
     }
@@ -609,6 +636,10 @@
         const messageArea = document.getElementById('messageArea');
         const container = document.querySelector('.container');
 
+        // 若已存在下载按钮，先移除，避免重复
+        const existed = document.getElementById('downloadResultsBtn');
+        if (existed) existed.remove();
+
         // 添加下载按钮
         const downloadBtn = document.createElement('button');
         downloadBtn.id = 'downloadResultsBtn';
@@ -623,7 +654,7 @@
 
         // 显示完成消息
         if (messageArea) {
-            messageArea.innerHTML = '<div class="success-message">数据处理完成！</div>';
+            messageArea.innerHTML = '<div class="success-message">数据处理完成</div>';
         }
     }
 
@@ -654,6 +685,17 @@
 
         // 下载文件
         XLSX.writeFile(wb, filename);
+    }
+
+    // 保存最近一次完成的结果（2小时内展示）
+    function saveLastResults(results, endDate) {
+        const data = {};
+        data[LAST_RESULTS_KEY] = {
+            results: results,
+            endDate: endDate,
+            savedAt: Date.now()
+        };
+        chrome.storage.local.set(data);
     }
 
     // DOM加载完成后初始化
