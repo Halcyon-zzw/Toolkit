@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 调整页面风格
 - 调整了功能二中"下载模板"按钮的位置和大小
 - 修改了功能一中按钮的样式以保持界面一致性
+- 功能一中课程列表展示优化
 
 ### Fixed
 - 修复了部分浏览器兼容性问题

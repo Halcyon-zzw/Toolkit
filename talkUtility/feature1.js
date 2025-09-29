@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const passwordSpan = document.getElementById('password');
     const scheduleList = document.getElementById('scheduleList');
     const scheduleTitle = document.getElementById('scheduleTitle');
-    const scheduleItems = document.getElementById('scheduleItems');
+    const scheduleTable = document.getElementById('scheduleTable');
 
     // 添加复制按钮元素
     const copyUsernameButton = document.getElementById('copyUsername');
@@ -259,17 +259,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 显示结果
             scheduleTitle.textContent = `${teacherName} ${timeRange.startTime} - ${timeRange.endTime} 课程列表如下`;
-            scheduleItems.innerHTML = '';
 
+            // 构建表格：序号、课程时间
+            scheduleTable.innerHTML = '';
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            ['序号', '课程时间'].forEach(text => {
+                const th = document.createElement('th');
+                th.textContent = text;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            const tbody = document.createElement('tbody');
             if (schedules.length === 0) {
-                scheduleItems.innerHTML = '<li>当前时间段没有课程</li>';
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 2;
+                cell.textContent = '当前时间段没有课程';
+                row.appendChild(cell);
+                tbody.appendChild(row);
             } else {
                 schedules.forEach((schedule, index) => {
-                    const li = document.createElement('li');
-                    li.textContent = `${index + 1}. ${schedule.dateTime}`;
-                    scheduleItems.appendChild(li);
+                    const row = document.createElement('tr');
+                    const idx = document.createElement('td');
+                    idx.textContent = index + 1;
+                    const time = document.createElement('td');
+                    time.textContent = schedule.dateTime;
+                    row.appendChild(idx);
+                    row.appendChild(time);
+                    tbody.appendChild(row);
                 });
             }
+
+            scheduleTable.appendChild(thead);
+            scheduleTable.appendChild(tbody);
 
             scheduleList.style.display = 'block';
         } catch (error) {
