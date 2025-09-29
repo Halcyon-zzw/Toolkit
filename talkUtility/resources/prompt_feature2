@@ -100,7 +100,7 @@
 ## 功能二流程
 
 ### 1. 初始化
-- 点击开始解析按钮后，读取Excel第一列数据，作为 `teaNameList`，注意过滤excel标题；
+- 点击开始统计按钮后，读取Excel第一列数据，作为 `teaNameList`，注意过滤excel标题；
 - 第一列内容不再展示在页面；
 - 时间范围：`classStartDate` 取自输入框1，`classEndDate` 取自输入框2
 

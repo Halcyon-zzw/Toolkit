@@ -126,7 +126,7 @@
             });
         }
 
-        // 开始解析按钮处理
+        // 开始统计按钮处理
         const parseBtn = document.getElementById('parseBtn');
         if (parseBtn) {
             parseBtn.addEventListener('click', async function() {
