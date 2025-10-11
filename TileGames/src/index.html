@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>麻将桌位置图</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <h1>麻将桌位置图</h1>
+    <div class="mahjong-table">
+        <!-- 上家 -->
+        <div class="player top">
+            <div class="player-info">
+                <div class="player-name-container">
+                    <span class="player-name" contenteditable="true" maxlength="10">上家</span>
+                </div>
+                <div class="buttons-container">
+                    <div class="hu-buttons">
+                        <button class="btn hu-btn" data-type="pinghu">平胡</button>
+                        <div class="button-with-counter">
+                            <button class="btn hu-btn with-counter" data-type="dahu">大胡</button>
+                            <div class="counter-container" id="dahu-counter-top" style="display: none;">
+                                <button class="btn counter-btn">+1</button>
+                            </div>
+                        </div>
+                        <button class="btn hu-btn" data-type="lanhu">烂糊</button>
+                        <button class="btn hu-btn" data-type="zimo">自摸</button>
+                        <div class="button-with-counter">
+                            <button class="btn hu-btn with-counter" data-type="bao">宝</button>
+                            <div class="counter-container" id="bao-counter-top" style="display: none;">
+                                <button class="btn counter-btn">+1</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gang-buttons">
+                        <div class="button-with-counter">
+                            <button class="btn gang-btn with-counter" data-type="neigang">内杠</button>
+                            <div class="counter-container" id="neigang-counter-top" style="display: none;">
+                                <button class="btn counter-btn">+1</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fangpao-container">
+                        <button class="btn fangpao-btn" data-type="fangpao">放炮</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右家 -->
+        <div class="player right">
+            <div class="player-info">
+                <div class="player-name-container">
+                    <span class="player-name" contenteditable="true" maxlength="10">右家</span>
+                </div>
+                <div class="buttons-container">
+                    <div class="hu-buttons">
+                        <button class="btn hu-btn" data-type="pinghu">平胡</button>
+                        <div class="button-with-counter">
+                            <button class="btn hu-btn with-counter" data-type="dahu">大胡</button>
+                            <div class="counter-container" id="dahu-counter-right" style="display: none;">
+                                <button class="btn counter-btn">+1</button>
+                            </div>
+                        </div>
+                        <button class="btn hu-btn" data-type="lanhu">烂糊</button>
+                        <button class="btn hu-btn" data-type="zimo">自摸</button>
+                        <div class="button-with-counter">
+                            <button class="btn hu-btn with-counter" data-type="bao">宝</button>
+                            <div class="counter-container" id="bao-counter-right" style="display: none;">
+                                <button class="btn counter-btn">+1</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gang-buttons">
+                        <div class="button-with-counter">
+                            <button class="btn gang-btn with-counter" data-type="neigang">内杠</button>
+                            <div class="counter-container" id="neigang-counter-right" style="display: none;">
+                                <button class="btn counter-btn">+1</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fangpao-container">
+                        <button class="btn fangpao-btn" data-type="fangpao">放炮</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下家 -->
+        <div class="player bottom">
+            <div class="player-info">
+                <div class="player-name-container">
+                    <span class="player-name" contenteditable="true" maxlength="10">下家</span>
+                </div>
+                <div class="buttons-container">
+                    <div class="hu-buttons">
+                        <button class="btn hu-btn" data-type="pinghu">平胡</button>
+                        <div class="button-with-counter">
+                            <button class="btn hu-btn with-counter" data-type="dahu">大胡</button>
+                            <div class="counter-container" id="dahu-counter-bottom" style="display: none;">
+                                <button class="btn counter-btn">+1</button>
+                            </div>
+                        </div>
+                        <button class="btn hu-btn" data-type="lanhu">烂糊</button>
+                        <button class="btn hu-btn" data-type="zimo">自摸</button>
+                        <div class="button-with-counter">
+                            <button class="btn hu-btn with-counter" data-type="bao">宝</button>
+                            <div class="counter-container" id="bao-counter-bottom" style="display: none;">
+                                <button class="btn counter-btn">+1</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gang-buttons">
+                        <div class="button-with-counter">
+                            <button class="btn gang-btn with-counter" data-type="neigang">内杠</button>
+                            <div class="counter-container" id="neigang-counter-bottom" style="display: none;">
+                                <button class="btn counter-btn">+1</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fangpao-container">
+                        <button class="btn fangpao-btn" data-type="fangpao">放炮</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 左家 -->
+        <div class="player left">
+            <div class="player-info">
+                <div class="player-name-container">
+                    <span class="player-name" contenteditable="true" maxlength="10">左家</span>
+                </div>
+                <div class="buttons-container">
+                    <div class="hu-buttons">
+                        <button class="btn hu-btn" data-type="pinghu">平胡</button>
+                        <div class="button-with-counter">
+                            <button class="btn hu-btn with-counter" data-type="dahu">大胡</button>
+                            <div class="counter-container" id="dahu-counter-left" style="display: none;">
+                                <button class="btn counter-btn">+1</button>
+                            </div>
+                        </div>
+                        <button class="btn hu-btn" data-type="lanhu">烂糊</button>
+                        <button class="btn hu-btn" data-type="zimo">自摸</button>
+                        <div class="button-with-counter">
+                            <button class="btn hu-btn with-counter" data-type="bao">宝</button>
+                            <div class="counter-container" id="bao-counter-left" style="display: none;">
+                                <button class="btn counter-btn">+1</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gang-buttons">
+                        <div class="button-with-counter">
+                            <button class="btn gang-btn with-counter" data-type="neigang">内杠</button>
+                            <div class="counter-container" id="neigang-counter-left" style="display: none;">
+                                <button class="btn counter-btn">+1</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fangpao-container">
+                        <button class="btn fangpao-btn" data-type="fangpao">放炮</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 麻将桌中心 -->
+        <div class="table-center">
+            <div class="table-image"></div>
+        </div>
+    </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

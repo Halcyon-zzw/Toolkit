@@ -1,0 +1,338 @@
+/* 全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Microsoft YaHei', Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+/* 麻将桌布局 */
+.mahjong-table {
+    position: relative;
+    width: 100%;
+    height: 90vh;
+    max-height: 800px;
+    margin: 0 auto;
+}
+
+/* 麻将桌中心 */
+.table-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30%;
+    height: 30%;
+    background-color: #27ae60;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.table-image {
+    width: 100%;
+    height: 100%;
+    background-color: #27ae60;
+    border-radius: 5px;
+    position: relative;
+}
+
+.table-image::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: 60%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+/* 玩家位置样式 */
+.player {
+    position: absolute;
+    z-index: 2;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 玩家名称容器 */
+.player-name-container {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.player-name {
+    display: inline-block;
+    min-width: 60px;
+    padding: 5px 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-weight: bold;
+    text-align: center;
+    cursor: text;
+    outline: none;
+}
+
+.player-name:focus {
+    border-color: #4a69bd;
+    box-shadow: 0 0 0 2px rgba(74, 105, 189, 0.2);
+}
+
+/* 按钮容器 */
+.buttons-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 按钮组 */
+.hu-buttons, .gang-buttons, .fangpao-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+/* 不同种类按钮的外框颜色 */
+.hu-buttons {
+    background-color: rgba(52, 152, 219, 0.15);
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.gang-buttons {
+    background-color: rgba(155, 89, 182, 0.15);
+    border: 1px solid rgba(155, 89, 182, 0.3);
+}
+
+.fangpao-container {
+    background-color: rgba(231, 76, 60, 0.15);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+/* 按钮样式 */
+.btn {
+    padding: 5px 8px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+/* 胡牌按钮 */
+.hu-btn {
+    background-color: transparent;
+    color: #3498db;
+    border: 1px solid #3498db;
+}
+
+.hu-btn.active {
+    background-color: #f1c40f; /* 黄色 */
+    color: #000;
+    font-weight: bold;
+    box-shadow: 0 0 0 2px rgba(241, 196, 15, 0.5);
+    transform: scale(1.05);
+    border-color: #f1c40f;
+}
+
+/* 杠按钮 */
+.gang-btn {
+    background-color: transparent;
+    color: #9b59b6;
+    border: 1px solid #9b59b6;
+}
+
+.gang-btn.active {
+    background-color: #f1c40f; /* 黄色 */
+    color: #000;
+    font-weight: bold;
+    box-shadow: 0 0 0 2px rgba(241, 196, 15, 0.5);
+    transform: scale(1.05);
+    border-color: #f1c40f;
+}
+
+/* 放炮按钮 */
+.fangpao-btn {
+    background-color: transparent;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+}
+
+.fangpao-btn.active {
+    background-color: #f1c40f; /* 黄色 */
+    color: #000;
+    font-weight: bold;
+    box-shadow: 0 0 0 2px rgba(241, 196, 15, 0.5);
+    transform: scale(1.05);
+    border-color: #f1c40f;
+}
+
+/* 计数器容器 */
+.counter-container {
+    display: flex;
+    align-items: center;
+    margin-left: 5px;
+}
+
+.counter-text {
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+.counter-btn {
+    background-color: #f39c12;
+    color: white;
+    padding: 2px 5px;
+    font-size: 12px;
+}
+
+/* 上家位置 */
+.player.top {
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* 右家位置 */
+.player.right {
+    top: 50%;
+    right: 5%;
+    transform: translateY(-50%);
+}
+
+.player.right .player-info {
+    flex-direction: column;
+    align-items: center;
+}
+
+.player.right .player-name-container {
+    margin-bottom: 10px;
+}
+
+.player.right .player-name {
+    min-width: 60px;
+    padding: 5px 10px;
+}
+
+.player.right .buttons-container {
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 下家位置 */
+.player.bottom {
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* 左家位置 */
+.player.left {
+    top: 50%;
+    left: 5%;
+    transform: translateY(-50%);
+}
+
+.player.left .player-info {
+    flex-direction: column;
+    align-items: center;
+}
+
+.player.left .player-name-container {
+    margin-bottom: 10px;
+}
+
+.player.left .player-name {
+    min-width: 60px;
+    padding: 5px 10px;
+}
+
+.player.left .buttons-container {
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .mahjong-table {
+        height: 80vh;
+    }
+    
+    .table-center {
+        width: 40%;
+        height: 40%;
+    }
+    
+    .player.right .player-info,
+    .player.left .player-info {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .player.right .player-name-container,
+    .player.left .player-name-container {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .player.right .buttons-container,
+    .player.left .buttons-container {
+        flex-direction: column;
+    }
+    
+    .btn {
+        font-size: 12px;
+        padding: 4px 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 20px;
+    }
+    
+    .table-center {
+        width: 50%;
+        height: 50%;
+    }
+    
+    .player-name {
+        min-width: 40px;
+        font-size: 12px;
+    }
+    
+    .btn {
+        font-size: 10px;
+        padding: 3px 5px;
+    }
+}
