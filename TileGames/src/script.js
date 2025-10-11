@@ -81,37 +81,66 @@ function handleFangPaoSelection(button, playerPosition) {
     // 如果有其他玩家已选择放炮，则取消其选择
     if (otherActiveFangPao) {
         otherActiveFangPao.classList.remove('active');
+        // 启用该玩家的胡牌按钮
+        enablePlayerHuButtons(otherActiveFangPao.closest('.player'));
     }
 
     // 切换当前放炮按钮的状态
     button.classList.toggle('active');
 
-    // 如果放炮按钮被选中，禁用该玩家的所有胡牌按钮
-    const playerHuButtons = document.querySelectorAll(`.player.${playerPosition} .hu-btn`);
+    // 获取当前玩家的所有按钮容器
+    const currentPlayer = button.closest(`.player.${playerPosition}`);
+
     if (button.classList.contains('active')) {
-        playerHuButtons.forEach(huBtn => {
-            huBtn.classList.remove('active');
-
-            // 移除按钮内的计数器显示元素
-            const counterDisplay = huBtn.querySelector('.counter-display');
-            if (counterDisplay) {
-                counterDisplay.remove();
-            }
-
-            // 隐藏计数器容器
-            if (huBtn.getAttribute('data-type') === 'dahu' || huBtn.getAttribute('data-type') === 'bao') {
-                const counterId = `${huBtn.getAttribute('data-type')}-counter-${playerPosition}`;
-                const counter = document.getElementById(counterId);
-                if (counter) {
-                    counter.style.display = 'none';
-                }
-            }
-        });
+        // 禁用该玩家的所有胡牌按钮
+        disablePlayerHuButtons(currentPlayer);
+    } else {
+        // 启用该玩家的所有胡牌按钮
+        enablePlayerHuButtons(currentPlayer);
     }
+}
+
+// 禁用玩家的胡牌按钮
+function disablePlayerHuButtons(playerElement) {
+    const playerHuButtons = playerElement.querySelectorAll('.hu-btn');
+    playerHuButtons.forEach(huBtn => {
+        huBtn.classList.add('disabled');
+        huBtn.disabled = true;
+
+        // 移除按钮内的计数器显示元素
+        const counterDisplay = huBtn.querySelector('.counter-display');
+        if (counterDisplay) {
+            counterDisplay.remove();
+        }
+
+        // 隐藏计数器容器
+        if (huBtn.getAttribute('data-type') === 'dahu' || huBtn.getAttribute('data-type') === 'bao') {
+            const playerPosition = getPlayerPosition(huBtn);
+            const counterId = `${huBtn.getAttribute('data-type')}-counter-${playerPosition}`;
+            const counter = document.getElementById(counterId);
+            if (counter) {
+                counter.style.display = 'none';
+            }
+        }
+    });
+}
+
+// 启用玩家的胡牌按钮
+function enablePlayerHuButtons(playerElement) {
+    const playerHuButtons = playerElement.querySelectorAll('.hu-btn');
+    playerHuButtons.forEach(huBtn => {
+        huBtn.classList.remove('disabled');
+        huBtn.disabled = false;
+    });
 }
 
 // 处理胡牌按钮选择
 function handleHuButtonSelection(button, playerPosition) {
+    // 检查按钮是否被禁用
+    if (button.classList.contains('disabled')) {
+        return;
+    }
+
     // 检查该玩家的放炮按钮是否已选中
     const fangPaoButton = document.querySelector(`.player.${playerPosition} .fangpao-btn`);
     if (fangPaoButton && fangPaoButton.classList.contains('active')) {
@@ -136,14 +165,14 @@ function handleHuButtonSelection(button, playerPosition) {
                     counterDisplay.textContent = '*1';
                     button.appendChild(counterDisplay);
                 }
-                counter.style.display = 'flex';
+                counter.style.display = 'block';
             } else {
-                counter.style.display = 'none';
                 // 移除按钮内的计数器显示元素
                 const counterDisplay = button.querySelector('.counter-display');
                 if (counterDisplay) {
                     counterDisplay.remove();
                 }
+                counter.style.display = 'none';
             }
         }
     }
@@ -169,14 +198,14 @@ function handleGangButtonSelection(button, playerPosition) {
                     counterDisplay.textContent = '*1';
                     button.appendChild(counterDisplay);
                 }
-                counter.style.display = 'flex';
+                counter.style.display = 'block';
             } else {
-                counter.style.display = 'none';
                 // 移除按钮内的计数器显示元素
                 const counterDisplay = button.querySelector('.counter-display');
                 if (counterDisplay) {
                     counterDisplay.remove();
                 }
+                counter.style.display = 'none';
             }
         }
     }
@@ -187,7 +216,8 @@ function initCounterButtons() {
     const counterButtons = document.querySelectorAll('.counter-btn');
 
     counterButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation(); // 阻止事件冒泡到父按钮
             const parentContainer = this.parentElement;
             const mainButton = parentContainer.parentElement.querySelector('.btn');
 
