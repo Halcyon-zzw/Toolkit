@@ -27,17 +27,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 复制英文内容到剪贴板（与template.HTML中格式保持一致）
     async function copyToClipboardEn() {
-        // 获取时间
-        const timeText = document.getElementById('time_en').textContent;
-
-        // 手动构造文本，确保格式与template.HTML完全一致
-        const text = `Hello! You are late for your ${timeText} class.
- If you are unable to attend the class, please make sure to enter the classroom within ten minutes after the class starts and then leave  a message with CS to cancel the class. Otherwise, it will be record as absent without notice.
-It's not our duty to remind. We sometimes randomly check classes and may remind you if there's lateness, but this does not apply to every class. Please be punctual and pay attention to your schedule.
-Important Notice: Recently, the platform has been strictly enforcing the rules. If you notify CS to cancel the class within ten minutes after the class starts but there is no record of you entering the classroom, the platform will still consider this cancellation as absent without notice.  `;
-
         try {
-            await navigator.clipboard.writeText(text);
+            // 获取所有的 p 标签
+            const paragraphs = document.querySelectorAll('#enContent p[data-line]');
+            const lines = [];
+
+            // 遍历每个段落，提取文本内容
+            paragraphs.forEach((p, index) => {
+                let text = p.textContent;
+
+                // 根据 template.HTML 的格式规则：
+                // 第2段（data-line="2"）开头需要有一个空格
+                if (p.getAttribute('data-line') === '2') {
+                    // 第2段前面已经有空格了，直接使用
+                    text = text;
+                } else if (index === 0) {
+                    // 第1段：正常文本，后面不换行
+                    text = text;
+                } else {
+                    // 其他段落：正常文本
+                    text = text;
+                }
+
+                lines.push(text);
+            });
+
+            // 按照 template.HTML 的格式拼接：
+            // 第1段后换行，第2段（带前导空格），第3段前换行，第4段前换行
+            const finalText = lines.join('\n');
+
+            await navigator.clipboard.writeText(finalText);
             // 显示成功提示
             const btn = document.getElementById('copyEnBtn');
             const originalText = btn.textContent;
@@ -59,16 +78,20 @@ Important Notice: Recently, the platform has been strictly enforcing the rules. 
 
     // 复制中文内容到剪贴板（与template.HTML中格式保持一致）
     async function copyToClipboardZh() {
-        // 获取时间
-        const timeText = document.getElementById('time_zh').textContent;
-
-        // 手动构造文本，确保格式与template.HTML完全一致
-        const text = `您好！${timeText}有课，您已迟到。如不能上课，请在上课开始后十分钟内务必进入教室，然后给CS留言取消课，否则记为缺勤。
-请注意: 提醒并非我们的职责。我们有时巡课发现迟到会提醒，但并非每一节课都会巡到。望您自觉遵守时间。
-重要提示: 最近平台抓规则，如果上课开始后十分钟内通知CS取消课，但是没有进入教室的记录，这种取消平台也视为缺勤取消。`;
-
         try {
-            await navigator.clipboard.writeText(text);
+            // 获取所有的 p 标签
+            const paragraphs = document.querySelectorAll('#zhContent p[data-line]');
+            const lines = [];
+
+            // 遍历每个段落，提取文本内容
+            paragraphs.forEach((p) => {
+                lines.push(p.textContent);
+            });
+
+            // 按照 template.HTML 的格式拼接：段落之间用换行分隔
+            const finalText = lines.join('\n');
+
+            await navigator.clipboard.writeText(finalText);
             // 显示成功提示
             const btn = document.getElementById('copyZhBtn');
             const originalText = btn.textContent;
