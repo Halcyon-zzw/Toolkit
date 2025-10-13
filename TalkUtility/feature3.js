@@ -25,21 +25,12 @@ document.addEventListener('DOMContentLoaded', function() {
         copyToClipboardZh();
     });
 
-    // 复制英文内容到剪贴板
+    // 复制英文内容到剪贴板（与template.HTML中格式保持一致）
     async function copyToClipboardEn() {
-        const messageElement = document.querySelector('.message');
-        let text = '';
+        let text = document.querySelector('#enContent').textContent;
         
-        if (messageElement) {
-            // 获取所有段落文本并组合
-            const paragraphs = messageElement.querySelectorAll('p');
-            paragraphs.forEach(p => {
-                text += p.textContent + '\n\n';
-            });
-            text = text.trim();
-        }
-
         try {
+            text = text.trim();
             await navigator.clipboard.writeText(text);
             // 显示成功提示
             const btn = document.getElementById('copyEnBtn');
@@ -60,21 +51,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 复制中文内容到剪贴板
+    // 复制中文内容到剪贴板（与template.HTML中格式保持一致）
     async function copyToClipboardZh() {
-        const messageElements = document.querySelectorAll('.message');
-        let text = '';
+        let text = document.querySelector('#zhContent').textContent;
         
-        if (messageElements.length >= 2) {
-            // 获取第二个消息框（中文）的所有段落文本并组合
-            const paragraphs = messageElements[1].querySelectorAll('p');
-            paragraphs.forEach(p => {
-                text += p.textContent + '\n\n';
-            });
-            text = text.trim();
-        }
-
         try {
+            text = text.trim();
             await navigator.clipboard.writeText(text);
             // 显示成功提示
             const btn = document.getElementById('copyZhBtn');

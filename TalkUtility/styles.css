@@ -200,22 +200,34 @@ tbody tr:last-child td { border-bottom: none; }
   border: 1px solid var(--color-border); 
   border-radius: 10px; 
   background-color: #f8fafc; 
+  position: relative;
 }
-.message h3 { 
-  margin-top: 0; 
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.message-header h3 { 
+  margin: 0; 
+  color: var(--color-primary);
+}
+.message-content-container {
+  height: 140px; /* 固定高度显示约6行文本 */
+  overflow-y: auto; /* 启用垂直滚动 */
+  position: relative;
+  border-radius: 5px;
+  padding-right: 10px; /* 防止文本被滚动条遮挡 */
+}
+.message-content {
+  line-height: 1.5;
+}
+.message-content p { 
   margin-bottom: 10px; 
-  color: var(--color-primary); 
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 5px;
 }
-.message p { 
-  margin-bottom: 10px; 
-  line-height: 1.5; 
-}
-.message .btn { 
-  margin-top: 10px; 
-  width: auto;
-  padding: 8px 16px;
+.message .btn-small { 
+  margin: 0;
+  padding: 6px 12px;
 }
 
 /* Utility */
