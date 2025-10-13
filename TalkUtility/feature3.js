@@ -15,18 +15,42 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('time_en').textContent = halfHourTime;
     document.getElementById('time_zh').textContent = halfHourTime;
 
+    // 定时器存储，用于防止多次点击导致的状态混乱
+    let enBtnTimer = null;
+    let zhBtnTimer = null;
+
+    // 按钮是否正在处理中
+    let enBtnProcessing = false;
+    let zhBtnProcessing = false;
+
     // 英文复制按钮事件
     document.getElementById('copyEnBtn').addEventListener('click', function() {
-        copyToClipboardEn();
+        if (!enBtnProcessing) {
+            copyToClipboardEn();
+        }
     });
 
     // 中文复制按钮事件
     document.getElementById('copyZhBtn').addEventListener('click', function() {
-        copyToClipboardZh();
+        if (!zhBtnProcessing) {
+            copyToClipboardZh();
+        }
     });
 
     // 复制英文内容到剪贴板（与template.HTML中格式保持一致）
     async function copyToClipboardEn() {
+        // 标记正在处理
+        enBtnProcessing = true;
+
+        // 清除之前的定时器
+        if (enBtnTimer) {
+            clearTimeout(enBtnTimer);
+            enBtnTimer = null;
+        }
+
+        const btn = document.getElementById('copyEnBtn');
+        const originalText = '复制英文';
+
         try {
             // 获取所有的 p 标签
             const paragraphs = document.querySelectorAll('#enContent p[data-line]');
@@ -57,27 +81,45 @@ document.addEventListener('DOMContentLoaded', function() {
             const finalText = lines.join('\n');
 
             await navigator.clipboard.writeText(finalText);
+
             // 显示成功提示
-            const btn = document.getElementById('copyEnBtn');
-            const originalText = btn.textContent;
             btn.textContent = '已复制';
-            setTimeout(() => {
+
+            // 设置新的定时器
+            enBtnTimer = setTimeout(() => {
                 btn.textContent = originalText;
+                enBtnProcessing = false;
+                enBtnTimer = null;
             }, 2000);
         } catch (err) {
             console.error('复制失败: ', err);
+
             // 显示错误提示
-            const btn = document.getElementById('copyEnBtn');
-            const originalText = btn.textContent;
             btn.textContent = '复制失败';
-            setTimeout(() => {
+
+            // 设置新的定时器
+            enBtnTimer = setTimeout(() => {
                 btn.textContent = originalText;
+                enBtnProcessing = false;
+                enBtnTimer = null;
             }, 2000);
         }
     }
 
     // 复制中文内容到剪贴板（与template.HTML中格式保持一致）
     async function copyToClipboardZh() {
+        // 标记正在处理
+        zhBtnProcessing = true;
+
+        // 清除之前的定时器
+        if (zhBtnTimer) {
+            clearTimeout(zhBtnTimer);
+            zhBtnTimer = null;
+        }
+
+        const btn = document.getElementById('copyZhBtn');
+        const originalText = '复制中文';
+
         try {
             // 获取所有的 p 标签
             const paragraphs = document.querySelectorAll('#zhContent p[data-line]');
@@ -92,21 +134,27 @@ document.addEventListener('DOMContentLoaded', function() {
             const finalText = lines.join('\n');
 
             await navigator.clipboard.writeText(finalText);
+
             // 显示成功提示
-            const btn = document.getElementById('copyZhBtn');
-            const originalText = btn.textContent;
             btn.textContent = '已复制';
-            setTimeout(() => {
+
+            // 设置新的定时器
+            zhBtnTimer = setTimeout(() => {
                 btn.textContent = originalText;
+                zhBtnProcessing = false;
+                zhBtnTimer = null;
             }, 2000);
         } catch (err) {
             console.error('复制失败: ', err);
+
             // 显示错误提示
-            const btn = document.getElementById('copyZhBtn');
-            const originalText = btn.textContent;
             btn.textContent = '复制失败';
-            setTimeout(() => {
+
+            // 设置新的定时器
+            zhBtnTimer = setTimeout(() => {
                 btn.textContent = originalText;
+                zhBtnProcessing = false;
+                zhBtnTimer = null;
             }, 2000);
         }
     }
