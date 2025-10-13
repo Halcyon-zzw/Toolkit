@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+  <div class="section-title">功能三 · 课程提醒</div>
+  
+  <div class="message-section">
+    <div class="message-container">
+      <div class="message">
+        <h3>英文提醒</h3>
+        <p>Hello! You are late for your <span id="time_en"></span> class.
+         If you are unable to attend the class, please make sure to enter the classroom within ten minutes after the class starts and then leave a message with CS to cancel the class. Otherwise, it will be record as absent without notice.
+        </p>
+        <p>It's not our duty to remind. We sometimes randomly check classes and may remind you if there's lateness, but this does not apply to every class. Please be punctual and pay attention to your schedule.</p>
+        <p>Important Notice: Recently, the platform has been strictly enforcing the rules. If you notify CS to cancel the class within ten minutes after the class starts but there is no record of you entering the classroom, the platform will still consider this cancellation as absent without notice.</p>
+        <button id="copyEnBtn" class="btn btn-primary">复制英文</button>
+      </div>
+      
+      <div class="message">
+        <h3>中文提醒</h3>
+        <p>您好！<span id="time_zh"></span>有课，您已迟到。如不能上课，请在上课开始后十分钟内务必进入教室，然后给CS留言取消课，否则记为缺勤。</p>
+        <p>请注意: 提醒并非我们的职责。我们有时巡课发现迟到会提醒，但并非每一节课都会巡到。望您自觉遵守时间。</p>
+        <p>重要提示: 最近平台抓规则，如果上课开始后十分钟内通知CS取消课，但是没有进入教室的记录，这种取消平台也视为缺勤取消。</p>
+        <button id="copyZhBtn" class="btn btn-primary">复制中文</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="feature3.js"></script>
+</body>
+</html>

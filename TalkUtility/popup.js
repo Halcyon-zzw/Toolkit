@@ -2,17 +2,23 @@
 document.addEventListener('DOMContentLoaded', function() {
   // 功能切换逻辑
   document.getElementById('featureOneBtn').addEventListener('click', function() {
-    switchFeature('popup_feature1.html', 'featureOneBtn', 'featureTwoBtn');
+    switchFeature('popup_feature1.html', 'featureOneBtn', ['featureTwoBtn', 'featureThreeBtn']);
   });
 
   document.getElementById('featureTwoBtn').addEventListener('click', function() {
-    switchFeature('popup_feature2.html', 'featureTwoBtn', 'featureOneBtn');
+    switchFeature('popup_feature2.html', 'featureTwoBtn', ['featureOneBtn', 'featureThreeBtn']);
   });
 
-  function switchFeature(src, activeBtnId, inactiveBtnId) {
+  document.getElementById('featureThreeBtn').addEventListener('click', function() {
+    switchFeature('popup_feature3.html', 'featureThreeBtn', ['featureOneBtn', 'featureTwoBtn']);
+  });
+
+  function switchFeature(src, activeBtnId, inactiveBtnIds) {
     // 更新按钮状态
     document.getElementById(activeBtnId).classList.add('active');
-    document.getElementById(inactiveBtnId).classList.remove('active');
+    inactiveBtnIds.forEach(id => {
+      document.getElementById(id).classList.remove('active');
+    });
 
     // 更新iframe源
     const frame = document.getElementById('featureFrame');

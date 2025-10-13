@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>麻将计分系统</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>麻将桌玩家位置</title>
     <style>
         * {
             margin: 0;
@@ -14,687 +13,995 @@
         }
 
         body {
-            background: linear-gradient(135deg, #1a5f7a 0%, #2d8c9e 100%);
-            padding: 20px;
-            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            padding: 20px;
             color: #333;
         }
 
         .container {
             width: 100%;
-            max-width: 1200px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            max-width: 900px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            position: relative;
         }
 
         h1 {
-            color: white;
-            margin-bottom: 30px;
             text-align: center;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 24px;
         }
 
-        .game-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-
-        .table-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            margin: 20px 0;
-        }
-
+        /* 麻将桌样式 */
         .mahjong-table {
             width: 300px;
             height: 300px;
-            margin: 0 auto;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #d9a75e, #b88746);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 12px solid #8B4513;
+            background: linear-gradient(145deg, #1e7b34, #2ecc71);
+            border-radius: 20px;
+            margin: 0 auto 40px;
             position: relative;
-            z-index: 10;
-        }
-
-        .table-center {
-            width: 40%;
-            height: 40%;
-            background: radial-gradient(circle, #c19a6b 0%, #8b6b3d 100%);
-            border-radius: 50%;
+            box-shadow:
+                    inset 0 0 20px rgba(0, 0, 0, 0.2),
+                    0 10px 20px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #fff;
+            color: white;
+            font-size: 24px;
             font-weight: bold;
-            font-size: 1.5rem;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.4);
-            border: 2px solid #6b4c21;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        .players-container {
-            display: grid;
-            grid-template-areas:
-                ". top ."
-                "left center right"
-                ". bottom .";
-            grid-template-columns: 1fr auto 1fr;
-            grid-template-rows: auto 1fr auto;
-            gap: 40px;
-            width: 100%;
-            max-width: 1000px;
-            margin-top: 20px;
-        }
-
-        .player {
+        /* 玩家区域通用样式 */
+        .player-area {
+            position: absolute;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            transition: all 0.3s ease;
-            min-width: 280px;
-        }
-
-        .player:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+            width: 200px;
         }
 
         .player-top {
-            grid-area: top;
-            flex-direction: row;
-            justify-content: center;
-            gap: 30px;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .player-bottom {
-            grid-area: bottom;
-            flex-direction: row;
-            justify-content: center;
-            gap: 30px;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .player-left {
-            grid-area: left;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            flex-direction: row;
         }
 
         .player-right {
-            grid-area: right;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            flex-direction: row-reverse;
         }
 
-        .player-name-container {
-            margin-bottom: 15px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
-
+        /* 玩家名称样式 */
         .player-name {
-            font-size: 1.4rem;
+            font-size: 16px;
             font-weight: bold;
-            padding: 10px 15px;
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-            width: 140px;
+            margin-bottom: 10px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background-color: #fff;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            width: 100%;
             text-align: center;
-            border: 2px solid #ddd;
+            cursor: pointer;
             transition: all 0.3s;
+            border: 2px solid transparent;
         }
 
-        .player-name:focus {
-            outline: none;
-            border-color: #4a90e2;
-            box-shadow: 0 0 8px rgba(74, 144, 226, 0.6);
+        .player-name:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
         }
 
+        .player-name.editing {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        /* 按钮组容器样式 */
         .button-group {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
             width: 100%;
-        }
-
-        .button-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
             padding: 12px;
             border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
         }
 
-        .hu-buttons {
-            background-color: rgba(173, 216, 230, 0.3);
-            border: 2px solid #add8e6;
+        .left .button-group, .right .button-group {
+            width: 160px;
         }
 
-        .gang-buttons {
-            background-color: rgba(144, 238, 144, 0.3);
-            border: 2px solid #90ee90;
+        /* 按钮组分类边框颜色 */
+        .win-group {
+            border: 2px solid #bbdefb; /* 浅蓝色 */
         }
 
-        .fangpao-buttons {
-            background-color: rgba(255, 182, 193, 0.3);
-            border: 2px solid #ffb6c1;
+        .gang-group {
+            border: 2px solid #c8e6c9; /* 浅绿色 */
         }
 
+        .pao-group {
+            border: 2px solid #ffcdd2; /* 浅红色 */
+        }
+
+        /* 按钮行样式 */
+        .button-row {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .left .button-row, .right .button-row {
+            flex-direction: column;
+        }
+
+        /* 按钮基础样式 */
         .btn {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(to bottom, #f9f9f9, #eaeaea);
-            color: #333;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             position: relative;
-            min-width: 70px;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-width: 65px;
+            min-height: 36px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .btn:hover:not(.selected):not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
-            background: linear-gradient(to bottom, #ffffff, #f0f0f0);
+        .btn.multiplier {
+            min-width: 85px;
+        }
+
+        .btn:hover:not(.disabled) {
+            background-color: #f5f5f5;
+            transform: translateY(-1px);
         }
 
         .btn.selected {
-            background: linear-gradient(to bottom, #4a90e2, #3a7bd5);
-            color: white;
-            box-shadow: 0 4px 8px rgba(74, 144, 226, 0.4);
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+            box-shadow: 0 0 8px rgba(33, 150, 243, 0.4);
         }
 
-        .btn:disabled {
-            background: #f0f0f0;
-            color: #aaa;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .counter-btn {
-            min-width: 85px;
-            position: relative;
-        }
-
-        .counter {
+        .btn.selected::after {
+            content: "✓";
             position: absolute;
-            top: -10px;
-            right: -10px;
-            width: 28px;
-            height: 28px;
-            background: linear-gradient(to bottom, #ff6b6b, #ff4757);
-            color: white;
+            bottom: 3px;
+            right: 6px;
+            font-size: 12px;
+            color: #2196f3;
+            font-weight: bold;
+        }
+
+        .btn.disabled {
+            background-color: #f5f5f5;
+            color: #9e9e9e;
+            cursor: not-allowed;
+            border-color: #e0e0e0;
+        }
+
+        /* 倍数按钮样式 */
+        .multiplier-value {
+            margin-left: 4px;
+            font-size: 12px;
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .multiplier-controls {
+            position: absolute;
+            top: -8px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .multiplier-controls .control-btn {
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
+            background-color: #2196f3;
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 0.9rem;
-            font-weight: bold;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            font-size: 12px;
             cursor: pointer;
+            pointer-events: all;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             transition: all 0.2s;
-            z-index: 5;
         }
 
-        .counter:hover {
+        .multiplier-controls .control-btn:hover {
             transform: scale(1.1);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            background-color: #0d8bf2;
         }
 
-        .counter-value {
-            margin-left: 5px;
-            font-weight: bold;
-            color: #ff4757;
+        .multiplier-controls .control-btn.minus {
+            left: -10px;
         }
 
-        .btn.selected .counter-value {
+        .multiplier-controls .control-btn.plus {
+            right: -10px;
+        }
+
+        /* 计算按钮和结果区域 */
+        .calculate-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .calculate-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #2196f3, #0d47a1);
             color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
         }
 
-        @media (max-width: 1024px) {
-            .players-container {
-                grid-template-areas:
-                    "top top"
-                    "left right"
-                    "bottom bottom";
-                grid-template-columns: 1fr 1fr;
-                grid-template-rows: auto 1fr auto;
-                gap: 30px;
-            }
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(33, 150, 243, 0.4);
+        }
 
-            .player-top, .player-bottom {
-                flex-direction: column;
-                gap: 20px;
+        .result-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .result-section h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .result-details {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .result-total {
+            font-weight: bold;
+            font-size: 18px;
+            color: #e74c3c;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
             }
 
             .mahjong-table {
                 width: 250px;
                 height: 250px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
+                font-size: 20px;
             }
 
-            .players-container {
-                grid-template-areas:
-                    "top"
-                    "left"
-                    "right"
-                    "bottom";
-                grid-template-columns: 1fr;
-                grid-template-rows: repeat(4, auto);
-                gap: 25px;
+            .player-area {
+                width: 160px;
             }
 
-            .mahjong-table {
-                width: 220px;
-                height: 220px;
+            .player-left, .player-right {
+                width: 140px;
             }
 
-            .player {
-                min-width: 250px;
+            .player-left {
+                left: 10px;
+            }
+
+            .player-right {
+                right: 10px;
             }
 
             .btn {
-                padding: 8px 12px;
-                font-size: 0.9rem;
-                min-width: 60px;
-            }
-
-            .counter-btn {
-                min-width: 75px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            body {
-                padding: 15px;
-            }
-
-            h1 {
-                font-size: 1.8rem;
-            }
-
-            .player {
-                padding: 15px;
-                min-width: 220px;
-            }
-
-            .player-name {
-                font-size: 1.2rem;
-                padding: 8px 12px;
-                width: 120px;
-            }
-
-            .button-row {
-                padding: 10px;
-                gap: 8px;
-            }
-
-            .btn {
-                padding: 7px 10px;
-                font-size: 0.85rem;
+                font-size: 12px;
+                padding: 6px 8px;
                 min-width: 55px;
             }
 
-            .counter-btn {
-                min-width: 70px;
+            .btn.multiplier {
+                min-width: 75px;
             }
 
-            .counter {
-                width: 24px;
-                height: 24px;
-                font-size: 0.8rem;
+            .player-name {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
             }
 
             .mahjong-table {
                 width: 200px;
                 height: 200px;
+                font-size: 18px;
+                margin-bottom: 30px;
             }
 
-            .table-center {
-                font-size: 1.2rem;
+            .player-area {
+                width: 130px;
+            }
+
+            .player-left, .player-right {
+                width: 110px;
+            }
+
+            .player-left {
+                left: 5px;
+            }
+
+            .player-right {
+                right: 5px;
+            }
+
+            .btn {
+                font-size: 11px;
+                padding: 5px 6px;
+                min-width: 45px;
+            }
+
+            .btn.multiplier {
+                min-width: 65px;
+            }
+
+            .player-name {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            .button-group {
+                padding: 8px;
             }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1><i class="fas fa-dice"></i> 麻将计分系统 <i class="fas fa-dice"></i></h1>
+    <h1>麻将桌玩家位置</h1>
 
-    <div class="game-area">
+    <div class="mahjong-table">麻将桌</div>
 
-        <div class="players-container">
-            <!-- 上家 -->
-            <div class="player player-top">
-                <div class="player-name-container">
-                    <div class="player-name" contenteditable="true" maxlength="10">上家</div>
-                </div>
-                <div class="button-group">
-                    <div class="button-row hu-buttons">
-                        <button class="btn" data-type="pinghu">平胡</button>
-                        <button class="btn counter-btn" data-type="dahu">大胡</button>
-                        <button class="btn" data-type="lanhu">烂胡</button>
-                        <button class="btn" data-type="zimo">自摸</button>
-                        <button class="btn counter-btn" data-type="bao">宝</button>
-                    </div>
-                    <div class="button-row gang-buttons">
-                        <button class="btn counter-btn" data-type="neigang">内杠</button>
-                    </div>
-                    <div class="button-row fangpao-buttons">
-                        <button class="btn" data-type="fangpao">放炮</button>
-                    </div>
-                </div>
+    <!-- 上方玩家 -->
+    <div class="player-area player-top">
+        <div class="player-name" data-player="0">玩家一</div>
+        <div class="button-group win-group">
+            <div class="button-row">
+                <div class="btn" data-type="pinghu">平胡</div>
+                <div class="btn multiplier" data-type="dahu">大胡</div>
+                <div class="btn" data-type="lanhu">烂胡</div>
             </div>
-
-
-
-            <!-- 下家 -->
-            <div class="player player-bottom">
-                <div class="player-name-container">
-                    <div class="player-name" contenteditable="true" maxlength="10">下家</div>
-                </div>
-                <div class="button-group">
-                    <div class="button-row hu-buttons">
-                        <button class="btn" data-type="pinghu">平胡</button>
-                        <button class="btn counter-btn" data-type="dahu">大胡</button>
-                        <button class="btn" data-type="lanhu">烂胡</button>
-                        <button class="btn" data-type="zimo">自摸</button>
-                        <button class="btn counter-btn" data-type="bao">宝</button>
-                    </div>
-                    <div class="button-row gang-buttons">
-                        <button class="btn counter-btn" data-type="neigang">内杠</button>
-                    </div>
-                    <div class="button-row fangpao-buttons">
-                        <button class="btn" data-type="fangpao">放炮</button>
-                    </div>
-                </div>
+            <div class="button-row">
+                <div class="btn" data-type="zimo">自摸</div>
+                <div class="btn multiplier" data-type="bao">宝</div>
             </div>
-
-            <!-- 左家 -->
-            <div class="player player-left">
-                <div class="player-name-container">
-                    <div class="player-name" contenteditable="true" maxlength="10">左家</div>
-                </div>
-                <div class="button-group">
-                    <div class="button-row hu-buttons">
-                        <button class="btn" data-type="pinghu">平胡</button>
-                        <button class="btn counter-btn" data-type="dahu">大胡</button>
-                        <button class="btn" data-type="lanhu">烂胡</button>
-                        <button class="btn" data-type="zimo">自摸</button>
-                        <button class="btn counter-btn" data-type="bao">宝</button>
-                    </div>
-                    <div class="button-row gang-buttons">
-                        <button class="btn counter-btn" data-type="neigang">内杠</button>
-                    </div>
-                    <div class="button-row fangpao-buttons">
-                        <button class="btn" data-type="fangpao">放炮</button>
-                    </div>
-                </div>
+        </div>
+        <div class="button-group gang-group">
+            <div class="button-row">
+                <div class="btn multiplier" data-type="neigang">内杠</div>
             </div>
-
-
-<!--            <div class="table-container">-->
-<!--                <div class="mahjong-table">-->
-<!--                    <div class="table-center">麻将桌</div>-->
-<!--                </div>-->
-<!--            </div>-->
-
-            <!-- 右家 -->
-            <div class="player player-right">
-                <div class="player-name-container">
-                    <div class="player-name" contenteditable="true" maxlength="10">右家</div>
-                </div>
-                <div class="button-group">
-                    <div class="button-row hu-buttons">
-                        <button class="btn" data-type="pinghu">平胡</button>
-                        <button class="btn counter-btn" data-type="dahu">大胡</button>
-                        <button class="btn" data-type="lanhu">烂胡</button>
-                        <button class="btn" data-type="zimo">自摸</button>
-                        <button class="btn counter-btn" data-type="bao">宝</button>
-                    </div>
-                    <div class="button-row gang-buttons">
-                        <button class="btn counter-btn" data-type="neigang">内杠</button>
-                    </div>
-                    <div class="button-row fangpao-buttons">
-                        <button class="btn" data-type="fangpao">放炮</button>
-                    </div>
-                </div>
+        </div>
+        <div class="button-group pao-group">
+            <div class="button-row">
+                <div class="btn" data-type="fangpao">放炮</div>
             </div>
+        </div>
+    </div>
+
+    <!-- 下方玩家 -->
+    <div class="player-area player-bottom">
+        <div class="player-name" data-player="1">玩家二</div>
+        <div class="button-group win-group">
+            <div class="button-row">
+                <div class="btn" data-type="pinghu">平胡</div>
+                <div class="btn multiplier" data-type="dahu">大胡</div>
+                <div class="btn" data-type="lanhu">烂胡</div>
+            </div>
+            <div class="button-row">
+                <div class="btn" data-type="zimo">自摸</div>
+                <div class="btn multiplier" data-type="bao">宝</div>
+            </div>
+        </div>
+        <div class="button-group gang-group">
+            <div class="button-row">
+                <div class="btn multiplier" data-type="neigang">内杠</div>
+            </div>
+        </div>
+        <div class="button-group pao-group">
+            <div class="button-row">
+                <div class="btn" data-type="fangpao">放炮</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 左侧玩家 -->
+    <div class="player-area player-left">
+        <div class="player-name" data-player="2">玩家三</div>
+        <div class="button-group win-group">
+            <div class="button-row">
+                <div class="btn" data-type="pinghu">平胡</div>
+                <div class="btn multiplier" data-type="dahu">大胡</div>
+                <div class="btn" data-type="lanhu">烂胡</div>
+            </div>
+            <div class="button-row">
+                <div class="btn" data-type="zimo">自摸</div>
+                <div class="btn multiplier" data-type="bao">宝</div>
+            </div>
+        </div>
+        <div class="button-group gang-group">
+            <div class="button-row">
+                <div class="btn multiplier" data-type="neigang">内杠</div>
+            </div>
+        </div>
+        <div class="button-group pao-group">
+            <div class="button-row">
+                <div class="btn" data-type="fangpao">放炮</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧玩家 -->
+    <div class="player-area player-right">
+        <div class="player-name" data-player="3">玩家四</div>
+        <div class="button-group win-group">
+            <div class="button-row">
+                <div class="btn" data-type="pinghu">平胡</div>
+                <div class="btn multiplier" data-type="dahu">大胡</div>
+                <div class="btn" data-type="lanhu">烂胡</div>
+            </div>
+            <div class="button-row">
+                <div class="btn" data-type="zimo">自摸</div>
+                <div class="btn multiplier" data-type="bao">宝</div>
+            </div>
+        </div>
+        <div class="button-group gang-group">
+            <div class="button-row">
+                <div class="btn multiplier" data-type="neigang">内杠</div>
+            </div>
+        </div>
+        <div class="button-group pao-group">
+            <div class="button-row">
+                <div class="btn" data-type="fangpao">放炮</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 计算区域 -->
+    <div class="calculate-section">
+        <button class="calculate-btn">计算得分</button>
+        <div class="result-section">
+            <h3>得分明细</h3>
+            <div class="result-details"></div>
+            <div class="result-total"></div>
         </div>
     </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 所有按钮元素
-        const allButtons = document.querySelectorAll('.btn');
-        // 所有放炮按钮
-        const fangpaoButtons = document.querySelectorAll('.btn[data-type="fangpao"]');
-        // 所有胡牌类按钮
-        const huButtons = document.querySelectorAll('.hu-buttons .btn');
-        // 所有可计数按钮
-        const counterButtons = document.querySelectorAll('.counter-btn');
+        // 玩家数据
+        const players = [
+            { name: '玩家一', pinghu: false, dahu: false, lanhu: false, zimo: false, bao: false, neigang: false, fangpao: false,
+                multipliers: { dahu: 1, bao: 1, neigang: 1 } },
+            { name: '玩家二', pinghu: false, dahu: false, lanhu: false, zimo: false, bao: false, neigang: false, fangpao: false,
+                multipliers: { dahu: 1, bao: 1, neigang: 1 } },
+            { name: '玩家三', pinghu: false, dahu: false, lanhu: false, zimo: false, bao: false, neigang: false, fangpao: false,
+                multipliers: { dahu: 1, bao: 1, neigang: 1 } },
+            { name: '玩家四', pinghu: false, dahu: false, lanhu: false, zimo: false, bao: false, neigang: false, fangpao: false,
+                multipliers: { dahu: 1, bao: 1, neigang: 1 } }
+        ];
 
-        // 当前选中的放炮玩家
-        let currentFangpaoPlayer = null;
+        // 全局状态
+        let zimoSelected = -1; // 记录哪个玩家选中了自摸
+        let fangpaoSelected = -1; // 记录哪个玩家选中了放炮
 
-        // 初始化所有按钮的点击事件
-        allButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const buttonType = this.getAttribute('data-type');
-                const playerContainer = this.closest('.player');
+        // 初始化玩家名称编辑
+        initPlayerNameEditing();
 
-                // 处理放炮按钮点击
-                if (buttonType === 'fangpao') {
-                    handleFangpaoClick(this, playerContainer);
-                }
-                // 处理胡牌类按钮点击
-                else if (['pinghu', 'dahu', 'lanhu', 'zimo', 'bao'].includes(buttonType)) {
-                    handleHuButtonClick(this, playerContainer);
-                }
-                // 处理内杠按钮点击
-                else if (buttonType === 'neigang') {
-                    handleNeigangClick(this);
-                }
-            });
-        });
+        // 初始化按钮点击事件
+        initButtonEvents();
 
-        // 处理放炮按钮点击
-        function handleFangpaoClick(button, playerContainer) {
-            // 如果当前玩家已经是放炮状态，取消选择
-            if (button.classList.contains('selected')) {
-                button.classList.remove('selected');
-                currentFangpaoPlayer = null;
-                enableHuButtonsForPlayer(playerContainer);
-            }
-            // 否则，设置当前玩家为放炮状态
-            else {
-                // 取消之前选中的放炮按钮
-                fangpaoButtons.forEach(btn => {
-                    btn.classList.remove('selected');
-                });
+        // 初始化计算按钮事件
+        initCalculateButton();
 
-                // 选中当前放炮按钮
-                button.classList.add('selected');
-                currentFangpaoPlayer = playerContainer;
+        function initPlayerNameEditing() {
+            const playerNames = document.querySelectorAll('.player-name');
 
-                // 禁用当前玩家的胡牌类按钮
-                disableHuButtonsForPlayer(playerContainer);
-            }
-        }
+            playerNames.forEach(nameElement => {
+                nameElement.addEventListener('click', function() {
+                    const playerIndex = parseInt(this.getAttribute('data-player'));
+                    const currentName = this.textContent;
 
-        // 处理胡牌类按钮点击
-        function handleHuButtonClick(button, playerContainer) {
-            const buttonType = button.getAttribute('data-type');
+                    this.classList.add('editing');
+                    this.innerHTML = `<input type="text" maxlength="10" value="${currentName}">`;
 
-            // 如果按钮已选中，取消选择
-            if (button.classList.contains('selected')) {
-                button.classList.remove('selected');
+                    const input = this.querySelector('input');
+                    input.focus();
+                    input.select();
 
-                // 如果是可计数按钮，移除计数器
-                if (button.classList.contains('counter-btn')) {
-                    removeCounterButton(button);
-                }
+                    input.addEventListener('blur', function() {
+                        savePlayerName(playerIndex, this.value);
+                    });
 
-                // 如果这是最后一个选中的胡牌按钮，启用放炮按钮
-                if (!hasSelectedHuButtonsForPlayer(playerContainer)) {
-                    enableFangpaoButtonForPlayer(playerContainer);
-                }
-            }
-            // 否则，选中按钮
-            else {
-                // 平胡、大胡、烂胡互斥
-                if (['pinghu', 'dahu', 'lanhu'].includes(buttonType)) {
-                    const huGroupButtons = playerContainer.querySelectorAll('.hu-buttons .btn[data-type="pinghu"], .hu-buttons .btn[data-type="dahu"], .hu-buttons .btn[data-type="lanhu"]');
-                    huGroupButtons.forEach(btn => {
-                        btn.classList.remove('selected');
-                        if (btn.classList.contains('counter-btn')) {
-                            removeCounterButton(btn);
+                    input.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            this.blur();
                         }
                     });
-                }
-
-                button.classList.add('selected');
-
-                // 禁用当前玩家的放炮按钮
-                disableFangpaoButtonForPlayer(playerContainer);
-
-                // 如果是可计数按钮，添加计数功能
-                if (button.classList.contains('counter-btn')) {
-                    addCounterButton(button);
-                }
-            }
+                });
+            });
         }
 
-        // 处理内杠按钮点击
-        function handleNeigangClick(button) {
-            // 如果按钮已选中，取消选择
-            if (button.classList.contains('selected')) {
-                button.classList.remove('selected');
-                removeCounterButton(button);
+        function savePlayerName(playerIndex, newName) {
+            if (newName.trim() === '') {
+                newName = `玩家${playerIndex + 1}`;
             }
-            // 否则，选中按钮并添加计数功能
-            else {
-                button.classList.add('selected');
-                addCounterButton(button);
-            }
+
+            players[playerIndex].name = newName.substring(0, 10);
+
+            const nameElement = document.querySelector(`.player-name[data-player="${playerIndex}"]`);
+            nameElement.textContent = players[playerIndex].name;
+            nameElement.classList.remove('editing');
         }
 
-        // 添加计数功能到按钮
-        function addCounterButton(button) {
-            // 如果已经存在计数器，不再添加
-            if (button.querySelector('.counter')) {
-                return;
+        function initButtonEvents() {
+            // 为所有按钮添加点击事件
+            const buttons = document.querySelectorAll('.btn');
+
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (this.classList.contains('disabled')) return;
+
+                    const playerIndex = getPlayerIndex(this);
+                    const buttonType = this.getAttribute('data-type');
+
+                    handleButtonClick(playerIndex, buttonType, this);
+                });
+            });
+
+            // 为倍数按钮的加减控制添加事件
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('control-btn')) {
+                    e.stopPropagation();
+
+                    const button = e.target.closest('.btn');
+                    const playerIndex = getPlayerIndex(button);
+                    const buttonType = button.getAttribute('data-type');
+                    const isPlus = e.target.classList.contains('plus');
+
+                    adjustMultiplier(playerIndex, buttonType, isPlus, button);
+                }
+            });
+        }
+
+        function getPlayerIndex(element) {
+            const playerArea = element.closest('.player-area');
+            const playerName = playerArea.querySelector('.player-name');
+            return parseInt(playerName.getAttribute('data-player'));
+        }
+
+        function handleButtonClick(playerIndex, buttonType, buttonElement) {
+            const player = players[playerIndex];
+
+            // 处理胡牌类按钮的互斥
+            if (['pinghu', 'dahu', 'lanhu'].includes(buttonType)) {
+                // 取消其他胡牌按钮的选择
+                ['pinghu', 'dahu', 'lanhu'].forEach(type => {
+                    if (type !== buttonType) {
+                        player[type] = false;
+                        updateButtonState(playerIndex, type, false);
+                    }
+                });
+
+                // 切换当前按钮状态
+                player[buttonType] = !player[buttonType];
+
+                // 如果选择了胡牌类按钮，取消放炮
+                if (player[buttonType] && player.fangpao) {
+                    player.fangpao = false;
+                    updateButtonState(playerIndex, 'fangpao', false);
+                    if (fangpaoSelected === playerIndex) {
+                        fangpaoSelected = -1;
+                    }
+                }
             }
 
-            // 创建计数元素
-            const counter = document.createElement('div');
-            counter.className = 'counter';
-            counter.textContent = '+';
+            // 处理自摸按钮
+            else if (buttonType === 'zimo') {
+                // 如果已经有玩家选择了自摸，先取消
+                if (zimoSelected !== -1 && zimoSelected !== playerIndex) {
+                    players[zimoSelected].zimo = false;
+                    updateButtonState(zimoSelected, 'zimo', false);
+                }
 
-            // 添加点击事件
-            counter.addEventListener('click', function(e) {
-                e.stopPropagation(); // 防止触发按钮点击事件
+                player.zimo = !player.zimo;
 
-                const counterValue = button.querySelector('.counter-value');
-                let count = 1;
-                if (counterValue) {
-                    count = parseInt(counterValue.textContent.replace('*', '')) + 1;
-                    counterValue.textContent = `*${count}`;
+                if (player.zimo) {
+                    zimoSelected = playerIndex;
+
+                    // 自摸和放炮互斥
+                    if (player.fangpao) {
+                        player.fangpao = false;
+                        updateButtonState(playerIndex, 'fangpao', false);
+                        if (fangpaoSelected === playerIndex) {
+                            fangpaoSelected = -1;
+                        }
+                    }
+
+                    // 放炮只能有一个玩家选择
+                    if (fangpaoSelected !== -1) {
+                        players[fangpaoSelected].fangpao = false;
+                        updateButtonState(fangpaoSelected, 'fangpao', false);
+                        fangpaoSelected = -1;
+                    }
                 } else {
-                    const newCounterValue = document.createElement('span');
-                    newCounterValue.className = 'counter-value';
-                    newCounterValue.textContent = `*${count}`;
-                    button.appendChild(newCounterValue);
+                    zimoSelected = -1;
                 }
+            }
+
+            // 处理放炮按钮
+            else if (buttonType === 'fangpao') {
+                // 如果已经有玩家选择了放炮，先取消
+                if (fangpaoSelected !== -1 && fangpaoSelected !== playerIndex) {
+                    players[fangpaoSelected].fangpao = false;
+                    updateButtonState(fangpaoSelected, 'fangpao', false);
+                }
+
+                player.fangpao = !player.fangpao;
+
+                if (player.fangpao) {
+                    fangpaoSelected = playerIndex;
+
+                    // 放炮和自摸互斥
+                    if (player.zimo) {
+                        player.zimo = false;
+                        updateButtonState(playerIndex, 'zimo', false);
+                        if (zimoSelected === playerIndex) {
+                            zimoSelected = -1;
+                        }
+                    }
+
+                    // 自摸只能有一个玩家选择
+                    if (zimoSelected !== -1) {
+                        players[zimoSelected].zimo = false;
+                        updateButtonState(zimoSelected, 'zimo', false);
+                        zimoSelected = -1;
+                    }
+
+                    // 放炮和胡牌类按钮互斥
+                    ['pinghu', 'dahu', 'lanhu', 'bao'].forEach(type => {
+                        if (player[type]) {
+                            player[type] = false;
+                            updateButtonState(playerIndex, type, false);
+                        }
+                    });
+                } else {
+                    fangpaoSelected = -1;
+                }
+            }
+
+            // 处理宝和内杠按钮（可以多选，有倍数）
+            else if (['bao', 'neigang'].includes(buttonType)) {
+                player[buttonType] = !player[buttonType];
+
+                // 如果选择了宝或内杠，且同时选择了放炮，则取消放炮
+                if (player[buttonType] && player.fangpao) {
+                    player.fangpao = false;
+                    updateButtonState(playerIndex, 'fangpao', false);
+                    if (fangpaoSelected === playerIndex) {
+                        fangpaoSelected = -1;
+                    }
+                }
+            }
+
+            // 更新按钮状态
+            updateButtonState(playerIndex, buttonType, player[buttonType]);
+
+            // 更新所有按钮的可用状态
+            updateAllButtonsState();
+        }
+
+        function updateButtonState(playerIndex, buttonType, isSelected) {
+            const button = document.querySelector(`.player-area .player-name[data-player="${playerIndex}"]`)
+                .closest('.player-area')
+                .querySelector(`.btn[data-type="${buttonType}"]`);
+
+            if (isSelected) {
+                button.classList.add('selected');
+
+                // 如果是倍数按钮，显示倍数控制
+                if (['dahu', 'bao', 'neigang'].includes(buttonType)) {
+                    const multiplier = players[playerIndex].multipliers[buttonType];
+                    button.innerHTML = `${getButtonText(buttonType)}<span class="multiplier-value">*${multiplier}</span>
+                                            <div class="multiplier-controls">
+                                                <div class="control-btn minus">-</div>
+                                                <div class="control-btn plus">+</div>
+                                            </div>`;
+                }
+            } else {
+                button.classList.remove('selected');
+
+                // 如果是倍数按钮，移除倍数控制
+                if (['dahu', 'bao', 'neigang'].includes(buttonType)) {
+                    button.innerHTML = getButtonText(buttonType);
+                    players[playerIndex].multipliers[buttonType] = 1;
+                }
+            }
+        }
+
+        function getButtonText(buttonType) {
+            const textMap = {
+                'pinghu': '平胡',
+                'dahu': '大胡',
+                'lanhu': '烂胡',
+                'zimo': '自摸',
+                'bao': '宝',
+                'neigang': '内杠',
+                'fangpao': '放炮'
+            };
+
+            return textMap[buttonType] || buttonType;
+        }
+
+        function adjustMultiplier(playerIndex, buttonType, isPlus, buttonElement) {
+            const player = players[playerIndex];
+
+            if (isPlus) {
+                player.multipliers[buttonType]++;
+            } else {
+                if (player.multipliers[buttonType] > 1) {
+                    player.multipliers[buttonType]--;
+                }
+            }
+
+            buttonElement.innerHTML = `${getButtonText(buttonType)}<span class="multiplier-value">*${player.multipliers[buttonType]}</span>
+                                            <div class="multiplier-controls">
+                                                <div class="control-btn minus">-</div>
+                                                <div class="control-btn plus">+</div>
+                                            </div>`;
+        }
+
+        function updateAllButtonsState() {
+            // 更新所有按钮的可用状态
+            for (let i = 0; i < players.length; i++) {
+                const player = players[i];
+
+                // 如果玩家选择了放炮，禁用胡牌类按钮
+                const disableWinButtons = player.fangpao;
+
+                // 如果玩家选择了胡牌类按钮，禁用放炮
+                const disablePaoButton = player.pinghu || player.dahu || player.lanhu || player.zimo || player.bao;
+
+                // 更新按钮状态
+                ['pinghu', 'dahu', 'lanhu', 'zimo', 'bao'].forEach(type => {
+                    const button = document.querySelector(`.player-area .player-name[data-player="${i}"]`)
+                        .closest('.player-area')
+                        .querySelector(`.btn[data-type="${type}"]`);
+
+                    if (disableWinButtons && !player[type]) {
+                        button.classList.add('disabled');
+                    } else {
+                        button.classList.remove('disabled');
+                    }
+                });
+
+                const fangpaoButton = document.querySelector(`.player-area .player-name[data-player="${i}"]`)
+                    .closest('.player-area')
+                    .querySelector(`.btn[data-type="fangpao"]`);
+
+                if (disablePaoButton && !player.fangpao) {
+                    fangpaoButton.classList.add('disabled');
+                } else {
+                    fangpaoButton.classList.remove('disabled');
+                }
+            }
+        }
+
+        function initCalculateButton() {
+            const calculateBtn = document.querySelector('.calculate-btn');
+            const resultSection = document.querySelector('.result-section');
+            const resultDetails = document.querySelector('.result-details');
+            const resultTotal = document.querySelector('.result-total');
+
+            calculateBtn.addEventListener('click', function() {
+                const scores = calculateScores();
+                displayResults(scores, resultDetails, resultTotal);
+                resultSection.style.display = 'block';
             });
+        }
 
-            button.appendChild(counter);
+        function calculateScores() {
+            // 初始化每个玩家的得分
+            const scores = [0, 0, 0, 0];
+            const scoreDetails = [];
 
-            // 确保有计数显示元素
-            if (!button.querySelector('.counter-value')) {
-                const counterValue = document.createElement('span');
-                counterValue.className = 'counter-value';
-                counterValue.textContent = '*1';
-                button.appendChild(counterValue);
+            // 找出胡牌玩家和放炮玩家
+            const huPlayers = [];
+            let paoPlayer = -1;
+
+            for (let i = 0; i < players.length; i++) {
+                if (players[i].pinghu || players[i].dahu || players[i].lanhu || players[i].zimo) {
+                    huPlayers.push(i);
+                }
+                if (players[i].fangpao) {
+                    paoPlayer = i;
+                }
             }
-        }
 
-        // 移除计数功能
-        function removeCounterButton(button) {
-            const counter = button.querySelector('.counter');
-            if (counter) {
-                counter.remove();
+            // 计算胡牌得分
+            if (huPlayers.length > 0) {
+                // 自摸情况
+                if (zimoSelected !== -1) {
+                    const zimoPlayer = zimoSelected;
+                    scoreDetails.push(`${players[zimoPlayer].name} 自摸：`);
+
+                    for (let i = 0; i < players.length; i++) {
+                        if (i === zimoPlayer) continue;
+
+                        let playerScore = 0;
+                        let detail = `  ${players[i].name} 支付：`;
+
+                        if (players[zimoPlayer].pinghu) {
+                            playerScore += 1;
+                            detail += '平胡1分';
+                        }
+
+                        if (players[zimoPlayer].dahu) {
+                            const dahuScore = 4 * players[zimoPlayer].multipliers.dahu;
+                            playerScore += dahuScore;
+                            detail += players[zimoPlayer].pinghu ? `，大胡${dahuScore}分` : `大胡${dahuScore}分`;
+                        }
+
+                        if (players[zimoPlayer].lanhu) {
+                            playerScore += 2;
+                            detail += players[zimoPlayer].pinghu || players[zimoPlayer].dahu ? `，烂胡2分` : `烂胡2分`;
+                        }
+
+                        if (players[zimoPlayer].bao) {
+                            const baoScore = players[zimoPlayer].multipliers.bao;
+                            playerScore += baoScore;
+                            detail += (players[zimoPlayer].pinghu || players[zimoPlayer].dahu || players[zimoPlayer].lanhu) ?
+                                `，宝${baoScore}分` : `宝${baoScore}分`;
+                        }
+
+                        scores[zimoPlayer] += playerScore;
+                        scores[i] -= playerScore;
+
+                        detail += ` (共${playerScore}分)`;
+                        scoreDetails.push(detail);
+                    }
+                }
+                // 点炮情况
+                else if (paoPlayer !== -1) {
+                    scoreDetails.push(`点炮情况：${players[paoPlayer].name} 放炮`);
+
+                    huPlayers.forEach(huPlayer => {
+                        let playerScore = 0;
+                        let detail = `  ${players[huPlayer].name} 从 ${players[paoPlayer].name} 获得：`;
+
+                        if (players[huPlayer].pinghu) {
+                            playerScore += 1;
+                            detail += '平胡1分';
+                        }
+
+                        if (players[huPlayer].dahu) {
+                            const dahuScore = 4 * players[huPlayer].multipliers.dahu;
+                            playerScore += dahuScore;
+                            detail += players[huPlayer].pinghu ? `，大胡${dahuScore}分` : `大胡${dahuScore}分`;
+                        }
+
+                        if (players[huPlayer].lanhu) {
+                            playerScore += 2;
+                            detail += players[huPlayer].pinghu || players[huPlayer].dahu ? `，烂胡2分` : `烂胡2分`;
+                        }
+
+                        // 宝的得分来自所有玩家
+                        if (players[huPlayer].bao) {
+                            const baoScore = players[huPlayer].multipliers.bao;
+                            for (let i = 0; i < players.length; i++) {
+                                if (i !== huPlayer) {
+                                    scores[huPlayer] += baoScore;
+                                    scores[i] -= baoScore;
+                                }
+                            }
+                            detail += `，宝${baoScore}分(每人支付)`;
+                        }
+
+                        scores[huPlayer] += playerScore;
+                        scores[paoPlayer] -= playerScore;
+
+                        detail += ` (共${playerScore}分)`;
+                        scoreDetails.push(detail);
+                    });
+                }
             }
 
-            // 重置计数显示
-            const counterValue = button.querySelector('.counter-value');
-            if (counterValue) {
-                counterValue.textContent = '*1';
+            // 计算内杠得分
+            for (let i = 0; i < players.length; i++) {
+                if (players[i].neigang) {
+                    const gangScore = players[i].multipliers.neigang;
+                    scoreDetails.push(`${players[i].name} 内杠：每个玩家支付${gangScore}分`);
+
+                    for (let j = 0; j < players.length; j++) {
+                        if (j !== i) {
+                            scores[i] += gangScore;
+                            scores[j] -= gangScore;
+                        }
+                    }
+                }
             }
+
+            return {
+                scores: scores,
+                details: scoreDetails
+            };
         }
 
-        // 检查玩家是否有选中的胡牌按钮
-        function hasSelectedHuButtonsForPlayer(playerContainer) {
-            const huButtons = playerContainer.querySelectorAll('.hu-buttons .btn');
-            return Array.from(huButtons).some(button => button.classList.contains('selected'));
-        }
+        function displayResults(result, detailsElem, totalElem) {
+            detailsElem.innerHTML = '';
 
-        // 禁用玩家的胡牌类按钮
-        function disableHuButtonsForPlayer(playerContainer) {
-            const huButtons = playerContainer.querySelectorAll('.hu-buttons .btn');
-            huButtons.forEach(button => {
-                button.disabled = true;
-            });
-        }
-
-        // 启用玩家的胡牌类按钮
-        function enableHuButtonsForPlayer(playerContainer) {
-            const huButtons = playerContainer.querySelectorAll('.hu-buttons .btn');
-            huButtons.forEach(button => {
-                button.disabled = false;
-            });
-        }
-
-        // 禁用玩家的放炮按钮
-        function disableFangpaoButtonForPlayer(playerContainer) {
-            const fangpaoButton = playerContainer.querySelector('.btn[data-type="fangpao"]');
-            if (fangpaoButton) {
-                fangpaoButton.disabled = true;
+            if (result.details.length === 0) {
+                detailsElem.innerHTML = '<p>无得分项目</p>';
+            } else {
+                result.details.forEach(detail => {
+                    const p = document.createElement('p');
+                    p.textContent = detail;
+                    detailsElem.appendChild(p);
+                });
             }
-        }
 
-        // 启用玩家的放炮按钮
-        function enableFangpaoButtonForPlayer(playerContainer) {
-            const fangpaoButton = playerContainer.querySelector('.btn[data-type="fangpao"]');
-            if (fangpaoButton && playerContainer !== currentFangpaoPlayer) {
-                fangpaoButton.disabled = false;
+            let totalText = '最终得分：';
+            for (let i = 0; i < players.length; i++) {
+                totalText += `${players[i].name}: ${result.scores[i]}分`;
+                if (i < players.length - 1) {
+                    totalText += '，';
+                }
             }
+
+            totalElem.textContent = totalText;
         }
     });
 </script>
