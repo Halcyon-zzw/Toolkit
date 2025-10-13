@@ -74,9 +74,8 @@
         if (downloadBtn) {
             downloadBtn.addEventListener('click', function() {
                 // 使用 Chrome 下载 API
-                chrome.runtime.getURL('talk_template.xlsx');
                 chrome.downloads.download({
-                    url: chrome.runtime.getURL('talk_template.xlsx'),
+                    url: chrome.runtime.getURL('assets/talk_template.xlsx'),
                     filename: 'talk_template.xlsx'
                 });
             });
