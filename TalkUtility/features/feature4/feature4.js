@@ -17,6 +17,95 @@ document.addEventListener('DOMContentLoaded', function() {
     let excelData = [];
     let processedData = [];
     let accessToken = '';
+    let currentProcessIndex = 0;
+    let isProcessing = false;
+
+    // 存储键名
+    const STORAGE_KEYS = {
+        EXCEL_DATA: 'feature4_excel_data',
+        PROCESSED_DATA: 'feature4_processed_data',
+        CURRENT_INDEX: 'feature4_current_index',
+        ACCESS_TOKEN: 'feature4_access_token',
+        IS_PROCESSING: 'feature4_is_processing',
+        FILE_NAME: 'feature4_file_name'
+    };
+
+    // 存储状态到Chrome storage
+    function saveState() {
+        chrome.storage.local.set({
+            [STORAGE_KEYS.EXCEL_DATA]: excelData,
+            [STORAGE_KEYS.PROCESSED_DATA]: processedData,
+            [STORAGE_KEYS.CURRENT_INDEX]: currentProcessIndex,
+            [STORAGE_KEYS.ACCESS_TOKEN]: accessToken,
+            [STORAGE_KEYS.IS_PROCESSING]: isProcessing,
+            [STORAGE_KEYS.FILE_NAME]: fileInputText.textContent
+        });
+    }
+
+    // 从Chrome storage恢复状态
+    function restoreState() {
+        chrome.storage.local.get([
+            STORAGE_KEYS.EXCEL_DATA,
+            STORAGE_KEYS.PROCESSED_DATA,
+            STORAGE_KEYS.CURRENT_INDEX,
+            STORAGE_KEYS.ACCESS_TOKEN,
+            STORAGE_KEYS.IS_PROCESSING,
+            STORAGE_KEYS.FILE_NAME
+        ], function(result) {
+            if (result[STORAGE_KEYS.EXCEL_DATA] && result[STORAGE_KEYS.EXCEL_DATA].length > 0) {
+                excelData = result[STORAGE_KEYS.EXCEL_DATA];
+                processedData = result[STORAGE_KEYS.PROCESSED_DATA] || excelData.map(item => ({ ...item }));
+                currentProcessIndex = result[STORAGE_KEYS.CURRENT_INDEX] || 0;
+                accessToken = result[STORAGE_KEYS.ACCESS_TOKEN] || '';
+                isProcessing = result[STORAGE_KEYS.IS_PROCESSING] || false;
+
+                // 恢复文件名显示
+                if (result[STORAGE_KEYS.FILE_NAME] && result[STORAGE_KEYS.FILE_NAME] !== '点击选择Excel文件 (.xlsx, .xls)') {
+                    fileInputText.textContent = result[STORAGE_KEYS.FILE_NAME];
+                    fileInputText.classList.add('selected-file');
+                }
+
+                // 恢复表格显示
+                displayDataTable();
+
+                // 更新按钮状态
+                updateProcessButton();
+
+                // 如果有处理过的数据，显示导出按钮
+                if (processedData.some(item => item.result !== '-')) {
+                    exportSection.classList.remove('hidden');
+                }
+            }
+        });
+    }
+
+    // 清除存储状态
+    function clearState() {
+        chrome.storage.local.remove([
+            STORAGE_KEYS.EXCEL_DATA,
+            STORAGE_KEYS.PROCESSED_DATA,
+            STORAGE_KEYS.CURRENT_INDEX,
+            STORAGE_KEYS.ACCESS_TOKEN,
+            STORAGE_KEYS.IS_PROCESSING,
+            STORAGE_KEYS.FILE_NAME
+        ]);
+        currentProcessIndex = 0;
+        isProcessing = false;
+    }
+
+    // 更新处理按钮状态
+    function updateProcessButton() {
+        if (currentProcessIndex > 0 && currentProcessIndex < excelData.length) {
+            startProcess.textContent = '继续处理';
+        } else if (currentProcessIndex >= excelData.length) {
+            startProcess.textContent = '重新处理';
+        } else {
+            startProcess.textContent = '开始处理';
+        }
+    }
+
+    // 页面加载时恢复状态
+    restoreState();
 
     // 文件选择处理
     fileInputWrapper.addEventListener('click', function() {
@@ -26,6 +115,9 @@ document.addEventListener('DOMContentLoaded', function() {
     excelFile.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
+            // 新选择文件时清除之前的状态
+            clearState();
+
             fileInputText.textContent = `已选择: ${file.name}`;
             fileInputText.classList.add('selected-file');
 
@@ -54,6 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fileInputText.classList.remove('selected-file');
             dataTableSection.classList.add('hidden');
             exportSection.classList.add('hidden');
+            clearState();
         }
     });
 
@@ -99,22 +192,33 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // 初始化processedData
+        processedData = excelData.map(item => ({ ...item }));
+        currentProcessIndex = 0;
+
         displayDataTable();
+        updateProcessButton();
+        saveState();
     }
 
     // 显示数据表格
     function displayDataTable() {
         dataTableBody.innerHTML = '';
 
-        excelData.forEach((item, index) => {
+        const dataToDisplay = processedData.length > 0 ? processedData : excelData;
+        dataToDisplay.forEach((item, index) => {
             const row = document.createElement('tr');
+            const resultClass = item.result === '-' ? '' :
+                               item.result.includes('正在处理') ? 'status-processing' :
+                               item.result.includes('未找到') || item.result.includes('失败') ? 'status-error' : 'status-success';
+
             row.innerHTML = `
                 <td>${item.index}</td>
                 <td>${item.teacherName}</td>
                 <td>${item.classInfo}</td>
                 <td>${item.classId}</td>
                 <td>${item.processContent}</td>
-                <td class="result-column">${item.result}</td>
+                <td class="result-column ${resultClass}">${item.result}</td>
             `;
             dataTableBody.appendChild(row);
         });
@@ -186,10 +290,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'GET',
                 headers: {
                     'app-id': 'app_75535bab9a72a',
-                    'authorization': `Bearer ${accessToken}`,
-                    'if-none-match': 'W/"f5619ad603f4b2490609a1e6c74e680eea1da040"',
-                    'priority': 'u=1, i',
-                    'Cookie': `team_id=0; app_id=app_75535bab9a72a; sidebarStatus=0; Admin-Token=${accessToken}`
+                    'authorization': `Bearer ${accessToken}`
+
                 }
             });
 
@@ -282,6 +384,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (processedData[index]) {
             processedData[index].result = result;
         }
+
+        // 保存状态
+        saveState();
     }
 
     // 开始处理按钮事件
@@ -294,36 +399,57 @@ document.addEventListener('DOMContentLoaded', function() {
         // 显示进度条
         progressSection.classList.remove('hidden');
         startProcess.disabled = true;
+        isProcessing = true;
 
-        // 登录获取token
-        progressText.textContent = '正在登录...';
-        const loginSuccess = await login();
-        if (!loginSuccess) {
-            alert('登录失败，无法继续处理');
-            progressSection.classList.add('hidden');
-            startProcess.disabled = false;
-            return;
+        // 如果是重新处理，重置所有数据
+        if (currentProcessIndex >= excelData.length) {
+            currentProcessIndex = 0;
+            processedData = excelData.map(item => ({ ...item, result: '-' }));
+            displayDataTable();
         }
 
-        // 初始化处理数据
-        processedData = excelData.map(item => ({ ...item }));
+        // 登录获取token（如果没有token或需要重新登录）
+        if (!accessToken) {
+            progressText.textContent = '正在登录...';
+            const loginSuccess = await login();
+            if (!loginSuccess) {
+                alert('登录失败，无法继续处理');
+                progressSection.classList.add('hidden');
+                startProcess.disabled = false;
+                isProcessing = false;
+                return;
+            }
+        }
 
-        // 逐行处理数据
-        for (let i = 0; i < excelData.length; i++) {
+        // 确保processedData已初始化
+        if (processedData.length === 0) {
+            processedData = excelData.map(item => ({ ...item }));
+        }
+
+        // 从当前位置继续处理数据
+        for (let i = currentProcessIndex; i < excelData.length; i++) {
+            currentProcessIndex = i;
             const progress = ((i + 1) / excelData.length) * 100;
             progressFill.style.width = `${progress}%`;
             progressText.textContent = `正在处理第 ${i + 1}/${excelData.length} 行...`;
 
             await processRow(excelData[i], i);
 
+            // 更新当前处理位置
+            currentProcessIndex = i + 1;
+            saveState();
+
             // 添加延迟避免请求过于频繁
             await new Promise(resolve => setTimeout(resolve, 500));
         }
 
         // 处理完成
+        isProcessing = false;
         progressText.textContent = '处理完成！';
         startProcess.disabled = false;
+        updateProcessButton();
         exportSection.classList.remove('hidden');
+        saveState();
     });
 
     // 导出Excel功能

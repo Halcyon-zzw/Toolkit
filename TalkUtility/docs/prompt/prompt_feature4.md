@@ -112,9 +112,6 @@
   ```
   app-id: app_75535bab9a72a
   authorization: Bearer {access_token}
-  if-none-match: W/"f5619ad603f4b2490609a1e6c74e680eea1da040"
-  priority: u=1, i
-  Cookie: team_id=0; app_id=app_75535bab9a72a; sidebarStatus=0; Admin-Token={access_token}
   ```
 
 ### 请求参数
@@ -171,9 +168,6 @@
   ```
   app-id: app_75535bab9a72a
   authorization: Bearer {access_token}
-  priority: u=1, i
-  content-type: application/json;charset=UTF-8
-  Cookie: team_id=0; app_id=app_75535bab9a72a; Admin-Token={access_token}; sidebarStatus=1
   ```
 
 ### 请求参数
