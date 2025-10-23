@@ -30,8 +30,18 @@ document.addEventListener('DOMContentLoaded', function() {
         FILE_NAME: 'feature4_file_name'
     };
 
+    // 检查Chrome扩展环境
+    function isChromeExtension() {
+        return typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local;
+    }
+
     // 存储状态到Chrome storage
     function saveState() {
+        if (!isChromeExtension()) {
+            console.log('📝 非Chrome扩展环境，跳过状态保存');
+            return;
+        }
+
         chrome.storage.local.set({
             [STORAGE_KEYS.EXCEL_DATA]: excelData,
             [STORAGE_KEYS.PROCESSED_DATA]: processedData,
@@ -44,6 +54,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 从Chrome storage恢复状态
     function restoreState() {
+        if (!isChromeExtension()) {
+            console.log('📱 非Chrome扩展环境，跳过状态恢复');
+            return;
+        }
+
         chrome.storage.local.get([
             STORAGE_KEYS.EXCEL_DATA,
             STORAGE_KEYS.PROCESSED_DATA,
@@ -81,14 +96,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 清除存储状态
     function clearState() {
-        chrome.storage.local.remove([
-            STORAGE_KEYS.EXCEL_DATA,
-            STORAGE_KEYS.PROCESSED_DATA,
-            STORAGE_KEYS.CURRENT_INDEX,
-            STORAGE_KEYS.ACCESS_TOKEN,
-            STORAGE_KEYS.IS_PROCESSING,
-            STORAGE_KEYS.FILE_NAME
-        ]);
+        if (isChromeExtension()) {
+            chrome.storage.local.remove([
+                STORAGE_KEYS.EXCEL_DATA,
+                STORAGE_KEYS.PROCESSED_DATA,
+                STORAGE_KEYS.CURRENT_INDEX,
+                STORAGE_KEYS.ACCESS_TOKEN,
+                STORAGE_KEYS.IS_PROCESSING,
+                STORAGE_KEYS.FILE_NAME
+            ]);
+        }
         currentProcessIndex = 0;
         isProcessing = false;
     }
@@ -180,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     index: i - startRow + 1,
                     teacherName: row[0] || `内容${i - startRow + 1}`,
                     classInfo: row[1] || `内容${i - startRow + 1}`,
-                    classId: row[2] || `内容${i - startRow + 1}`,
+                    classId: String(row[2] || `内容${i - startRow + 1}`), // 确保classId为字符串类型
                     processContent: row[7] || `内容${i - startRow + 1}`,
                     result: '-'
                 });
@@ -328,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 步骤3: 查找匹配的课程
             const classInfo = evaluationList.find(evaluation =>
-                evaluation.class_id === item.classId
+                String(evaluation.class_id) === String(item.classId)
             );
 
             if (!classInfo) {
@@ -443,9 +460,30 @@ document.addEventListener('DOMContentLoaded', function() {
             await new Promise(resolve => setTimeout(resolve, 500));
         }
 
-        // 处理完成
+        // 处理完成 - 统计结果
         isProcessing = false;
-        progressText.textContent = '处理完成！';
+
+        // 统计处理结果
+        const totalCount = excelData.length;
+        const successCount = processedData.filter(item =>
+            item.result !== '-' &&
+            !item.result.includes('未找到') &&
+            !item.result.includes('失败') &&
+            !item.result.includes('正在处理')
+        ).length;
+        const errorCount = processedData.filter(item =>
+            item.result.includes('未找到') ||
+            item.result.includes('失败')
+        ).length;
+
+        progressText.textContent = `处理完成！总计 ${totalCount} 条，成功 ${successCount} 条，失败 ${errorCount} 条`;
+        console.log(`🎉 处理完成统计:`, {
+            总计: totalCount,
+            成功: successCount,
+            失败: errorCount,
+            成功率: `${((successCount / totalCount) * 100).toFixed(1)}%`
+        });
+
         startProcess.disabled = false;
         updateProcessButton();
         exportSection.classList.remove('hidden');
