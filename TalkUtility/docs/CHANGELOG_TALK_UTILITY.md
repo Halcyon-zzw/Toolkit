@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.3] - 2025-10-14
+
+### Added
+- 添加了功能四，差评处理功能
+
+## [2.5.2] - 2025-10-13
+
+### Added
+- 添加了功能三，课程提醒文案
+
+### Changed
+- 调整文件目录
+
 ## [2.4.1] - 2025-09-29
 
 ### Added

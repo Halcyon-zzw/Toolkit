@@ -2,15 +2,19 @@
 document.addEventListener('DOMContentLoaded', function() {
   // 功能切换逻辑
   document.getElementById('featureOneBtn').addEventListener('click', function() {
-    switchFeature('features/feature1/popup_feature1.html', 'featureOneBtn', ['featureTwoBtn', 'featureThreeBtn']);
+    switchFeature('features/feature1/popup_feature1.html', 'featureOneBtn', ['featureTwoBtn', 'featureThreeBtn', 'featureFourBtn']);
   });
 
   document.getElementById('featureTwoBtn').addEventListener('click', function() {
-    switchFeature('features/feature2/popup_feature2.html', 'featureTwoBtn', ['featureOneBtn', 'featureThreeBtn']);
+    switchFeature('features/feature2/popup_feature2.html', 'featureTwoBtn', ['featureOneBtn', 'featureThreeBtn', 'featureFourBtn']);
   });
 
   document.getElementById('featureThreeBtn').addEventListener('click', function() {
-    switchFeature('features/feature3/popup_feature3.html', 'featureThreeBtn', ['featureOneBtn', 'featureTwoBtn']);
+    switchFeature('features/feature3/popup_feature3.html', 'featureThreeBtn', ['featureOneBtn', 'featureTwoBtn', 'featureFourBtn']);
+  });
+
+  document.getElementById('featureFourBtn').addEventListener('click', function() {
+    switchFeature('features/feature4/popup_feature4.html', 'featureFourBtn', ['featureOneBtn', 'featureTwoBtn', 'featureThreeBtn']);
   });
 
   function switchFeature(src, activeBtnId, inactiveBtnIds) {

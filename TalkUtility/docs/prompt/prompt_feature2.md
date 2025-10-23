@@ -4,25 +4,15 @@
 - **URL**: `https://www.talk915.com/users/user/login`
 - **请求方式**: POST
 - **账号密码**：
-  - 账号1: userName:`ta-peng`，password:`tapeng123456`
-  - 账号2: userName:`ta-fonpeng`，password: `fonpeng123456`
-- **入参格式**：参考功能1（未提供具体格式，默认使用账号密码登录）
-```json
-  {
-    "password": ${password},
-    "loginId": ${userName},
-    "isApp": 2,
-    "loginMode": 1
-  }
-  ```
+  - 账号1: userName: `ta-peng`，password: `tapeng123456`
+  - 账号2: userName: `ta-fonpeng`，password: `fonpeng123456`
+- **入参格式**：
   ```json
   {
-    "resultCode": 0,
-    "resultMessage": "操作成功",
-    "resultData": {
-      "token": "5432543fagra"
-    },
-    "showPermission": false
+    "password": "${password}",
+    "loginId": "${userName}",
+    "isApp": 2,
+    "loginMode": 1
   }
   ```
 - **出参示例**：

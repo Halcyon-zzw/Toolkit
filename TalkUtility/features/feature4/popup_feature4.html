@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .upload-section {
+      margin-bottom: 20px;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      background-color: #f8f9fa;
+      border: 2px dashed #dee2e6;
+      border-radius: 6px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .file-input-wrapper:hover {
+      border-color: #007bff;
+      background-color: #e3f2fd;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: -9999px;
+    }
+
+    .file-input-text {
+      color: #6c757d;
+      font-size: 14px;
+    }
+
+    .selected-file {
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 12px;
+    }
+
+    .data-table th,
+    .data-table td {
+      border: 1px solid #dee2e6;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .data-table th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+
+    .progress-container {
+      margin: 20px 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background-color: #e9ecef;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: #007bff;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    .progress-text {
+      text-align: center;
+      margin-top: 5px;
+      font-size: 14px;
+      color: #6c757d;
+    }
+
+    .status-processing {
+      color: #ffc107;
+    }
+
+    .status-success {
+      color: #28a745;
+    }
+
+    .status-error {
+      color: #dc3545;
+    }
+
+    .result-column {
+      max-width: 200px;
+      word-wrap: break-word;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="section-title">功能四 · 差评处理</div>
+
+  <!-- Excel文件上传区域 -->
+  <div class="upload-section">
+    <div class="file-input-wrapper" id="fileInputWrapper">
+      <input type="file" id="excelFile" accept=".xlsx,.xls" />
+      <div class="file-input-text" id="fileInputText">
+        点击选择Excel文件 (.xlsx, .xls)
+      </div>
+    </div>
+  </div>
+
+  <!-- 数据表格区域 -->
+  <div id="dataTableSection" class="hidden">
+
+    <!-- 处理控制和进度区域 -->
+    <button id="startProcess" class="btn btn-success" style="margin-bottom: 15px;">开始处理</button>
+
+    <div id="progressSection" class="progress-container hidden" style="margin-bottom: 15px;">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">准备开始处理...</div>
+    </div>
+
+    <table class="data-table" id="dataTable">
+      <thead>
+        <tr>
+          <th>序号</th>
+          <th>教师姓名</th>
+          <th>课程信息</th>
+          <th>课程ID</th>
+          <th>处理内容</th>
+          <th>处理结果</th>
+        </tr>
+      </thead>
+      <tbody id="dataTableBody">
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 导出区域 -->
+  <div id="exportSection" class="hidden">
+    <button id="exportExcel" class="btn btn-success">导出处理结果</button>
+  </div>
+</div>
+
+<script src="../../lib/xlsx.full.min.js"></script>
+<script src="feature4.js"></script>
+</body>
+</html>
