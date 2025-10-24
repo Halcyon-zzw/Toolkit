@@ -374,7 +374,7 @@
 - 如果找到对应数据，则“处理后记录信息”中展示：
   ```
   跟进状态: `${classInfo.follow_status}` //根据具体值展示对应信息。1: 未跟进、2: 跟进中、3: 跟进完成
-  评论: `${classInfo.extra.remark}`
+  备注内容: `${classInfo.extra.remark}`
   ```
 
 

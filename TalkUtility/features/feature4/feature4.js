@@ -231,11 +231,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                item.result.includes('未找到') || item.result.includes('失败') ? 'status-error' : 'status-success';
 
             row.innerHTML = `
-                <td>${item.index}</td>
-                <td>${item.teacherName}</td>
-                <td>${item.classInfo}</td>
-                <td>${item.classId}</td>
-                <td>${item.processContent}</td>
+                <td class="col-index">${item.index}</td>
+                <td class="col-teacher">${item.teacherName}</td>
+                <td class="col-class-info" title="${item.classInfo}">${item.classInfo}</td>
+                <td class="col-class-id" title="${item.classId}">${item.classId}</td>
+                <td class="col-process-content" title="${item.processContent}">${item.processContent}</td>
                 <td class="result-column ${resultClass}">${item.result}</td>
                 <td class="record-info-column">${item.recordInfo || '-'}</td>
             `;
@@ -243,6 +243,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         dataTableSection.classList.remove('hidden');
+
+        // 显示滚动提示
+        const scrollHint = document.getElementById('scrollHint');
+        if (scrollHint) {
+            scrollHint.classList.remove('hidden');
+        }
+
+        // 添加表格滚动事件监听
+        const tableContainer = document.getElementById('tableContainer');
+        if (tableContainer) {
+            let scrollHideTimer;
+            tableContainer.addEventListener('scroll', function() {
+                if (scrollHint) {
+                    scrollHint.style.opacity = '0.5';
+                    clearTimeout(scrollHideTimer);
+                    scrollHideTimer = setTimeout(() => {
+                        scrollHint.style.opacity = '1';
+                    }, 1000);
+                }
+            });
+        }
     }
 
     // API接口调用函数
@@ -437,12 +458,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (item.processContent.includes('已移除')) {
                 const updateSuccess = await updateEvaluationStatus(classInfo.id, 3);
                 if (updateSuccess) {
-                    resultMessages.push('更新跟进状态成功');
+                    resultMessages.push('\n更新跟进状态成功');
                 } else {
-                    resultMessages.push('更新跟进状态失败');
+                    resultMessages.push('\n更新跟进状态失败');
                 }
             } else {
-                resultMessages.push('无需更新跟进状态');
+                resultMessages.push('\n无需更新跟进状态');
             }
 
             // 步骤e: 查看记录信息（不传follow_status参数）
@@ -458,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     3: '跟进完成'
                 };
 
-                const recordInfo = `跟进状态: ${followStatusText[updatedClassInfo.follow_status] || updatedClassInfo.follow_status}\n评论: ${updatedClassInfo.extra?.remark || '无'}`;
+                const recordInfo = `跟进状态: ${followStatusText[updatedClassInfo.follow_status] || updatedClassInfo.follow_status}\n备注内容: ${updatedClassInfo.extra?.remark || '无'}`;
                 updateRecordInfo(index, recordInfo);
             } else {
                 updateRecordInfo(index, '未找到处理结果');
@@ -601,7 +622,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 准备导出数据
         const exportData = [
-            ['序号', '教师姓名', '课程信息', '课程ID', '处理内容', '处理结果', '处理后记录信息']
+            ['序号', '教师姓名', '课程信息', '课程ID', '备注内容', '处理结果', '处理后记录信息']
         ];
 
         processedData.forEach(item => {

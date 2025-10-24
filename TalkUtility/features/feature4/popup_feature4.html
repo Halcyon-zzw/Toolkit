@@ -42,11 +42,22 @@
       font-weight: bold;
     }
 
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      margin: 20px 0;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
     .data-table {
       width: 100%;
+      min-width: 1200px; /* 设置最小宽度确保所有列都有足够空间 */
       border-collapse: collapse;
-      margin: 20px 0;
       font-size: 12px;
+      table-layout: fixed; /* 固定表格布局以控制列宽 */
     }
 
     .data-table th,
@@ -54,16 +65,79 @@
       border: 1px solid #dee2e6;
       padding: 8px;
       text-align: left;
+      vertical-align: top;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
     .data-table th {
       background-color: #f8f9fa;
       font-weight: bold;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .data-table tbody tr:nth-child(even) {
       background-color: #f8f9fa;
     }
+
+    /* 列宽度控制 */
+    .col-index { width: 40px; }      /* 容下4个数字 */
+    .col-teacher { width: 80px; }   /* 容下10个字 */
+    .col-class-info { width: 100px; }
+    .col-class-id { width: 50px; }
+    .col-process-content { width: 120px; }  /* 容下10个汉字 */
+    .col-result { width: 120px; }
+    .col-record-info { width: 140px; }
+
+    /* 结果列特殊样式 */
+    .result-column {
+      max-height: 80px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      line-height: 1.2;
+    }
+
+    .record-info-column {
+      white-space: pre-wrap;
+      line-height: 1.4;
+      font-size: 11px;
+    }
+
+    /* 滚动提示 */
+    .table-scroll-hint {
+      text-align: center;
+      color: #6c757d;
+      font-size: 12px;
+      margin-bottom: 10px;
+      padding: 5px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      border: 1px dashed #dee2e6;
+    }
+
+    /* 表格滚动条样式 */
+    .table-container::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+
 
     .progress-container {
       margin: 20px 0;
@@ -140,21 +214,27 @@
       <div class="progress-text" id="progressText">准备开始处理...</div>
     </div>
 
-    <table class="data-table" id="dataTable">
-      <thead>
-        <tr>
-          <th>序号</th>
-          <th>教师姓名</th>
-          <th>课程信息</th>
-          <th>课程ID</th>
-          <th>处理内容</th>
-          <th>处理结果</th>
-          <th>处理后记录信息</th>
-        </tr>
-      </thead>
-      <tbody id="dataTableBody">
-      </tbody>
-    </table>
+    <div class="table-scroll-hint" id="scrollHint">
+      💡 表格内容较宽，可以左右滚动查看完整信息，悬停单元格查看详细内容
+    </div>
+
+    <div class="table-container" id="tableContainer">
+      <table class="data-table" id="dataTable">
+        <thead>
+          <tr>
+            <th class="col-index">序号</th>
+            <th class="col-teacher">教师姓名</th>
+            <th class="col-class-info">课程信息</th>
+            <th class="col-class-id">课程ID</th>
+            <th class="col-process-content">备注内容</th>
+            <th class="col-result">处理结果</th>
+            <th class="col-record-info">处理后记录信息</th>
+          </tr>
+        </thead>
+        <tbody id="dataTableBody">
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- 导出区域 -->
