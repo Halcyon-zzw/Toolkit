@@ -303,14 +303,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    async function getEvaluationList(userId) {
+    async function getEvaluationList(userId, followStatus = 2) {
         try {
-            const response = await fetch(`https://trmk.teachingrecord.com/api/evaluation/list?follow_status=2&user_id=${userId}&page=1&pageSize=10`, {
+            let url = `https://trmk.teachingrecord.com/api/evaluation/list?user_id=${userId}&page=1&pageSize=10`;
+            if (followStatus !== null) {
+                url += `&follow_status=${followStatus}`;
+            }
+
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'app-id': 'app_75535bab9a72a',
                     'authorization': `Bearer ${accessToken}`
-
                 }
             });
 
@@ -442,8 +445,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 resultMessages.push('无需更新跟进状态');
             }
 
-            // 步骤e: 查看记录信息
-            const updatedEvaluationList = await getEvaluationList(userId);
+            // 步骤e: 查看记录信息（不传follow_status参数）
+            const updatedEvaluationList = await getEvaluationList(userId, null);
             const updatedClassInfo = updatedEvaluationList.find(evaluation =>
                 String(evaluation.class_id) === String(item.classId)
             );

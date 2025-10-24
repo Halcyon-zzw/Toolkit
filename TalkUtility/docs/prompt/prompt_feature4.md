@@ -365,8 +365,9 @@
 
 **步骤e：查看记录信息**
 - 执行接口4获取差评列表
-- `user_id` = 步骤a获取到的`user_id`
-- `class_id` = excel提取的`classId`
+  - `user_id` = 步骤a获取到的`user_id`
+  - `class_id` = excel提取的`classId`
+  - `follow_status`不传
 - 获取对应的结果`evaluateResponse`
 - 通过比较`evaluateResponse.data.list`中的`classId`，获取唯一的`classInfo`
 - 如果未找到对应数据，则“处理后记录信息”中展示"未找到处理结果"
