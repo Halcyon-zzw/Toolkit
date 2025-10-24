@@ -110,7 +110,6 @@
 - **请求方式**: GET
 - **请求头**:
   ```
-  app-id: app_75535bab9a72a
   authorization: Bearer {access_token}
   ```
 
@@ -166,7 +165,6 @@
 - **请求方式**: POST
 - **请求头**:
   ```
-  app-id: app_75535bab9a72a
   authorization: Bearer {access_token}
   ```
 
@@ -360,7 +358,7 @@
 
 **步骤d：更新跟进状态**
 - 如果步骤c执行成功且`processContent`包含"已移除"：
-  - 调接口6更新跟进状态为3
+  - 调接口6更新跟进状态为3。入参：`id=${classInfo.id}`，`follow_status=3`
   - 执行成功：处理结果中追加展示"更新跟进状态成功"
   - 执行失败：处理结果中追加展示"更新跟进状态失败"
 - 如果步骤c执行成功且`processContent`不包含"已移除"：处理结果中追加展示"无需更新跟进状态"
