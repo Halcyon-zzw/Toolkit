@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     teacherName: row[0] || `内容${i - startRow + 1}`,
                     classInfo: row[1] || `内容${i - startRow + 1}`,
                     classId: String(row[2] || `内容${i - startRow + 1}`), // 确保classId为字符串类型
-                    processContent: row[7] || `内容${i - startRow + 1}`,
+                    processContent: String(row[7] || `内容${i - startRow + 1}`),
                     result: '-',
                     recordInfo: '-'  // 新增处理后记录信息字段
                 });
