@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.5.2] - 2025-10-13
 
 ### Added
-- 添加了功能三，课程提醒文案
+- 添加了功能三，迟到提醒文案
 
 ### Changed
 - 调整文件目录
