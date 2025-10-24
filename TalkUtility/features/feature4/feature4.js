@@ -482,7 +482,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const recordInfo = `跟进状态: ${followStatusText[updatedClassInfo.follow_status] || updatedClassInfo.follow_status}\n备注内容: ${updatedClassInfo.extra?.remark || '无'}`;
                 updateRecordInfo(index, recordInfo);
             } else {
-                updateRecordInfo(index, '未找到处理结果');
+                updateRecordInfo(index, '未找到记录信息');
             }
 
             // 更新处理结果
@@ -622,7 +622,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 准备导出数据
         const exportData = [
-            ['序号', '教师姓名', '课程信息', '课程ID', '备注内容', '处理结果', '处理后记录信息']
+            ['序号', '教师姓名', '课程信息', '课程ID', '备注内容', '处理日志', '处理后记录信息']
         ];
 
         processedData.forEach(item => {
