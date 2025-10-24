@@ -375,7 +375,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 "keywords": [],
                 "class_id": [],
                 "bad_review": 2,
-                "extra": classInfo.extra || {}
+                "extra": {
+                    ...(classInfo.extra || {}),
+                    "remark": item.processContent  // 将Excel的processContent设置到extra.remark
+                }
             };
 
             // 将构建的参数展示在结果列中
