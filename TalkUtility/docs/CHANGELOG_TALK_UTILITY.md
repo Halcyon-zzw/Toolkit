@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 添加了功能四，差评处理功能
 
+### Changed
+- 功能标题改为实际的功能名称
+
 ## [2.5.2] - 2025-10-13
 
 ### Added
