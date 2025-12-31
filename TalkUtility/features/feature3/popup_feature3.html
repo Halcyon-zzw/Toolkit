@@ -5,8 +5,12 @@
   <link rel="stylesheet" href="../../styles.css">
 </head>
 <body>
-<div class="container">
-  <div class="section-title">功能三 · 迟到提醒</div>
+<div class="container" style="position: relative;">
+  <button id="editTemplateBtn" class="btn btn-primary btn-small" style="position: absolute; top: 10px; right: 10px; z-index: 10;">编辑模版</button>
+
+  <div class="section-title">
+    功能三 · 迟到提醒
+  </div>
   
   <div class="message-section">
     <div class="message-container">
@@ -44,6 +48,148 @@
     </div>
   </div>
 </div>
+
+<!-- 模版编辑模态框 -->
+<div id="templateModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>编辑迟到提醒模版</h2>
+      <span class="close">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="zhTemplateInput">中文模版</label>
+        <textarea id="zhTemplateInput" rows="12" placeholder="请输入中文模版，使用 {{time}} 作为时间占位符"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="enTemplateInput">英文模版</label>
+        <textarea id="enTemplateInput" rows="12" placeholder="请输入英文模版，使用 {{time}} 作为时间占位符"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="saveTemplateBtn" class="btn btn-primary">保存</button>
+      <button id="cancelTemplateBtn" class="btn btn-secondary">取消</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* 模态框样式 */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 5% auto;
+  padding: 0;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  padding: 15px 20px;
+  background-color: #f1f1f1;
+  border-bottom: 1px solid #ddd;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.close {
+  color: #aaa;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+.modal-footer {
+  padding: 15px 20px;
+  background-color: #f1f1f1;
+  border-top: 1px solid #ddd;
+  border-radius: 0 0 8px 8px;
+  text-align: right;
+}
+
+.btn {
+  padding: 8px 16px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-primary {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #45a049;
+}
+
+.btn-secondary {
+  background-color: #ddd;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background-color: #ccc;
+}
+</style>
 
 <script src="feature3.js"></script>
 </body>
