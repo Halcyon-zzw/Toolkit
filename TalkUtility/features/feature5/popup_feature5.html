@@ -62,6 +62,11 @@
       gap: 6px;
       margin-bottom: 6px;
       flex-shrink: 0;
+      align-items: center;
+    }
+
+    .action-bar .btn-export {
+      margin-left: auto;
     }
 
     .btn-sm {
@@ -80,6 +85,7 @@
     .btn-primary-sm  { background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; }
     .btn-success-sm  { background: linear-gradient(135deg, #22c55e, #4ade80); color: #fff; }
     .btn-warning-sm  { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #fff; }
+    .btn-danger-sm   { background: linear-gradient(135deg, #ef4444, #f87171); color: #fff; }
 
     /* 表格滚动容器 */
     .table-scroll-wrapper {
@@ -196,6 +202,9 @@
     .remark-cell textarea:focus { border-color: #6366f1; }
 
     /* 行状态 */
+    tr.row-unextracted td { background: #f5f5f5 !important; color: #bbb; }
+    tr.row-unextracted .remark-cell textarea { background: #f5f5f5; color: #bbb; cursor: default; }
+    tr.row-unextracted .cert-btn { opacity: 0.45; cursor: default; }
     tr.row-loading td { background: #fefce8 !important; }
     tr.row-done td    { background: #f0fdf4 !important; }
     tr.row-error td   { background: #fff1f2 !important; }
@@ -224,22 +233,41 @@
 
     /* 虚行 */
     tr.ghost-row td {
-      text-align: center;
       color: #9ca3af;
       font-size: 11px;
       cursor: pointer;
-      padding: 8px;
+      padding: 8px 12px;
       border: 1.5px dashed #d1d5db;
       background: #fafafa;
+      position: sticky;
+      left: 0;
     }
     tr.ghost-row:hover td {
       background: #f0f4ff;
       color: #6366f1;
       border-color: #6366f1;
     }
+
+    /* 自定义 tooltip */
+    #customTooltip {
+      position: fixed;
+      background: #1f2937;
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: pre-line;
+      display: none;
+      max-width: 240px;
+      line-height: 1.6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    }
   </style>
 </head>
 <body>
+  <div id="customTooltip"></div>
 
   <!-- Cookie 输入 -->
   <div class="cookie-section">
@@ -250,9 +278,10 @@
 
   <!-- 操作按钮 -->
   <div class="action-bar">
+    <button class="btn-sm btn-danger-sm" id="clearAllBtn">清空表格</button>
     <button class="btn-sm btn-primary-sm" id="addRowBtn">+ 新增5行</button>
     <button class="btn-sm btn-warning-sm" id="extractAllBtn">全部提取</button>
-    <button class="btn-sm btn-success-sm" id="exportBtn">导出 Excel</button>
+    <button class="btn-sm btn-success-sm btn-export" id="exportBtn">导出 Excel</button>
   </div>
 
   <!-- 表格 -->

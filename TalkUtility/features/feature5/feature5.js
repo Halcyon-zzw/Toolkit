@@ -27,7 +27,33 @@ function todayStr() {
 
 // ─── 初始化 ────────────────────────────────────────────────────────────────
 
+// ─── 自定义 Tooltip ────────────────────────────────────────────────────────
+
+let _tooltip = null;
+function getTooltip() {
+  if (!_tooltip) _tooltip = document.getElementById('customTooltip');
+  return _tooltip;
+}
+function showTooltip(e, text) {
+  const tip = getTooltip();
+  tip.textContent = text;
+  tip.style.display = 'block';
+  tip.style.left = (e.clientX + 14) + 'px';
+  tip.style.top = (e.clientY + 14) + 'px';
+}
+function hideTooltip() {
+  getTooltip().style.display = 'none';
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('mousemove', function (e) {
+    const tip = getTooltip();
+    if (tip && tip.style.display !== 'none') {
+      tip.style.left = (e.clientX + 14) + 'px';
+      tip.style.top = (e.clientY + 14) + 'px';
+    }
+  });
+
   loadFromStorage();
 
   // Cookie 自动保存（blur）
@@ -36,6 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
     saveToStorage();
   });
 
+  document.getElementById('clearAllBtn').addEventListener('click', clearAllData);
   document.getElementById('addRowBtn').addEventListener('click', addFiveRows);
   document.getElementById('extractAllBtn').addEventListener('click', extractAll);
   document.getElementById('exportBtn').addEventListener('click', exportExcel);
@@ -63,9 +90,8 @@ function saveToStorage() {
 // ─── 行操作 ────────────────────────────────────────────────────────────────
 
 function createEmptyRow() {
-  const row = { teacherId: '' };
+  const row = { teacherId: '', _extracted: false };
   EDITABLE_FIELDS.forEach(f => { row[f] = ''; });
-  row['初选通过日期'] = todayStr();
   return row;
 }
 
@@ -91,6 +117,13 @@ function deleteRow(index) {
   renderTable();
 }
 
+function clearAllData() {
+  if (!confirm('确认清空所有数据？此操作不可恢复。')) return;
+  rows = [];
+  saveToStorage();
+  renderTable();
+}
+
 // ─── 渲染表格 ──────────────────────────────────────────────────────────────
 
 function renderTable() {
@@ -110,6 +143,8 @@ function createGhostRow() {
   td.colSpan = EDITABLE_FIELDS.length + 2; // teacherId + fields + 操作
   td.textContent = '+ 点击新增一行';
   td.addEventListener('click', addOneRow);
+  tr.addEventListener('mouseenter', (e) => showTooltip(e, '+ 点击新增一行'));
+  tr.addEventListener('mouseleave', hideTooltip);
   tr.appendChild(td);
   return tr;
 }
@@ -117,6 +152,8 @@ function createGhostRow() {
 function createRowElement(row, index) {
   const tr = document.createElement('tr');
   tr.dataset.index = index;
+  const isExtracted = !!row._extracted;
+  if (!isExtracted) tr.classList.add('row-unextracted');
 
   // ── teacherId 固定左列 ──
   const tdTeacher = document.createElement('td');
@@ -135,6 +172,13 @@ function createRowElement(row, index) {
   teacherInput.addEventListener('blur', function () {
     rows[index].teacherId = this.value;
     saveToStorage();
+  });
+  teacherInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      rows[index].teacherId = this.value;
+      if (this.value.trim()) extractRow(index, tr, extractBtn);
+    }
   });
 
   const extractBtn = document.createElement('button');
@@ -170,6 +214,7 @@ function createRowElement(row, index) {
       const ta = document.createElement('textarea');
       ta.value = row[field] || '';
       ta.placeholder = '提取后自动生成';
+      if (!isExtracted) ta.disabled = true;
       ta.addEventListener('blur', function () {
         rows[index]['备注（最终结果）'] = this.value;
         saveToStorage();
@@ -183,25 +228,30 @@ function createRowElement(row, index) {
       btn.className = 'cert-btn ' + (val === '有' ? 'has' : 'none');
       btn.textContent = val || '无';
       if (certList.length > 0) {
-        btn.title = certList.join(', ');
+        btn.addEventListener('mouseenter', (e) => showTooltip(e, certList.join('\n')));
+        btn.addEventListener('mouseleave', hideTooltip);
       }
-      btn.addEventListener('click', function () {
-        const newVal = rows[index]['有无教资'] === '有' ? '无' : '有';
-        rows[index]['有无教资'] = newVal;
-        btn.textContent = newVal;
-        btn.className = 'cert-btn ' + (newVal === '有' ? 'has' : 'none');
-        saveToStorage();
-      });
+      if (isExtracted) {
+        btn.addEventListener('click', function () {
+          const newVal = rows[index]['有无教资'] === '有' ? '无' : '有';
+          rows[index]['有无教资'] = newVal;
+          btn.textContent = newVal;
+          btn.className = 'cert-btn ' + (newVal === '有' ? 'has' : 'none');
+          saveToStorage();
+        });
+      }
       td.appendChild(btn);
 
     } else if (field === '国家') {
       td.className = 'country-cell';
-      td.setAttribute('contenteditable', 'true');
+      if (isExtracted) td.setAttribute('contenteditable', 'true');
       td.textContent = row[field] || '';
-      td.addEventListener('blur', function () {
-        rows[index][field] = this.textContent;
-        saveToStorage();
-      });
+      if (isExtracted) {
+        td.addEventListener('blur', function () {
+          rows[index][field] = this.textContent;
+          saveToStorage();
+        });
+      }
 
     } else if (field === '简历链接') {
       td.className = 'resume-link';
@@ -213,28 +263,32 @@ function createRowElement(row, index) {
         a.textContent = link;
         td.appendChild(a);
       }
-      td.setAttribute('contenteditable', 'true');
-      td.addEventListener('blur', function () {
-        const val = this.textContent.trim();
-        rows[index][field] = val;
-        this.innerHTML = '';
-        if (val) {
-          const a = document.createElement('a');
-          a.href = val;
-          a.target = '_blank';
-          a.textContent = val;
-          this.appendChild(a);
-        }
-        saveToStorage();
-      });
+      if (isExtracted) {
+        td.setAttribute('contenteditable', 'true');
+        td.addEventListener('blur', function () {
+          const val = this.textContent.trim();
+          rows[index][field] = val;
+          this.innerHTML = '';
+          if (val) {
+            const a = document.createElement('a');
+            a.href = val;
+            a.target = '_blank';
+            a.textContent = val;
+            this.appendChild(a);
+          }
+          saveToStorage();
+        });
+      }
 
     } else {
-      td.setAttribute('contenteditable', 'true');
+      if (isExtracted) td.setAttribute('contenteditable', 'true');
       td.textContent = row[field] || '';
-      td.addEventListener('blur', function () {
-        rows[index][field] = this.textContent;
-        saveToStorage();
-      });
+      if (isExtracted) {
+        td.addEventListener('blur', function () {
+          rows[index][field] = this.textContent;
+          saveToStorage();
+        });
+      }
     }
 
     tr.appendChild(td);
@@ -259,6 +313,13 @@ async function extractRow(index, trEl, extractBtn) {
   const teacherId = rows[index].teacherId.trim();
   if (!teacherId) { alert('请先输入 teacherId'); return; }
   if (!cookieStr) { alert('请先输入 Cookie'); return; }
+
+  // 清空原有提取数据，保留用户输入字段
+  const keepFields = new Set(['teacherId', '备注（输入）', '初选通过日期']);
+  EDITABLE_FIELDS.forEach(f => {
+    if (!keepFields.has(f)) rows[index][f] = '';
+  });
+  rows[index]['_certificationNameList'] = [];
 
   trEl.className = 'row-loading';
   extractBtn.textContent = '提取中';
@@ -317,6 +378,7 @@ async function extractRow(index, trEl, extractBtn) {
     rows[index]['WA/Teams账号'] = waTeams;
     rows[index]['备注（最终结果）'] = finalRemark;
     rows[index]['_certificationNameList'] = certNameList;
+    rows[index]['_extracted'] = true;
 
     trEl.className = 'row-done';
     saveToStorage();
@@ -410,7 +472,7 @@ function exportExcel() {
   ];
 
   const dataArr = [headers];
-  rows.forEach(row => {
+  rows.filter(r => r.teacherId && r.teacherId.trim()).forEach(row => {
     dataArr.push(headers.map(h => {
       if (h === 'teacherId') return row.teacherId || '';
       if (h === '邮件执行人') return row['邮件执行人'] || '';
