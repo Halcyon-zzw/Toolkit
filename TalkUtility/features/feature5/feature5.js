@@ -2,6 +2,17 @@
 
 const STORAGE_KEY = 'feature5_data';
 
+const DEFAULT_EXPORT_COLUMNS = [
+  'teacherId', '备注（输入）', '备注（最终结果）',
+  '沟通渠道', '名字', '语种', '国家', '邮箱', '简历链接', '来源', '网站沟通执行人',
+  '初选通过日期', '有无教资',
+  '是否需邮件提醒添加WS/Teams', '邮件提醒日期', '邮件执行人',
+  'WA/Teams沟通执行人', 'WA/Teams添加日期', 'WA/Teams账号',
+  '是否需邮件催发checklist/self-intro', '邮件催发日期', '邮件执行人',
+  'WA/Teams及问卷确认最大开课时长', 'WA/Teams及问卷确认开课时段',
+  '特殊备注', '是否约面试', '不约面试原因', '面试时间'
+];
+
 // 中间列字段，与表头顺序一致（不含 teacherId 和操作列）
 const EDITABLE_FIELDS = [
   '备注（输入）', '备注（最终结果）',
@@ -16,6 +27,9 @@ const EDITABLE_FIELDS = [
 
 let rows = [];
 let cookieStr = '';
+let exportColumns = []; // { name, enabled, custom }
+let modalColumns = []; // working copy while modal open
+let dragSrcIdx = null;
 
 function isChromeExtension() {
   return typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local;
@@ -65,18 +79,39 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('clearAllBtn').addEventListener('click', clearAllData);
   document.getElementById('addRowBtn').addEventListener('click', addFiveRows);
   document.getElementById('extractAllBtn').addEventListener('click', extractAll);
+  document.getElementById('exportSettingsBtn').addEventListener('click', openExportSettings);
   document.getElementById('exportBtn').addEventListener('click', exportExcel);
+  document.getElementById('closeExportSettingsBtn').addEventListener('click', closeExportSettings);
+  document.getElementById('cancelExportSettingsBtn').addEventListener('click', closeExportSettings);
+  document.getElementById('saveExportSettingsBtn').addEventListener('click', saveExportSettingsModal);
+  document.getElementById('addColAtEndBtn').addEventListener('click', () => {
+    modalColumns.push({ name: '', enabled: true, custom: true });
+    renderExportSettingsTable();
+  });
+  document.getElementById('exportSettingsOverlay').addEventListener('click', function (e) {
+    if (e.target === this) closeExportSettings();
+  });
 });
+
+function initExportColumns(saved) {
+  if (saved && saved.length > 0) {
+    exportColumns = saved;
+  } else {
+    exportColumns = DEFAULT_EXPORT_COLUMNS.map(n => ({ name: n, enabled: true, custom: false }));
+  }
+}
 
 function loadFromStorage() {
   if (!isChromeExtension()) {
+    initExportColumns(null);
     renderTable();
     return;
   }
   chrome.storage.local.get([STORAGE_KEY], function (result) {
-    const saved = result[STORAGE_KEY] || { cookie: '', rows: [] };
+    const saved = result[STORAGE_KEY] || { cookie: '', rows: [], exportColumns: null };
     cookieStr = saved.cookie || '';
     rows = saved.rows || [];
+    initExportColumns(saved.exportColumns || null);
     document.getElementById('cookieInput').value = cookieStr;
     renderTable();
   });
@@ -84,7 +119,135 @@ function loadFromStorage() {
 
 function saveToStorage() {
   if (!isChromeExtension()) return;
-  chrome.storage.local.set({ [STORAGE_KEY]: { cookie: cookieStr, rows: rows } });
+  chrome.storage.local.set({ [STORAGE_KEY]: { cookie: cookieStr, rows, exportColumns } });
+}
+
+// ─── 导出设置弹窗 ──────────────────────────────────────────────────────────
+
+function openExportSettings() {
+  modalColumns = exportColumns.map(c => ({ ...c }));
+  renderExportSettingsTable();
+  document.getElementById('exportSettingsOverlay').classList.add('open');
+}
+
+function closeExportSettings() {
+  document.getElementById('exportSettingsOverlay').classList.remove('open');
+}
+
+function saveExportSettingsModal() {
+  exportColumns = modalColumns;
+  saveToStorage();
+  closeExportSettings();
+}
+
+function renderExportSettingsTable() {
+  const tbody = document.getElementById('exportSettingsTbody');
+  tbody.innerHTML = '';
+
+  modalColumns.forEach((col, i) => {
+    const tr = document.createElement('tr');
+    tr.draggable = true;
+
+    tr.addEventListener('dragstart', (e) => {
+      dragSrcIdx = i;
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => tr.classList.add('dragging'), 0);
+    });
+    tr.addEventListener('dragend', () => {
+      tr.classList.remove('dragging');
+      tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over-top'));
+    });
+    tr.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      tbody.querySelectorAll('tr').forEach(r => r.classList.remove('drag-over-top'));
+      if (dragSrcIdx !== i) tr.classList.add('drag-over-top');
+    });
+    tr.addEventListener('drop', (e) => {
+      e.preventDefault();
+      tr.classList.remove('drag-over-top');
+      if (dragSrcIdx === null || dragSrcIdx === i) return;
+      const [moved] = modalColumns.splice(dragSrcIdx, 1);
+      const targetIdx = dragSrcIdx < i ? i - 1 : i;
+      modalColumns.splice(targetIdx, 0, moved);
+      dragSrcIdx = null;
+      renderExportSettingsTable();
+    });
+
+    // 拖拽把手
+    const tdHandle = document.createElement('td');
+    tdHandle.innerHTML = '<span class="drag-handle">⠿</span>';
+    tr.appendChild(tdHandle);
+
+    // 列名（含勾选框）
+    const tdName = document.createElement('td');
+    tdName.className = 'td-name';
+    const nameCell = document.createElement('div');
+    nameCell.className = 'col-name-cell';
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = col.enabled;
+    cb.addEventListener('change', () => { modalColumns[i].enabled = cb.checked; });
+    nameCell.appendChild(cb);
+
+    if (col.custom) {
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.className = 'col-name-input';
+      nameInput.value = col.name;
+      nameInput.placeholder = '输入列名';
+      nameInput.addEventListener('input', () => { modalColumns[i].name = nameInput.value; });
+      nameCell.appendChild(nameInput);
+    } else {
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'col-name-text';
+      nameSpan.textContent = col.name;
+      nameCell.appendChild(nameSpan);
+    }
+
+    tdName.appendChild(nameCell);
+    tr.appendChild(tdName);
+
+    // 操作
+    const tdOps = document.createElement('td');
+    tdOps.style.cssText = 'text-align:center;white-space:nowrap';
+
+    const btnAbove = document.createElement('button');
+    btnAbove.className = 'btn-tiny';
+    btnAbove.textContent = '↑插入';
+    btnAbove.title = '在上方插入新列';
+    btnAbove.addEventListener('click', () => {
+      modalColumns.splice(i, 0, { name: '', enabled: true, custom: true });
+      renderExportSettingsTable();
+    });
+
+    const btnBelow = document.createElement('button');
+    btnBelow.className = 'btn-tiny';
+    btnBelow.textContent = '↓插入';
+    btnBelow.title = '在下方插入新列';
+    btnBelow.addEventListener('click', () => {
+      modalColumns.splice(i + 1, 0, { name: '', enabled: true, custom: true });
+      renderExportSettingsTable();
+    });
+
+    const btnDel = document.createElement('button');
+    btnDel.className = 'btn-tiny del';
+    btnDel.textContent = '删除';
+    btnDel.addEventListener('click', () => {
+      modalColumns.splice(i, 1);
+      renderExportSettingsTable();
+    });
+
+    tdOps.appendChild(btnAbove);
+    tdOps.appendChild(document.createTextNode(' '));
+    tdOps.appendChild(btnBelow);
+    tdOps.appendChild(document.createTextNode(' '));
+    tdOps.appendChild(btnDel);
+    tr.appendChild(tdOps);
+
+    tbody.appendChild(tr);
+  });
 }
 
 // ─── 行操作 ────────────────────────────────────────────────────────────────
@@ -460,23 +623,18 @@ async function extractAll() {
 function exportExcel() {
   if (rows.length === 0) { alert('暂无数据可导出'); return; }
 
-  const headers = [
-    'teacherId', '备注（输入）', '备注（最终结果）',
-    '沟通渠道', '名字', '语种', '国家', '邮箱', '简历链接', '来源', '网站沟通执行人',
-    '初选通过日期', '有无教资',
-    '是否需邮件提醒添加WS/Teams', '邮件提醒日期', '邮件执行人',
-    'WA/Teams沟通执行人', 'WA/Teams添加日期', 'WA/Teams账号',
-    '是否需邮件催发checklist/self-intro', '邮件催发日期', '邮件执行人',
-    'WA/Teams及问卷确认最大开课时长', 'WA/Teams及问卷确认开课时段',
-    '特殊备注', '是否约面试', '不约面试原因', '面试时间'
-  ];
+  const enabledCols = exportColumns.filter(c => c.enabled);
+  if (enabledCols.length === 0) { alert('请在"导出设置"中至少选择一列'); return; }
+
+  const knownFields = new Set(['teacherId', ...EDITABLE_FIELDS]);
+  const headers = enabledCols.map(c => c.name);
 
   const dataArr = [headers];
   rows.filter(r => r.teacherId && r.teacherId.trim()).forEach(row => {
-    dataArr.push(headers.map(h => {
-      if (h === 'teacherId') return row.teacherId || '';
-      if (h === '邮件执行人') return row['邮件执行人'] || '';
-      return row[h] || '';
+    dataArr.push(enabledCols.map(col => {
+      if (!knownFields.has(col.name)) return ''; // 自定义列，数据为空
+      if (col.name === 'teacherId') return row.teacherId || '';
+      return row[col.name] || '';
     }));
   });
 
