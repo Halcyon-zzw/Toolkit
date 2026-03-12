@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "说课",
-  "version": "2.5.4",
+  "version": "2.7.0",
   "description": "从文本中提取说客英语账号密码并自动填充",
   "permissions": [
     "storage",
@@ -11,7 +11,8 @@
   ],
   "host_permissions": [
     "https://www.talk915.com/*",
-    "https://trmk.teachingrecord.com/*"
+    "https://trmk.teachingrecord.com/*",
+    "https://teacherrecord.com/*"
   ],
   "web_accessible_resources": [
     {

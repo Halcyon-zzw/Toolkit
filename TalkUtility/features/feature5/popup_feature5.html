@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 8px;
+      font-size: 12px;
+      background: #f8faff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      flex-shrink: 0;
+    }
+
+    .top-bar input[type="text"] {
+      flex: 1;
+      padding: 5px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 11px;
+      outline: none;
+    }
+
+    .top-bar input[type="text"]:focus {
+      border-color: var(--color-primary, #6366f1);
+    }
+
+    .action-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 6px;
+      flex-shrink: 0;
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+
+    .btn-sm:hover { opacity: 0.85; }
+
+    .btn-sm:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary-sm {
+      background: linear-gradient(135deg, #6366f1, #818cf8);
+      color: #fff;
+    }
+
+    .btn-success-sm {
+      background: linear-gradient(135deg, #22c55e, #4ade80);
+      color: #fff;
+    }
+
+    .btn-warning-sm {
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      color: #fff;
+    }
+
+    .btn-danger-sm {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: #fff;
+    }
+
+    .btn-gray-sm {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    /* 表格外层滚动容器 */
+    .table-scroll-wrapper {
+      flex: 1;
+      overflow: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    table {
+      border-collapse: collapse;
+      min-width: 3200px;
+      font-size: 11px;
+      table-layout: fixed;
+    }
+
+    thead th {
+      background: #f1f5f9;
+      color: #374151;
+      font-weight: 600;
+      padding: 6px 8px;
+      border-right: 1px solid #e5e7eb;
+      border-bottom: 2px solid #e5e7eb;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    tbody td {
+      padding: 4px 6px;
+      border-right: 1px solid #f0f0f0;
+      border-bottom: 1px solid #f0f0f0;
+      vertical-align: top;
+      min-height: 28px;
+      word-break: break-word;
+    }
+
+    tbody tr:hover td {
+      background: #f8faff;
+    }
+
+    /* 固定左列（teacherId） */
+    th.col-fixed-left,
+    td.col-fixed-left {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      background: #fff;
+      border-right: 2px solid #e5e7eb;
+      min-width: 160px;
+      width: 160px;
+    }
+
+    thead th.col-fixed-left {
+      background: #f1f5f9;
+      z-index: 4;
+    }
+
+    /* 固定右列（备注） */
+    th.col-fixed-right,
+    td.col-fixed-right {
+      position: sticky;
+      right: 0;
+      z-index: 3;
+      background: #fff;
+      border-left: 2px solid #e5e7eb;
+      min-width: 160px;
+      width: 160px;
+    }
+
+    thead th.col-fixed-right {
+      background: #f1f5f9;
+      z-index: 4;
+    }
+
+    /* teacherId 输入区 */
+    .teacher-id-cell {
+      display: flex;
+      align-items: flex-start;
+      gap: 4px;
+    }
+
+    .teacher-id-cell input {
+      flex: 1;
+      padding: 3px 6px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 11px;
+      outline: none;
+      min-width: 0;
+    }
+
+    .teacher-id-cell input:focus {
+      border-color: #6366f1;
+    }
+
+    .btn-extract {
+      padding: 3px 7px;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      display: none;
+    }
+
+    .btn-extract:hover { background: #4f46e5; }
+
+    .btn-extract.loading {
+      background: #a5b4fc;
+      cursor: wait;
+    }
+
+    /* 备注输入区 */
+    .remark-cell textarea {
+      width: 100%;
+      min-height: 40px;
+      padding: 3px 6px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 11px;
+      outline: none;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    .remark-cell textarea:focus {
+      border-color: #6366f1;
+    }
+
+    /* 有无教资按钮 */
+    .cert-btn {
+      padding: 2px 10px;
+      border: none;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .cert-btn.has {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .cert-btn.none {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    /* 可编辑 td */
+    td[contenteditable="true"] {
+      cursor: text;
+      outline: none;
+    }
+
+    td[contenteditable="true"]:focus {
+      background: #eff6ff;
+      box-shadow: inset 0 0 0 1px #6366f1;
+    }
+
+    /* 行状态 */
+    tr.row-loading td {
+      background: #fefce8 !important;
+    }
+
+    tr.row-done td {
+      background: #f0fdf4 !important;
+    }
+
+    tr.row-error td {
+      background: #fff1f2 !important;
+    }
+
+    /* 简历链接 */
+    .resume-link a {
+      color: #6366f1;
+      text-decoration: none;
+      font-size: 10px;
+    }
+
+    .resume-link a:hover { text-decoration: underline; }
+
+    /* 国家文本换行 */
+    .country-cell {
+      white-space: pre-line;
+    }
+
+    /* 操作列 */
+    .col-action {
+      width: 40px;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .btn-del {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .btn-del:hover { color: #b91c1c; }
+
+    /* 状态徽章 */
+    .status-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-size: 10px;
+      background: #e5e7eb;
+      color: #6b7280;
+    }
+
+    .status-badge.done { background: #dcfce7; color: #16a34a; }
+    .status-badge.error { background: #fee2e2; color: #dc2626; }
+    .status-badge.loading { background: #fef3c7; color: #d97706; }
+  </style>
+</head>
+<body>
+
+  <!-- Cookie 输入 -->
+  <div class="top-bar">
+    <input type="text" id="cookieInput" placeholder="输入 teacherrecord.com Cookie..." />
+    <button class="btn-sm btn-gray-sm" id="saveCookieBtn">保存</button>
+  </div>
+
+  <!-- 操作按钮 -->
+  <div class="action-bar">
+    <button class="btn-sm btn-primary-sm" id="addRowBtn">+ 新增行</button>
+    <button class="btn-sm btn-warning-sm" id="extractAllBtn">全部提取</button>
+    <button class="btn-sm btn-success-sm" id="exportBtn">导出 Excel</button>
+  </div>
+
+  <!-- 表格 -->
+  <div class="table-scroll-wrapper">
+    <table id="resumeTable">
+      <thead>
+        <tr>
+          <th class="col-fixed-left">teacherId</th>
+          <th style="width:80px">沟通渠道</th>
+          <th style="width:90px">名字</th>
+          <th style="width:60px">语种</th>
+          <th style="width:120px">国家</th>
+          <th style="width:160px">邮箱</th>
+          <th style="width:140px">简历链接</th>
+          <th style="width:80px">来源</th>
+          <th style="width:90px">网站沟通执行人</th>
+          <th style="width:100px">初选通过日期</th>
+          <th style="width:70px">有无教资</th>
+          <th style="width:120px">是否需邮件提醒添加WS/Teams</th>
+          <th style="width:100px">邮件提醒日期</th>
+          <th style="width:80px">邮件执行人</th>
+          <th style="width:110px">WA/Teams沟通执行人</th>
+          <th style="width:110px">WA/Teams添加日期</th>
+          <th style="width:160px">WA/Teams账号</th>
+          <th style="width:140px">是否需邮件催发checklist/self-intro</th>
+          <th style="width:100px">邮件催发日期</th>
+          <th style="width:80px">邮件执行人</th>
+          <th style="width:140px">WA/Teams及问卷确认最大开课时长</th>
+          <th style="width:130px">WA/Teams及问卷确认开课时段</th>
+          <th style="width:100px">特殊备注</th>
+          <th style="width:80px">是否约面试</th>
+          <th style="width:100px">不约面试原因</th>
+          <th style="width:100px">面试时间</th>
+          <th class="col-action">操作</th>
+          <th class="col-fixed-right">备注</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+      </tbody>
+    </table>
+  </div>
+
+  <script src="feature5.js"></script>
+</body>
+</html>
