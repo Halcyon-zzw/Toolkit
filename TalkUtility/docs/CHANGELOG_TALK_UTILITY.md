@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [2.6.0] - 2026-03-12
+
+### Added
+
+### Changed
+- 整体 UI 放大：标题字号、按钮、输入框、表格等尺寸全面扩大约一倍，适配独立窗口显示
+- popup 布局改为全屏 flex，iframe 内容区自动撑满剩余高度
+- manifest 新增 host_permissions: teacherrecord.com，新增 windows 权限
+
 ## [2.5.4] - 2025-12-31
 
 ### Added
