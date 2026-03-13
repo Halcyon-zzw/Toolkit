@@ -584,8 +584,9 @@ async function extractRow(index, trEl, extractBtn) {
 
     // 教资
     const certList = teacher.certification || [];
-    const certNameList = certList.map(c => c && c.name).filter(Boolean);
-    const hasCert = certNameList.some(n => ['TEFL', 'TESOL'].includes(n));
+    const apiCertNameList = certList.map(c => c && c.name).filter(Boolean);
+    const certNameList = [...apiCertNameList, ...resumeInfo.resumeCertNameList];
+    const hasCert = certNameList.some(n => n && (n.toUpperCase().includes('TEFL') || n.toUpperCase().includes('TESOL')));
 
     // 来源 & 简历链接
     const resumeLink = 'https://teacherrecord.com/service/shareResume/' + teacher.tk;
@@ -667,7 +668,25 @@ function parseResumeHtml(html) {
   const teams = teamsMatch ? teamsMatch[1].trim() : '';
   const expMatch = html.match(/<strong>教学年限: <\/strong>([^<]+)<br\/>/);
   const teachingExperience = expMatch ? expMatch[1].trim() : '';
-  return { email, whatsapp, teams, teachingExperience };
+
+  // 从教学证书表格中提取证书名称
+  const resumeCertNameList = [];
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    for (const table of doc.querySelectorAll('table.layui-table')) {
+      const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim());
+      const certNameIdx = headers.indexOf('证书名称');
+      if (certNameIdx === -1) continue;
+      for (const tr of table.querySelectorAll('tbody tr')) {
+        const tds = tr.querySelectorAll('td');
+        const name = tds[certNameIdx] ? tds[certNameIdx].textContent.trim() : '';
+        if (name) resumeCertNameList.push(name);
+      }
+      break; // 只取第一个含"证书名称"的表格
+    }
+  } catch (e) { /* ignore */ }
+
+  return { email, whatsapp, teams, teachingExperience, resumeCertNameList };
 }
 
 // ─── 全部提取 ──────────────────────────────────────────────────────────────
