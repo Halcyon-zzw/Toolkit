@@ -88,16 +88,29 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('extractAllBtn').addEventListener('click', extractAll);
   document.getElementById('exportSettingsBtn').addEventListener('click', openExportSettings);
   document.getElementById('exportBtn').addEventListener('click', exportExcel);
-  document.getElementById('closeExportSettingsBtn').addEventListener('click', closeExportSettings);
-  document.getElementById('cancelExportSettingsBtn').addEventListener('click', closeExportSettings);
+  document.getElementById('closeExportSettingsBtn').addEventListener('click', tryCloseExportSettings);
+  document.getElementById('cancelExportSettingsBtn').addEventListener('click', tryCloseExportSettings);
   document.getElementById('saveExportSettingsBtn').addEventListener('click', saveExportSettingsModal);
   document.getElementById('addColAtEndBtn').addEventListener('click', () => {
     modalColumns.push({ name: '', enabled: true, custom: true });
     renderExportSettingsTable();
   });
   document.getElementById('exportSettingsOverlay').addEventListener('click', function (e) {
-    if (e.target === this) closeExportSettings();
+    if (e.target === this) tryCloseExportSettings();
   });
+
+  // 退出确认弹窗
+  const confirmOverlay = document.getElementById('confirmDiscardOverlay');
+  function hideConfirm() { confirmOverlay.style.display = 'none'; }
+  document.getElementById('confirmSaveBtn').addEventListener('click', () => {
+    hideConfirm();
+    saveExportSettingsModal();
+  });
+  document.getElementById('confirmDiscardBtn').addEventListener('click', () => {
+    hideConfirm();
+    closeExportSettings();
+  });
+  document.getElementById('confirmCancelBtn').addEventListener('click', hideConfirm);
 });
 
 function initExportColumns(saved) {
@@ -137,8 +150,22 @@ function openExportSettings() {
   document.getElementById('exportSettingsOverlay').classList.add('open');
 }
 
+function hasModalChanges() {
+  if (modalColumns.length !== exportColumns.length) return true;
+  return modalColumns.some((c, i) => {
+    const e = exportColumns[i];
+    return c.name !== e.name || c.enabled !== e.enabled || c.custom !== e.custom;
+  });
+}
+
 function closeExportSettings() {
   document.getElementById('exportSettingsOverlay').classList.remove('open');
+}
+
+function tryCloseExportSettings() {
+  if (!hasModalChanges()) { closeExportSettings(); return; }
+  const overlay = document.getElementById('confirmDiscardOverlay');
+  overlay.style.display = 'flex';
 }
 
 function saveExportSettingsModal() {

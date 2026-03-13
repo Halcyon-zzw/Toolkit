@@ -345,7 +345,7 @@
   <!-- Cookie 输入 -->
   <div class="cookie-section">
     <span class="cookie-label">Cookie</span>
-    <span class="cookie-hint">请输入 teacherrecord.com 的 Cookie（失焦后自动保存）</span>
+    <span class="cookie-hint">请输入 teacherrecord.com 的 Cookie</span>
     <textarea id="cookieInput" placeholder="请输入Cookie..."></textarea>
   </div>
 
@@ -398,6 +398,18 @@
     </table>
   </div>
 
+  <!-- 退出确认弹窗 -->
+  <div id="confirmDiscardOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10100;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,0.22);padding:20px 24px;min-width:240px;max-width:320px;text-align:center;">
+      <p style="font-size:13px;color:#374151;margin-bottom:16px;line-height:1.6;">设置已修改，是否保存？</p>
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button id="confirmSaveBtn"    style="padding:4px 14px;font-size:12px;border-radius:6px;border:none;background:#22c55e;color:#fff;cursor:pointer;">保存</button>
+        <button id="confirmDiscardBtn" style="padding:4px 14px;font-size:12px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;color:#374151;cursor:pointer;">不保存</button>
+        <button id="confirmCancelBtn"  style="padding:4px 14px;font-size:12px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;color:#6b7280;cursor:pointer;">取消</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 导出设置弹窗 -->
   <div id="exportSettingsOverlay" class="modal-overlay">
     <div class="modal-box">
@@ -409,6 +421,7 @@
         <table class="settings-table">
           <thead>
             <tr>
+              <th style="text-align:center">序号</th>
               <th></th>
               <th class="th-name">列名</th>
               <th style="text-align:center">操作</th>
@@ -418,7 +431,7 @@
         </table>
       </div>
       <div class="modal-footer">
-        <button class="btn-sm btn-primary-sm" id="addColAtEndBtn">+ 末尾新增列</button>
+        <button class="btn-sm btn-primary-sm" id="addColAtEndBtn">末尾新增行</button>
         <div style="flex:1"></div>
         <button class="btn-sm btn-secondary-sm" id="cancelExportSettingsBtn">取消</button>
         <button class="btn-sm btn-success-sm" id="saveExportSettingsBtn">保存</button>
