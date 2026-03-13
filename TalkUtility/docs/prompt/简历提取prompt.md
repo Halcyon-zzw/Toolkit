@@ -59,7 +59,7 @@ curl --location --request POST 'https://teacherrecord.com/company/recruit/list_a
 --data-urlencode 'wechat=' \
 --data-urlencode 'whats_app=' \
 --data-urlencode 'phone=' \
---data-urlencode 'qq=' \
+--data-urlencode 'qq=' \ 
 --data-urlencode 'expect_filter=' \
 --data-urlencode 'degree=' \
 --data-urlencode 'sort=' \
@@ -207,7 +207,7 @@ curl --location --request POST 'https://teacherrecord.com/company/recruit/list_a
 }
 
 ```
-将接口添加到接口文档中，文档名称“teacherrecord接口文档”
+将接口添加到接口文档中，文档名称“docs/api/teacherrecord_api.md接口文档”
 
 # 处理逻辑
 ```
