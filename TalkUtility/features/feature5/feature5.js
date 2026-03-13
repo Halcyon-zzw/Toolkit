@@ -31,6 +31,13 @@ let exportColumns = []; // { name, enabled, custom }
 let modalColumns = []; // working copy while modal open
 let dragSrcIdx = null;
 
+// 0→'A', 1→'B', 25→'Z', 26→'AA' …
+function idxToSeq(n) {
+  let s = '', k = n + 1;
+  while (k > 0) { k--; s = String.fromCharCode(65 + (k % 26)) + s; k = Math.floor(k / 26); }
+  return s;
+}
+
 function isChromeExtension() {
   return typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local;
 }
@@ -174,14 +181,21 @@ function renderExportSettingsTable() {
       renderExportSettingsTable();
     });
 
+    // 序号列（始终按当前行位置 A B C …，重排后重新渲染即保持顺序）
+    const tdSeq = document.createElement('td');
+    tdSeq.textContent = idxToSeq(i);
+    tdSeq.style.cssText = 'text-align:center;color:#6b7280;font-size:11px;user-select:none;';
+    tr.appendChild(tdSeq);
+
     // 拖拽把手
     const tdHandle = document.createElement('td');
     tdHandle.innerHTML = '<span class="drag-handle">⠿</span>';
     tr.appendChild(tdHandle);
 
-    // 列名（含勾选框）
+    // 列名（含勾选框；双击选中文本）
     const tdName = document.createElement('td');
     tdName.className = 'td-name';
+    tdName.title = '双击选中列名';
     const nameCell = document.createElement('div');
     nameCell.className = 'col-name-cell';
 
@@ -198,11 +212,19 @@ function renderExportSettingsTable() {
       nameInput.value = col.name;
       nameInput.placeholder = '输入列名';
       nameInput.addEventListener('input', () => { modalColumns[i].name = nameInput.value; });
+      nameInput.addEventListener('dblclick', () => nameInput.select());
       nameCell.appendChild(nameInput);
     } else {
       const nameSpan = document.createElement('span');
       nameSpan.className = 'col-name-text';
       nameSpan.textContent = col.name;
+      nameSpan.addEventListener('dblclick', () => {
+        const sel = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(nameSpan);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      });
       nameCell.appendChild(nameSpan);
     }
 
@@ -213,9 +235,31 @@ function renderExportSettingsTable() {
     const tdOps = document.createElement('td');
     tdOps.style.cssText = 'text-align:center;white-space:nowrap';
 
+    const btnUp = document.createElement('button');
+    btnUp.className = 'btn-tiny';
+    btnUp.textContent = '↑';
+    btnUp.title = '上移一行';
+    btnUp.disabled = i === 0;
+    btnUp.addEventListener('click', () => {
+      if (i === 0) return;
+      [modalColumns[i - 1], modalColumns[i]] = [modalColumns[i], modalColumns[i - 1]];
+      renderExportSettingsTable();
+    });
+
+    const btnDown = document.createElement('button');
+    btnDown.className = 'btn-tiny';
+    btnDown.textContent = '↓';
+    btnDown.title = '下移一行';
+    btnDown.disabled = i === modalColumns.length - 1;
+    btnDown.addEventListener('click', () => {
+      if (i === modalColumns.length - 1) return;
+      [modalColumns[i], modalColumns[i + 1]] = [modalColumns[i + 1], modalColumns[i]];
+      renderExportSettingsTable();
+    });
+
     const btnAbove = document.createElement('button');
     btnAbove.className = 'btn-tiny';
-    btnAbove.textContent = '↑插入';
+    btnAbove.textContent = '上方+';
     btnAbove.title = '在上方插入新列';
     btnAbove.addEventListener('click', () => {
       modalColumns.splice(i, 0, { name: '', enabled: true, custom: true });
@@ -224,7 +268,7 @@ function renderExportSettingsTable() {
 
     const btnBelow = document.createElement('button');
     btnBelow.className = 'btn-tiny';
-    btnBelow.textContent = '↓插入';
+    btnBelow.textContent = '下方+';
     btnBelow.title = '在下方插入新列';
     btnBelow.addEventListener('click', () => {
       modalColumns.splice(i + 1, 0, { name: '', enabled: true, custom: true });
@@ -239,11 +283,10 @@ function renderExportSettingsTable() {
       renderExportSettingsTable();
     });
 
-    tdOps.appendChild(btnAbove);
-    tdOps.appendChild(document.createTextNode(' '));
-    tdOps.appendChild(btnBelow);
-    tdOps.appendChild(document.createTextNode(' '));
-    tdOps.appendChild(btnDel);
+    [btnUp, btnDown, btnAbove, btnBelow, btnDel].forEach((btn, idx) => {
+      if (idx > 0) tdOps.appendChild(document.createTextNode(' '));
+      tdOps.appendChild(btn);
+    });
     tr.appendChild(tdOps);
 
     tbody.appendChild(tr);
