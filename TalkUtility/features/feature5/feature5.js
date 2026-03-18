@@ -325,6 +325,7 @@ function renderExportSettingsTable() {
 function createEmptyRow() {
   const row = { teacherId: '', _extracted: false };
   EDITABLE_FIELDS.forEach(f => { row[f] = ''; });
+  row['初选通过日期'] = todayStr();
   return row;
 }
 
@@ -548,7 +549,7 @@ async function extractRow(index, trEl, extractBtn) {
   if (!cookieStr) { alert('请先输入 Cookie'); return; }
 
   // 清空原有提取数据，保留用户输入字段
-  const keepFields = new Set(['teacherId', '备注（输入）', '初选通过日期']);
+  const keepFields = new Set(['teacherId', '备注（输入）']);
   EDITABLE_FIELDS.forEach(f => {
     if (!keepFields.has(f)) rows[index][f] = '';
   });
@@ -600,8 +601,9 @@ async function extractRow(index, trEl, extractBtn) {
       : (resumeInfo.teachingExperience || '');
 
     // 写入
+    rows[index]['初选通过日期'] = todayStr();
     rows[index]['沟通渠道'] = 'Whatsapp';
-    rows[index]['名字'] = teacher.name || '';
+    rows[index]['名字'] = resumeInfo.teacherName || teacher.name || '';
     rows[index]['语种'] = '英语';
     rows[index]['国家'] = countryDisplay;
     rows[index]['邮箱'] = resumeInfo.email || '';
@@ -668,6 +670,8 @@ function parseResumeHtml(html) {
   const teams = teamsMatch ? teamsMatch[1].trim() : '';
   const expMatch = html.match(/<strong>教学年限: <\/strong>([^<]+)<br\/>/);
   const teachingExperience = expMatch ? expMatch[1].trim() : '';
+  const nameMatch = html.match(/<strong>名称:\s*<\/strong>([\s\S]*?)<br/);
+  const teacherName = nameMatch ? nameMatch[1].replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim() : '';
 
   // 从教学证书表格中提取证书名称
   const resumeCertNameList = [];
@@ -686,7 +690,7 @@ function parseResumeHtml(html) {
     }
   } catch (e) { /* ignore */ }
 
-  return { email, whatsapp, teams, teachingExperience, resumeCertNameList };
+  return { email, whatsapp, teams, teachingExperience, resumeCertNameList, teacherName };
 }
 
 // ─── 全部提取 ──────────────────────────────────────────────────────────────
