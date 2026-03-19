@@ -598,7 +598,7 @@ async function extractRow(index, trEl, extractBtn) {
     const remarkInput = rows[index]['备注（输入）'] || '';
     const experienceOuput = resumeInfo.teachingExperience ? '经验：' + resumeInfo.teachingExperience : '';
     const ageOuput = resumeInfo.teacherAge ? '年龄：' + resumeInfo.teacherAge : '';
-    const remarkOutput = remarkInput ? '备注：' + remarkInput : '';
+    const remarkOutput = remarkInput ? '其他：' + remarkInput : '';
     const finalRemark = experienceOuput + '\n' + ageOuput + '\n' + remarkOutput;
 
     // 写入
