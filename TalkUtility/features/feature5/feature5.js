@@ -596,9 +596,10 @@ async function extractRow(index, trEl, extractBtn) {
 
     // 备注（最终结果）= 备注（输入）+ teachingExperience
     const remarkInput = rows[index]['备注（输入）'] || '';
-    const finalRemark = remarkInput
-      ? remarkInput + (resumeInfo.teachingExperience ? '\n' + resumeInfo.teachingExperience : '')
-      : (resumeInfo.teachingExperience || '');
+    const experienceOuput = resumeInfo.teachingExperience ? '经验：' + resumeInfo.teachingExperience : '';
+    const ageOuput = resumeInfo.teacherAge ? '年龄：' + resumeInfo.teacherAge : '';
+    const remarkOutput = remarkInput ? '备注：' + remarkInput : '';
+    const finalRemark = experienceOuput + '\n' + ageOuput + '\n' + remarkOutput;
 
     // 写入
     rows[index]['初选通过日期'] = todayStr();
@@ -672,6 +673,8 @@ function parseResumeHtml(html) {
   const teachingExperience = expMatch ? expMatch[1].trim() : '';
   const nameMatch = html.match(/<strong>名称:\s*<\/strong>([\s\S]*?)<br/);
   const teacherName = nameMatch ? nameMatch[1].replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim() : '';
+  const teacherMatch = html.match(/<strong>年龄:\s*<\/strong>([\s\S]*?)<br/);
+  const teacherAge = teacherMatch ? teacherMatch[1].replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim() : '';
 
   // 从教学证书表格中提取证书名称
   const resumeCertNameList = [];
@@ -690,7 +693,7 @@ function parseResumeHtml(html) {
     }
   } catch (e) { /* ignore */ }
 
-  return { email, whatsapp, teams, teachingExperience, resumeCertNameList, teacherName };
+  return { email, whatsapp, teams, teachingExperience, resumeCertNameList, teacherName, teacherAge };
 }
 
 // ─── 全部提取 ──────────────────────────────────────────────────────────────
