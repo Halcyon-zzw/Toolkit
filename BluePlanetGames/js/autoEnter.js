@@ -16,8 +16,8 @@ var config = {
 };
 
 // ==================== 全局变量 ====================
-var isRunning = true;
-var isPaused = false;
+var isRunning = false;  // 启动时不运行
+var isPaused = true;    // 默认暂停状态
 var clickStartTime = 0;
 var count = 0;
 var controlWindow = null;
@@ -34,8 +34,8 @@ function createControlWindow() {
 
     controlWindow = floaty.window(
         <vertical layout_width="wrap_content" layout_height="wrap_content">
-            <button id="stop" text="停" w="40" h="40" bg="#ff4444" textColor="#ffffff" textSize="12sp"/>
-            <button id="start" text="始" w="40" h="40" bg="#44ff44" textColor="#000000" textSize="12sp" visibility="gone"/>
+            <button id="stop" text="停" w="40" h="40" bg="#ff4444" textColor="#ffffff" textSize="12sp" visibility="gone"/>
+            <button id="start" text="始" w="40" h="40" bg="#44ff44" textColor="#000000" textSize="12sp"/>
         </vertical>
     );
 
@@ -60,7 +60,7 @@ function createControlWindow() {
         }
     });
 
-    console.log("控制窗口已创建");
+    toastLog("控制窗口已创建");
 }
 
 // ==================== 暂停工作 ====================
@@ -75,7 +75,6 @@ function pauseWork() {
     });
 
     toastLog("⏸️ 脚本已暂停，进入休眠");
-    console.log("========== 已暂停 ==========");
 
     // 等待工作线程结束
     if (workThread != null && workThread.isAlive()) {
@@ -96,9 +95,8 @@ function resumeWork() {
     });
 
     toastLog("▶️ 唤醒休眠，脚本继续运行");
-    console.log("========== 已唤醒 ==========");
     if (config.continuousClick.enabled) {
-        console.log("⏰ 将连续点击 " + config.continuousClick.duration + " 秒后自动暂停");
+        toastLog("⏰ 将连续点击 " + config.continuousClick.duration + " 秒后自动暂停");
     }
 
     // 启动新的工作线程
@@ -124,7 +122,7 @@ function startWorkThread() {
                     // 每10秒打印一次剩余时间（降低输出频率）
                     if (Math.floor(elapsedSeconds) % 10 === 0 && elapsedSeconds > 0) {
                         var remaining = Math.max(0, config.continuousClick.duration - elapsedSeconds);
-                        console.log("⏰ 剩余点击时间: " + remaining.toFixed(0) + " 秒");
+                        toastLog("⏰ 剩余点击时间: " + remaining.toFixed(0) + " 秒");
                     }
 
                     if (elapsedSeconds >= config.continuousClick.duration) {
@@ -149,14 +147,12 @@ function startWorkThread() {
             // 降低输出频率
             if (localCount % 50 === 0) {
                 var elapsed = clickStartTime > 0 ? ((new Date().getTime() - clickStartTime) / 1000).toFixed(0) : 0;
-                console.log("📊 已完成 " + localCount + " 次点击 | 已运行 " + elapsed + " 秒");
+                toastLog("📊 已完成 " + localCount + " 次点击 | 已运行 " + elapsed + " 秒");
             }
 
             // 随机延迟
             sleep(random(config.time.min, config.time.max));
         }
-
-        console.log("工作线程已停止");
     });
 }
 
@@ -174,12 +170,12 @@ function cleanup() {
         try { controlWindow.close(); } catch(e) {}
     }
 
-    console.log("脚本已完全退出");
+    toastLog("脚本已完全退出");
 }
 
 // ==================== 主程序 ====================
 auto.waitFor();
-console.show();
+// 移除 console.show()，不显示左上角弹窗
 
 // 注册退出处理
 events.on("exit", cleanup);
@@ -188,18 +184,16 @@ events.on("exit", cleanup);
 createControlWindow();
 
 toastLog("═══════════════════════════");
-toastLog("自动点击脚本已启动（省电优化版）");
+toastLog("自动点击脚本已启动（待命模式）");
 toastLog("点击区域: (" + config.area.left + "," + config.area.top + ")");
 toastLog("间隔: " + config.time.min + "~" + config.time.max + "ms");
 if (config.continuousClick.enabled) {
     toastLog("⏰ 连续点击: " + config.continuousClick.duration + " 秒");
 }
+toastLog("请点击绿色'始'按钮开始运行");
 toastLog("═══════════════════════════");
 
-// 启动工作线程
-startWorkThread();
-
-// 主线程只需等待，降低CPU占用
+// 主线程保活
 setInterval(function() {
     // 保活，实际无需做任何事
 }, 60000);  // 每分钟唤醒一次，极低功耗
