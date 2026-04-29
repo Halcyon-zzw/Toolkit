@@ -1,32 +1,26 @@
-// ==================== 脚本声明与权限请求 ====================
+// ==================== 防止重复运行 ====================
 "auto";
 auto.waitFor();
 
-// 请求截图权限
-var hasScreenCapture = false;
-try {
-    hasScreenCapture = requestScreenCapture(false);
-    if (!hasScreenCapture) {
-        toast("请在弹出窗口中授权截图权限");
-        sleep(1000);
-        hasScreenCapture = requestScreenCapture(true);
-    }
-} catch (e) {
-    toast("截图权限请求失败: " + e.message);
-    sleep(2000);
+let currentEngine = engines.myEngine();
+let runningEngines = engines.all();
+let currentSource = currentEngine.getSource() + '';
+if (runningEngines.length > 1) {
+    runningEngines.forEach(compareEngine => {
+        let compareSource = compareEngine.getSource() + '';
+        if (currentEngine.id !== compareEngine.id && compareSource === currentSource) {
+            compareEngine.forceStop();
+        }
+    });
 }
 
-// 请求悬浮窗权限
-try {
-    if (!floaty.checkPermission()) {
-        toast("请允许悬浮窗权限");
-        floaty.requestPermission();
-        sleep(1000);
-    }
-} catch (e) {
-    toast("悬浮窗权限请求失败: " + e.message);
-    sleep(2000);
+// ==================== 权限请求 ====================
+if (!requestScreenCapture()) {
+    toastLog('请求截图权限失败');
+    exit();
 }
+
+sleep(1000);
 
 // ==================== 可配置参数 ====================
 var config = {
@@ -49,7 +43,7 @@ var config = {
         // 刷新按钮
         refreshButton: { left: 400, top: 1500, right: 680, bottom: 1600 },
         // OCR识别区域
-        ocrArea: { left: 80, top: 750, right: 990, bottom: 850 },
+        ocrArea: { left: 80, top: 750, right: 990, bottom: 830 },
         // 三个词条位置
         wordPositions: [
             { left: 80, top: 1100, right: 300, bottom: 1300 },
@@ -58,7 +52,7 @@ var config = {
         ]
     },
 
-    // 控制按钮位置（左下角）
+    // 控制按钮位置
     controlButton: {
         x: 50,
         y: 1600,
@@ -77,7 +71,7 @@ var needWordListRaw = [
     "哥斯拉:高速轰击", "哥斯拉:火球喷发", "哥斯拉:高速火球",
     "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:核能增幅",
     "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:灼烧岩浆",
-    "天使:神圣契约", "天使:圣羽加持", "天使:战神化身", "天使:奥术连奏"
+    "天使:神圣契约", "天使:圣羽加持", "天使:战神化身"
 ];
 
 var allWordListRaw = [
@@ -93,10 +87,7 @@ var allWordListRaw = [
     "毒液:血肉盛宴"
 ];
 
-// 处理后去除前缀
-var needWordList = [];
-var allWordList = [];
-
+// 提取词条名称（去除角色前缀）
 function extractWordNames(rawList) {
     var result = [];
     for (var i = 0; i < rawList.length; i++) {
@@ -111,8 +102,8 @@ function extractWordNames(rawList) {
     return result;
 }
 
-needWordList = extractWordNames(needWordListRaw);
-allWordList = extractWordNames(allWordListRaw);
+var needWordList = extractWordNames(needWordListRaw);
+var allWordList = extractWordNames(allWordListRaw);
 
 // ==================== 全局变量 ====================
 var isRunning = false;
@@ -122,6 +113,47 @@ var controlWindow = null;
 var logWindow = null;
 var logLines = [];
 var isLogExpanded = true;
+
+// ==================== OCR功能 ====================
+function captureAndOcr() {
+    try {
+        var img = captureScreen();
+        if (!img) {
+            addLog("截图失败");
+            return [];
+        }
+
+        var area = config.areas.ocrArea;
+        var clip = images.clip(img, area.left, area.top,
+            area.right - area.left,
+            area.bottom - area.top);
+        img.recycle();
+
+        var start = new Date();
+        var result = paddle.ocr(clip);
+        clip.recycle();
+
+        if (result && result.length > 0) {
+            var words = [];
+            for (var i = 0; i < result.length; i++) {
+                var text = result[i].words || result[i].text || "";
+                text = text.replace(/[\s\n\r\t]+/g, "").trim();
+                if (text.length > 2 && text.length <= 10) {
+                    words.push(text);
+                }
+            }
+            addLog("OCR耗时: " + (new Date() - start) + "ms");
+            return words;
+        }
+
+        addLog("OCR耗时: " + (new Date() - start) + "ms, 结果为空");
+        return [];
+
+    } catch (e) {
+        addLog("OCR异常: " + e.message);
+        return [];
+    }
+}
 
 // ==================== 工具函数 ====================
 function randomDelay() {
@@ -133,61 +165,11 @@ function randomClick(area) {
     var x = random(area.left, area.right);
     var y = random(area.top, area.bottom);
     try {
+        addLog("点击:" + x + "," + y)
         click(x, y);
     } catch (e) {
         addLog("点击失败: " + e.message);
     }
-}
-
-function cleanText(str) {
-    // 移除所有空白字符和特殊字符
-    if (!str) return "";
-    return str.replace(/[\s\n\r\t]+/g, "").trim();
-}
-
-function ocrWordItems() {
-    var area = config.areas.ocrArea;
-    try {
-        if (!hasScreenCapture) {
-            addLog("无截图权限");
-            return [];
-        }
-
-        var img = captureScreen();
-        if (!img) {
-            addLog("截图失败");
-            return [];
-        }
-
-        var clip = images.clip(img, area.left, area.top,
-            area.right - area.left,
-            area.bottom - area.top);
-        img.recycle();
-
-        var result = ocr(clip);
-        clip.recycle();
-
-        if (result && result.length > 0) {
-            var words = [];
-            for (var i = 0; i < result.length; i++) {
-                var text = "";
-                if (typeof result[i] === "string") {
-                    text = result[i];
-                } else if (result[i] && result[i].text) {
-                    text = result[i].text;
-                }
-
-                text = cleanText(text);
-                if (text.length > 0 && text.length <= 10) {
-                    words.push(text);
-                }
-            }
-            return words;
-        }
-    } catch (e) {
-        addLog("OCR错误: " + e.message);
-    }
-    return [];
 }
 
 // ==================== 日志窗口 ====================
@@ -197,7 +179,7 @@ function addLog(msg) {
     console.log(logMsg);
     logLines.push(logMsg);
 
-    if (logLines.length > 15) {
+    if (logLines.length > 50) {
         logLines.shift();
     }
 
@@ -290,19 +272,6 @@ function startWork() {
         sleep(1000);
     }
 
-    if (!hasScreenCapture) {
-        try {
-            hasScreenCapture = requestScreenCapture(false);
-            if (!hasScreenCapture) {
-                toast("截图权限不足");
-                return;
-            }
-        } catch (e) {
-            toast("截图权限请求失败");
-            return;
-        }
-    }
-
     isRunning = true;
     isExiting = false;
 
@@ -356,7 +325,7 @@ function startWorkThread() {
                     sleep(1000);
 
                     // OCR识别
-                    var words = ocrWordItems();
+                    var words = captureAndOcr();
                     if (words.length > 0) {
                         addLog("识别: " + words.join(", "));
                     } else {
@@ -365,9 +334,8 @@ function startWorkThread() {
 
                     if (words.length < 3) {
                         addLog("词条不足3个");
-                        back();
                         sleep(500);
-                        continue;
+                        break;
                     }
 
                     // 检查是否包含优先词条
@@ -385,7 +353,7 @@ function startWorkThread() {
                         randomClick(config.areas.refreshButton);
                         sleep(1000);
 
-                        words = ocrWordItems();
+                        words = captureAndOcr();
                         if (words.length > 0) {
                             addLog("刷新后: " + words.join(", "));
                         }
@@ -432,9 +400,7 @@ function startWorkThread() {
                 // 等待下一个循环
                 if (isRunning && !isExiting) {
                     addLog("等待" + (config.mainLoopInterval/1000) + "秒");
-                    for (var i = 0; i < config.mainLoopInterval / 100 && isRunning; i++) {
-                        sleep(100);
-                    }
+                    sleep(config.mainLoopInterval)
                 }
 
             } catch (e) {
@@ -447,7 +413,7 @@ function startWorkThread() {
     });
 }
 
-// ==================== 清理 ====================
+// ==================== 退出清理 ====================
 function cleanup() {
     isExiting = true;
     isRunning = false;
@@ -463,6 +429,8 @@ function cleanup() {
     if (logWindow) {
         try { logWindow.close(); } catch(e) {}
     }
+
+    console.log("脚本已清理");
 }
 
 // ==================== 主程序 ====================
@@ -478,15 +446,14 @@ createControlWindow();
 sleep(500);
 
 addLog("==================");
-addLog("脚本初始化完成");
-addLog("截图: " + (hasScreenCapture ? "OK" : "NO"));
-addLog("无障碍: " + (auto.service !== null ? "OK" : "NO"));
+addLog("PaddleOCR脚本就绪");
 addLog("优先词条: " + needWordList.length);
 addLog("可选词条: " + allWordList.length);
 addLog("间隔: " + (config.mainLoopInterval/1000) + "秒");
+addLog("重试: " + config.maxRetryCount + "次");
 addLog("==================");
 addLog("点击开始运行");
 
-toast("初始化完成");
+toast("初始化完成，点击开始");
 
 setInterval(function() {}, 60000);
