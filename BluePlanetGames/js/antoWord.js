@@ -138,7 +138,7 @@ function captureAndOcr() {
             for (var i = 0; i < result.length; i++) {
                 var text = result[i].words || result[i].text || "";
                 text = text.replace(/[\s\n\r\t]+/g, "").trim();
-                if (text.length > 2 && text.length <= 10) {
+                if (text.length > 1 && text.length <= 10) {
                     words.push(text);
                 }
             }
@@ -351,7 +351,6 @@ function startWorkThread() {
                     if (!hasNeedWord) {
                         addLog("刷新词条");
                         randomClick(config.areas.refreshButton);
-                        sleep(1000);
 
                         words = captureAndOcr();
                         if (words.length > 0) {
@@ -392,7 +391,10 @@ function startWorkThread() {
                         randomClick(config.areas.wordPositions[selectedIndex]);
                         break;
                     } else {
-                        addLog("无可用词条");
+                        // 随机选择词条
+                        var randomIndex = Math.floor(Math.random() * config.areas.wordPositions.length);
+                        randomClick(config.areas.wordPositions[randomIndex])
+                        addLog("无可用词条, 随机选择词条: " + words[randomIndex]);
                         break;
                     }
                 }
