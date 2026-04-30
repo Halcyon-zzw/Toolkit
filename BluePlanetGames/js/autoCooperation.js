@@ -62,7 +62,7 @@ var config = {
             // 选择词条按钮
             wordButton: { left: 240, top: 2200, right: 370, bottom: 2300 },
             // 刷新按钮
-            refreshButton: { left: 400, top: 1500, right: 680, bottom: 1600 },
+            refreshButton: { left: 400, top: 1550, right: 680, bottom: 1600 },
             // OCR识别区域
             ocrArea: { left: 80, top: 750, right: 990, bottom: 830 },
             // 三个词条位置
@@ -121,10 +121,10 @@ var config = {
 // ==================== 词条配置 ====================
 var needWordListRaw = [
     "猴子:化身仗势", "猴子:万化随形", "猴子:应物随心",
+    "猴子:大闹天宫",
     "猴子:天地倾", "猴子:江海翻", "猴子:称心如意",
-    "猴子:大闹天宫", "猴子:乱点天宫", "猴子:风卷残云",
-    "猴子:翻江倒海", "猴子:乘胜追击", "猴子:战意升腾",
-    "猴子:斗战激昂", "猴子:无处遁行",
+    "猴子:乱点天宫", "猴子:风卷残云", "猴子:翻江倒海", "猴子:乘胜追击",
+    "猴子:战意升腾", "猴子:斗战激昂", "猴子:无处遁行", "猴子:无处通行",
     "哥斯拉:高速轰击", "哥斯拉:火球喷发", "哥斯拉:高速火球",
     "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:核能增幅",
     "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:灼烧岩浆",
@@ -191,8 +191,7 @@ var lastOcrCheckTime = 0;
 
 // ==================== 日志窗口 ====================
 function addLog(msg) {
-    var time = new Date().toLocaleTimeString();
-    var logMsg = "[" + time + "] " + msg;
+    var logMsg = msg;
     console.log(logMsg);
     logLines.push(logMsg);
 
@@ -421,6 +420,7 @@ function executeGamePreparation() {
 
     // 2. 点击方案主入口按钮
     var planBtn = config.gameCheck.planButtonLocation;
+    addLog("点击方案按钮");
     clickArea(planBtn);
     addLog("点击: 方案入口 → 方案" + (planType === "plan4" ? "4" : "2") + "按钮 → 准备按钮");
     sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
@@ -432,16 +432,20 @@ function executeGamePreparation() {
     } else {
         selectedPlanBtn = config.gameCheck.plan2ButtonLocation;
     }
+    addLog("点击具体方案:" + planType);
     clickArea(selectedPlanBtn);
-    sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
+    sleep(500);
 
     var whiteArea = config.gameCheck.levelOcrArea;
+    addLog("点击空白区域");
     clickArea(whiteArea);
     sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
+    addLog("点击空白区域");
     clickArea(whiteArea);
     sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
 
     // 4. 点击准备按钮
+    addLog("点击准备按钮");
     clickArea(config.gameCheck.prepareButtonLocation);
 }
 
@@ -559,7 +563,6 @@ function captureAndOcr() {
                     words.push(text);
                 }
             }
-            addLog("OCR耗时: " + (new Date() - start) + "ms");
             return words;
         }
 
@@ -671,12 +674,11 @@ function startOcrThread() {
 
         while (ocrRunning && !isExiting) {
             try {
-                addLog("--- 新一轮循环 ---");
-
+                addLog("=============start===============")
                 for (var retry = 0; retry < config.ocr.maxRetryCount && ocrRunning; retry++) {
-                    addLog("第" + (retry + 1) + "次尝试");
 
                     // 点击词条按钮
+                    addLog("点击词条")
                     randomClick(config.ocr.areas.wordButton);
                     randomDelay();
                     sleep(1000);
@@ -684,13 +686,11 @@ function startOcrThread() {
                     // OCR识别
                     var words = captureAndOcr();
                     if (words.length > 0) {
-                        addLog("识别: " + words.join(", "));
-                    } else {
-                        addLog("未识别到词条");
+                        addLog("OCR识别: 【" + words.join("】, 【") + "】");
                     }
 
                     if (words.length < 3) {
-                        addLog("词条不足3个");
+                        addLog("词条数量:" + words.length);
                         sleep(500);
                         break;
                     }
@@ -706,7 +706,7 @@ function startOcrThread() {
 
                     // 刷新逻辑
                     if (!hasNeedWord) {
-                        addLog("刷新词条");
+                        addLog("点击刷新词条");
                         randomClick(config.ocr.areas.refreshButton);
 
                         words = captureAndOcr();
@@ -727,7 +727,7 @@ function startOcrThread() {
                         var idx = words.indexOf(needWordList[w]);
                         if (idx >= 0 && idx < 3) {
                             selectedIndex = idx;
-                            addLog("命中优先: " + needWordList[w]);
+                            addLog("命中优先词条: 【" + needWordList[w] + "】");
                             break;
                         }
                     }
@@ -744,7 +744,7 @@ function startOcrThread() {
                     }
 
                     if (selectedIndex >= 0) {
-                        addLog("点击词条" + (selectedIndex + 1));
+                        addLog("点击词条:" + (selectedIndex + 1));
                         randomClick(config.ocr.areas.wordPositions[selectedIndex]);
                         break;
                     } else {
@@ -756,9 +756,9 @@ function startOcrThread() {
                     }
                 }
 
+                addLog("=============end===============")
                 // 等待下一个循环
                 if (ocrRunning && !isExiting) {
-                    addLog("等待" + (config.ocr.mainLoopInterval/1000) + "秒");
                     sleep(config.ocr.mainLoopInterval);
                 }
 
