@@ -296,7 +296,6 @@ function pauseClicker() {
     });
 
     addLog("⏸️ 点击器已暂停");
-    toastLog("⏸️ 点击器已暂停");
 
     if (clickerThread != null && clickerThread.isAlive()) {
         clickerThread.interrupt();
@@ -317,10 +316,8 @@ function resumeClicker() {
     });
 
     addLog("▶️ 点击器已启动");
-    toastLog("▶️ 点击器已启动");
     if (config.clicker.continuousClick.enabled) {
         addLog("⏰ 将连续点击 " + config.clicker.continuousClick.duration + " 秒后自动暂停");
-        toastLog("⏰ 将连续点击 " + config.clicker.continuousClick.duration + " 秒后自动暂停");
     }
 
     startClickerThread();
@@ -480,11 +477,6 @@ function startClickerThread() {
                 if (clickStartTime > 0) {
                     var elapsedSeconds = (now - clickStartTime) / 1000;
 
-                    if (Math.floor(elapsedSeconds) % 10 === 0 && elapsedSeconds > 0) {
-                        var remaining = Math.max(0, config.clicker.continuousClick.duration - elapsedSeconds);
-                        addLog("⏰ 剩余点击时间: " + remaining.toFixed(0) + " 秒");
-                    }
-
                     if (elapsedSeconds >= config.clicker.continuousClick.duration) {
                         ui.run(function() {
                             pauseClicker();
@@ -582,16 +574,6 @@ function randomDelay() {
     sleep(delay);
 }
 
-function randomClick(area) {
-    var x = random(area.left, area.right);
-    var y = random(area.top, area.bottom);
-    try {
-        addLog("点击:" + x + "," + y);
-        click(x, y);
-    } catch (e) {
-        addLog("点击失败: " + e.message);
-    }
-}
 
 // ==================== OCR控制窗口 ====================
 function createOcrControlWindow() {
@@ -680,7 +662,7 @@ function startOcrThread() {
 
                     // 点击词条按钮
                     addLog("点击词条")
-                    randomClick(config.ocr.areas.wordButton);
+                    clickArea(config.ocr.areas.wordButton);
                     randomDelay();
                     sleep(1000);
 
@@ -708,7 +690,7 @@ function startOcrThread() {
                     // 刷新逻辑
                     if (!hasNeedWord) {
                         addLog("点击刷新词条");
-                        randomClick(config.ocr.areas.refreshButton);
+                        clickArea(config.ocr.areas.refreshButton);
 
                         words = captureAndOcr();
                         if (words.length > 0) {
@@ -746,12 +728,12 @@ function startOcrThread() {
 
                     if (selectedIndex >= 0) {
                         addLog("点击词条:" + (selectedIndex + 1));
-                        randomClick(config.ocr.areas.wordPositions[selectedIndex]);
+                        clickArea(config.ocr.areas.wordPositions[selectedIndex]);
                         break;
                     } else {
                         // 随机选择词条
                         var randomIndex = Math.floor(Math.random() * config.ocr.areas.wordPositions.length);
-                        randomClick(config.ocr.areas.wordPositions[randomIndex]);
+                        clickArea(config.ocr.areas.wordPositions[randomIndex]);
                         addLog("无可用词条, 随机选择词条: " + words[randomIndex]);
                         break;
                     }
