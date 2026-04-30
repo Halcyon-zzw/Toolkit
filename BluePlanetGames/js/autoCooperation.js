@@ -36,8 +36,9 @@ var config = {
             enabled: true,
             duration: 300
         },
+        //自动加入按钮偏移位置
         button: {
-            x: 200, y: 200
+            x: 200, y: 300
         },
         // OCR检测间隔（毫秒）
         ocrCheckInterval: 5000
@@ -76,9 +77,9 @@ var config = {
         // 控制按钮位置
         controlButton: {
             x: 50,
-            y: 1600,
-            width: 70,
-            height: 70
+            y: 300,
+            width: 80,
+            height: 80
         }
     },
 
@@ -133,10 +134,10 @@ var needWordListRaw = [
 
 var allWordListRaw = [
     "猴子:化身仗势", "猴子:万化随行", "猴子:应物随心",
+    "猴子:大闹天宫",
     "猴子:天地倾", "猴子:江海翻", "猴子:称心如意",
-    "猴子:大闹天宫", "猴子:乱点天宫", "猴子:风卷残云",
-    "猴子:翻江倒海", "猴子:乘胜追击", "猴子:战意升腾",
-    "猴子:斗战激昂", "猴子:无处遁形",
+    "猴子:乱点天宫", "猴子:风卷残云", "猴子:翻江倒海", "猴子:乘胜追击",
+    "猴子:战意升腾", "猴子:斗战激昂", "猴子:无处遁形", "猴子:无处通行",
     "哥斯拉:高速轰击", "哥斯拉:火球喷发", "哥斯拉:高速火球",
     "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:核能增幅",
     "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:灼烧岩浆",
@@ -601,7 +602,7 @@ function createOcrControlWindow() {
     try {
         ocrControlWindow = floaty.window(
             <frame>
-                <button id="ocrControlBtn" text="OCR开始"
+                <button id="ocrControlBtn" text="词"
                         w="{{config.ocr.controlButton.width}}px"
                         h="{{config.ocr.controlButton.height}}px"
                         bg="#4CAF50" textColor="#ffffff"
