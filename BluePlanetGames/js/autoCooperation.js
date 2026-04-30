@@ -76,7 +76,7 @@ var config = {
 
         // 控制按钮位置
         controlButton: {
-            x: 50,
+            x: 100,
             y: 300,
             width: 80,
             height: 80
