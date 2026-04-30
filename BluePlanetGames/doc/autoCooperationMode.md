@@ -1,17 +1,44 @@
-### 一、新增逻辑
+### 一、历史逻辑
 1. 在自动点击循环中过程中，每5s（可配置）通过OCR识别joinOCRArea区域，如果不为“加入”，则跳出循环点击。并切换按钮状态。
 2. 注意，手动点击按钮停止的循环不需要执行该步骤。识别顶部区域levelOcrArea，根据不同的层数选择不同的阵容，可配置，依次点击区域：planButtonLocation、$configLocation、levelOcrArea、levelOcrArea, 每次点击间隔100ms（加上随机数）
    配置如下
 3. 点击准备区域prepareButtonLocation
 4. 结束
 
+### 一、新增逻辑
+
+#### 功能1:优化自动加入流程
+点击开始后
+1. 先点击聊天框工具
+2. 点击队伍
+3. 点击选择难度
+4. 点击空白区域
+5. 开始自动点击（原来的自动点击逻辑）
+
 ```
-彩虹3层：plan4ButtonLocation
-彩虹4层：plan4ButtonLocation
-彩虹5层：plan2ButtonLocation
-其他楼层默认plan2ButtonLocation
+#聊天框位置
+chatBoxLocation = (990, 1020, 1010, 1040)
+
+队伍位置
+teamButtonLocation = (80, 1410, 100, 1430)
+
+选择难度位置
+selectDifficultyButtonLocation = (610, 1720, 630, 1740)
+
+空白区域teamWhileBlankArea: { left: 600, top: 500, right: 630, bottom: 530 }
+
+
 ```
 
+#### 功能2:自动召唤词条
+1. 点击准备后，每3s识别准备区域，不是“已准备”时，推出循环。休眠8s，随后点击召唤英雄区域10次。
+2. 结束
+
+```
+#召唤英雄位置
+召唤 = (730, 2200, 850, 2300)
+
+```
 
 
 ### 二、坐标区域配置

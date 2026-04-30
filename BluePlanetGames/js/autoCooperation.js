@@ -116,6 +116,45 @@ var config = {
 
         // 点击间隔随机范围（毫秒）
         clickRandomRange: 50
+    },
+
+    // ========== 自动加入流程配置 ==========
+    autoJoin: {
+        // 聊天框位置
+        chatBoxLocation: { left: 990, top: 1020, right: 1010, bottom: 1040 },
+
+        // 队伍位置
+        teamButtonLocation: { left: 80, top: 1410, right: 100, bottom: 1430 },
+
+        // 选择难度位置
+        selectDifficultyButtonLocation: { left: 610, top: 1720, right: 630, bottom: 1740 },
+
+        // 空白区域（队伍界面）
+        teamBlankArea: { left: 600, top: 500, right: 630, bottom: 530 },
+
+        // 步骤间延时（毫秒）
+        stepDelay: 500
+    },
+
+    // ========== 自动召唤配置 ==========
+    summon: {
+        // 准备状态检测区域
+        prepareStatusArea: { left: 330, top: 1900, right: 750, bottom: 2020 },
+
+        // 召唤英雄位置
+        summonButtonLocation: { left: 730, top: 2200, right: 850, bottom: 2300 },
+
+        // 准备状态检测间隔（毫秒）
+        statusCheckInterval: 3000,
+
+        // 准备完成后的等待时间（毫秒）
+        waitAfterPrepare: 8000,
+
+        // 召唤点击次数
+        summonClickCount: 10,
+
+        // 召唤点击间隔（毫秒）
+        summonClickInterval: 300
     }
 };
 
@@ -323,6 +362,102 @@ function resumeClicker() {
     startClickerThread();
 }
 
+// ==================== 自动加入流程 ====================
+function executeAutoJoinFlow() {
+    addLog("===== 开始自动加入流程 =====");
+
+    // 1. 点击聊天框
+    addLog("步骤1: 点击聊天框");
+    clickArea(config.autoJoin.chatBoxLocation);
+    sleep(config.autoJoin.stepDelay);
+
+    // 2. 点击队伍
+    addLog("步骤2: 点击队伍");
+    clickArea(config.autoJoin.teamButtonLocation);
+    sleep(config.autoJoin.stepDelay);
+
+    // 3. 点击选择难度
+    addLog("步骤3: 点击选择难度");
+    clickArea(config.autoJoin.selectDifficultyButtonLocation);
+    sleep(config.autoJoin.stepDelay);
+
+    // 4. 点击空白区域
+    addLog("步骤4: 点击空白区域");
+    clickArea(config.autoJoin.teamBlankArea);
+    sleep(config.autoJoin.stepDelay);
+
+    addLog("===== 自动加入流程完成 =====");
+}
+
+// ==================== 检查准备状态 ====================
+function checkPrepareStatus() {
+    try {
+        var img = captureScreen();
+        if (!img) {
+            addLog("准备状态检测: 截图失败");
+            return false;
+        }
+
+        var area = config.summon.prepareStatusArea;
+        var clip = images.clip(img, area.left, area.top,
+            area.right - area.left,
+            area.bottom - area.top);
+        img.recycle();
+
+        var result = paddle.ocr(clip);
+        clip.recycle();
+
+        if (result && result.length > 0) {
+            for (var i = 0; i < result.length; i++) {
+                var text = result[i].words || result[i].text || "";
+                text = text.replace(/[\s\n\r\t]+/g, "").trim();
+                if (text.indexOf("已准备") >= 0) {
+                    addLog("准备状态: 检测到【已准备】");
+                    return true;
+                }
+            }
+        }
+
+        addLog("准备状态: 未检测到【已准备】");
+        return false;
+
+    } catch (e) {
+        addLog("准备状态检测异常: " + e.message);
+        return false;
+    }
+}
+
+// ==================== 执行召唤流程 ====================
+function executeSummonFlow() {
+    addLog("===== 开始召唤流程 =====");
+
+    // 等待准备完成
+    addLog("已准备完成，每" + (config.summon.statusCheckInterval/1000) + "秒检测是否开始");
+    var isPrepared = true;
+
+    while (isPrepared && !isExiting) {
+        isPrepared = checkPrepareStatus()
+        if (isPrepared) {
+            sleep(config.summon.statusCheckInterval);
+        }
+    }
+
+    if (isExiting) return;
+
+    addLog("游戏开始，休眠" + (config.summon.waitAfterPrepare/1000) + "秒");
+    sleep(config.summon.waitAfterPrepare);
+
+    // 点击召唤按钮10次
+    addLog("开始召唤英雄，点击" + config.summon.summonClickCount + "次");
+    for (var i = 0; i < config.summon.summonClickCount && !isExiting; i++) {
+        addLog("召唤点击: 第" + (i + 1) + "次");
+        clickArea(config.summon.summonButtonLocation);
+        sleep(config.summon.summonClickInterval);
+    }
+
+    addLog("===== 召唤流程完成 =====");
+}
+
 // ==================== 游戏就绪检测 ====================
 function checkGameReady() {
     try {
@@ -401,8 +536,9 @@ function recognizeLevel() {
 }
 
 // ==================== 执行游戏准备流程 ====================
-// ==================== 执行游戏准备流程 ====================
 function executeGamePreparation() {
+    addLog("===== 开始游戏准备流程 =====");
+
     // 1. 识别楼层
     var levelText = recognizeLevel();
     var planType = config.gameCheck.levelConfig["default"];
@@ -435,16 +571,18 @@ function executeGamePreparation() {
     sleep(500);
 
     var whiteArea = config.gameCheck.levelOcrArea;
-    addLog("点击空白区域");
+    addLog("点击空白区域(第1次)");
     clickArea(whiteArea);
     sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
-    addLog("点击空白区域");
+    addLog("点击空白区域(第2次)");
     clickArea(whiteArea);
     sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
 
     // 4. 点击准备按钮
     addLog("点击准备按钮");
     clickArea(config.gameCheck.prepareButtonLocation);
+
+    addLog("===== 游戏准备流程完成 =====");
 }
 
 // ==================== 点击区域辅助函数 ====================
@@ -460,7 +598,6 @@ function clickArea(area) {
 }
 
 // ==================== 点击器工作线程 ====================
-// ==================== 点击器工作线程 ====================
 function startClickerThread() {
     if (clickerThread != null && clickerThread.isAlive()) {
         clickerThread.interrupt();
@@ -470,6 +607,12 @@ function startClickerThread() {
         var localCount = clickCount;
         lastOcrCheckTime = new Date().getTime();
 
+        // 先执行自动加入流程
+        addLog("执行自动加入流程");
+        executeAutoJoinFlow();
+
+        // 开始主循环
+        addLog("开始自动点击循环");
         while (!clickerPaused && clickerRunning && !isExiting) {
             // 检查是否超时
             if (config.clicker.continuousClick.enabled) {
@@ -494,11 +637,15 @@ function startClickerThread() {
 
                     if (!checkGameReady()) {
                         addLog("状态: 游戏未就绪，跳出点击循环");
-                        addLog("状态: 开始执行游戏准备流程");
+
+                        // 执行准备流程
                         executeGamePreparation();
-                        addLog("状态: 游戏准备流程完成，自动暂停点击器");
+
+                        // 执行召唤流程
+                        executeSummonFlow();
 
                         // 自动暂停点击器，改变按钮状态
+                        addLog("状态: 流程完成，自动暂停点击器");
                         ui.run(function() {
                             pauseClicker();
                         });
@@ -813,6 +960,10 @@ addLog("  - OCR检测间隔: " + (config.clicker.ocrCheckInterval/1000) + "秒")
 if (config.clicker.continuousClick.enabled) {
     addLog("  - 连续点击: " + config.clicker.continuousClick.duration + "秒");
 }
+addLog("自动加入流程: 已配置");
+addLog("  - 聊天框→队伍→难度→空白区域");
+addLog("自动召唤流程: 已配置");
+addLog("  - 等待准备→召唤英雄" + config.summon.summonClickCount + "次");
 addLog("OCR选择器: 初始待命");
 addLog("  - 优先词条: " + needWordList.length);
 addLog("  - 可选词条: " + allWordList.length);
