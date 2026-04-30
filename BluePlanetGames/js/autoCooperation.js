@@ -65,7 +65,7 @@ var config = {
             // 刷新按钮
             refreshButton: { left: 400, top: 1550, right: 680, bottom: 1600 },
             // OCR识别区域
-            ocrArea: { left: 80, top: 750, right: 990, bottom: 830 },
+            wordOcrArea: { left: 80, top: 750, right: 990, bottom: 830 },
             // 三个词条位置
             wordPositions: [
                 { left: 80, top: 1100, right: 300, bottom: 1300 },
@@ -86,6 +86,12 @@ var config = {
     // ========== 游戏就绪检测配置 ==========
     gameCheck: {
         // 加入按钮识别区域
+
+        joinOcrInfo: {
+            checkText: "招募频道",
+            checkArea: { left: 500, top: 420, right: 750, bottom: 510}
+        },
+
         joinOcrArea: { left: 580, top: 1710, right: 730, bottom: 1770 },
 
         // 当前楼层识别区域
@@ -127,7 +133,7 @@ var config = {
         teamButtonLocation: { left: 80, top: 1410, right: 100, bottom: 1430 },
 
         // 选择难度位置
-        selectDifficultyButtonLocation: { left: 610, top: 1720, right: 630, bottom: 1740 },
+        selectDifficultyButtonLocation: { left: 610, top: 1920, right: 630, bottom: 1940 },
 
         // 空白区域（队伍界面）
         teamBlankArea: { left: 600, top: 500, right: 630, bottom: 530 },
@@ -467,7 +473,8 @@ function checkGameReady() {
             return false;
         }
 
-        var area = config.gameCheck.joinOcrArea;
+        var area = config.gameCheck.joinOcrInfo.checkArea;
+        var checkText = config.gameCheck.joinOcrInfo.checkText;
         var clip = images.clip(img, area.left, area.top,
             area.right - area.left,
             area.bottom - area.top);
@@ -480,14 +487,13 @@ function checkGameReady() {
             for (var i = 0; i < result.length; i++) {
                 var text = result[i].words || result[i].text || "";
                 text = text.replace(/[\s\n\r\t]+/g, "").trim();
-                if (text.indexOf("加入") >= 0) {
-                    addLog("状态: 游戏就绪");
+                if (text.indexOf(checkText) >= 0) {
+                    addLog("状态: 未进入房间，等待中...");
                     return true;
                 }
             }
         }
 
-        addLog("状态: 检测到游戏未就绪，等待中...");
         return false;
 
     } catch (e) {
@@ -636,7 +642,7 @@ function startClickerThread() {
                     lastOcrCheckTime = currentTime;
 
                     if (!checkGameReady()) {
-                        addLog("状态: 游戏未就绪，跳出点击循环");
+                        addLog("状态: 进入房间");
 
                         // 执行准备流程
                         executeGamePreparation();
@@ -684,7 +690,7 @@ function captureAndOcr() {
             return [];
         }
 
-        var area = config.ocr.areas.ocrArea;
+        var area = config.ocr.areas.wordOcrArea;
         var clip = images.clip(img, area.left, area.top,
             area.right - area.left,
             area.bottom - area.top);
