@@ -45,7 +45,7 @@ var config = {
     },
 
     // ========== OCR词条选择配置 ==========
-    ocr: {
+    wordOcr: {
         // 主循环间隔（毫秒）
         mainLoopInterval: 10000,
 
@@ -83,17 +83,14 @@ var config = {
         }
     },
 
-    // ========== 游戏就绪检测配置 ==========
-    gameCheck: {
-        // 加入按钮识别区域
-
+    // ========== 游戏准备配置 ==========
+    gamePrepare: {
+        // 停止自动加入判断的识别区域
         joinOcrInfo: {
             checkText: "招募频道",
             checkArea: { left: 500, top: 420, right: 750, bottom: 510}
         },
-
-        joinOcrArea: { left: 580, top: 1710, right: 730, bottom: 1770 },
-
+        
         // 当前楼层识别区域
         levelOcrArea: { left: 420, top: 280, right: 650, bottom: 360 },
 
@@ -160,7 +157,7 @@ var config = {
         summonClickCount: 10,
 
         // 召唤点击间隔（毫秒）
-        summonClickInterval: 300
+        summonClickInterval: 800
     }
 };
 
@@ -473,8 +470,8 @@ function checkGameReady() {
             return false;
         }
 
-        var area = config.gameCheck.joinOcrInfo.checkArea;
-        var checkText = config.gameCheck.joinOcrInfo.checkText;
+        var area = config.gamePrepare.joinOcrInfo.checkArea;
+        var checkText = config.gamePrepare.joinOcrInfo.checkText;
         var clip = images.clip(img, area.left, area.top,
             area.right - area.left,
             area.bottom - area.top);
@@ -511,7 +508,7 @@ function recognizeLevel() {
             return null;
         }
 
-        var area = config.gameCheck.levelOcrArea;
+        var area = config.gamePrepare.levelOcrArea;
         var clip = images.clip(img, area.left, area.top,
             area.right - area.left,
             area.bottom - area.top);
@@ -547,11 +544,11 @@ function executeGamePreparation() {
 
     // 1. 识别楼层
     var levelText = recognizeLevel();
-    var planType = config.gameCheck.levelConfig["default"];
+    var planType = config.gamePrepare.levelConfig["default"];
 
     if (levelText) {
-        if (config.gameCheck.levelConfig[levelText]) {
-            planType = config.gameCheck.levelConfig[levelText];
+        if (config.gamePrepare.levelConfig[levelText]) {
+            planType = config.gamePrepare.levelConfig[levelText];
         }
         addLog("楼层识别: " + levelText + " → 使用方案" + (planType === "plan4" ? "4" : "2"));
     } else {
@@ -559,34 +556,34 @@ function executeGamePreparation() {
     }
 
     // 2. 点击方案主入口按钮
-    var planBtn = config.gameCheck.planButtonLocation;
+    var planBtn = config.gamePrepare.planButtonLocation;
     addLog("点击方案按钮");
     clickArea(planBtn);
     addLog("点击: 方案入口 → 方案" + (planType === "plan4" ? "4" : "2") + "按钮 → 准备按钮");
-    sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
+    sleep(config.gamePrepare.clickBaseInterval + random(-config.gamePrepare.clickRandomRange, config.gamePrepare.clickRandomRange));
 
     // 3. 点击对应方案按钮
     var selectedPlanBtn;
     if (planType === "plan4") {
-        selectedPlanBtn = config.gameCheck.plan4ButtonLocation;
+        selectedPlanBtn = config.gamePrepare.plan4ButtonLocation;
     } else {
-        selectedPlanBtn = config.gameCheck.plan2ButtonLocation;
+        selectedPlanBtn = config.gamePrepare.plan2ButtonLocation;
     }
     addLog("点击具体方案:" + planType);
     clickArea(selectedPlanBtn);
     sleep(500);
 
-    var whiteArea = config.gameCheck.levelOcrArea;
+    var whiteArea = config.gamePrepare.levelOcrArea;
     addLog("点击空白区域(第1次)");
     clickArea(whiteArea);
-    sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
+    sleep(config.gamePrepare.clickBaseInterval + random(-config.gamePrepare.clickRandomRange, config.gamePrepare.clickRandomRange));
     addLog("点击空白区域(第2次)");
     clickArea(whiteArea);
-    sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
+    sleep(config.gamePrepare.clickBaseInterval + random(-config.gamePrepare.clickRandomRange, config.gamePrepare.clickRandomRange));
 
     // 4. 点击准备按钮
     addLog("点击准备按钮");
-    clickArea(config.gameCheck.prepareButtonLocation);
+    clickArea(config.gamePrepare.prepareButtonLocation);
 
     addLog("===== 游戏准备流程完成 =====");
 }
@@ -690,7 +687,7 @@ function captureAndOcr() {
             return [];
         }
 
-        var area = config.ocr.areas.wordOcrArea;
+        var area = config.wordOcr.areas.wordOcrArea;
         var clip = images.clip(img, area.left, area.top,
             area.right - area.left,
             area.bottom - area.top);
@@ -723,7 +720,7 @@ function captureAndOcr() {
 
 // ==================== OCR工具函数 ====================
 function randomDelay() {
-    var delay = random(config.ocr.actionDelay.min, config.ocr.actionDelay.max);
+    var delay = random(config.wordOcr.actionDelay.min, config.wordOcr.actionDelay.max);
     sleep(delay);
 }
 
@@ -738,14 +735,14 @@ function createOcrControlWindow() {
         ocrControlWindow = floaty.window(
             <frame>
                 <button id="ocrControlBtn" text="词"
-                        w="{{config.ocr.controlButton.width}}px"
-                        h="{{config.ocr.controlButton.height}}px"
+                        w="{{config.wordOcr.controlButton.width}}px"
+                        h="{{config.wordOcr.controlButton.height}}px"
                         bg="#4CAF50" textColor="#ffffff"
                         textSize="14sp"/>
             </frame>
         );
 
-        ocrControlWindow.setPosition(config.ocr.controlButton.x, config.ocr.controlButton.y);
+        ocrControlWindow.setPosition(config.wordOcr.controlButton.x, config.wordOcr.controlButton.y);
 
         ocrControlWindow.ocrControlBtn.on("click", function() {
             if (!ocrRunning) {
@@ -811,11 +808,11 @@ function startOcrThread() {
         while (ocrRunning && !isExiting) {
             try {
                 addLog("=============start===============")
-                for (var retry = 0; retry < config.ocr.maxRetryCount && ocrRunning; retry++) {
+                for (var retry = 0; retry < config.wordOcr.maxRetryCount && ocrRunning; retry++) {
 
                     // 点击词条按钮
                     addLog("点击词条")
-                    clickArea(config.ocr.areas.wordButton);
+                    clickArea(config.wordOcr.areas.wordButton);
                     randomDelay();
                     sleep(1000);
 
@@ -843,7 +840,7 @@ function startOcrThread() {
                     // 刷新逻辑
                     if (!hasNeedWord) {
                         addLog("点击刷新词条");
-                        clickArea(config.ocr.areas.refreshButton);
+                        clickArea(config.wordOcr.areas.refreshButton);
 
                         words = captureAndOcr();
                         if (words.length > 0) {
@@ -881,12 +878,12 @@ function startOcrThread() {
 
                     if (selectedIndex >= 0) {
                         addLog("点击词条:" + (selectedIndex + 1));
-                        clickArea(config.ocr.areas.wordPositions[selectedIndex]);
+                        clickArea(config.wordOcr.areas.wordPositions[selectedIndex]);
                         break;
                     } else {
                         // 随机选择词条
-                        var randomIndex = Math.floor(Math.random() * config.ocr.areas.wordPositions.length);
-                        clickArea(config.ocr.areas.wordPositions[randomIndex]);
+                        var randomIndex = Math.floor(Math.random() * config.wordOcr.areas.wordPositions.length);
+                        clickArea(config.wordOcr.areas.wordPositions[randomIndex]);
                         addLog("无可用词条, 随机选择词条: " + words[randomIndex]);
                         break;
                     }
@@ -895,7 +892,7 @@ function startOcrThread() {
                 addLog("=============end===============")
                 // 等待下一个循环
                 if (ocrRunning && !isExiting) {
-                    sleep(config.ocr.mainLoopInterval);
+                    sleep(config.wordOcr.mainLoopInterval);
                 }
 
             } catch (e) {
@@ -973,8 +970,8 @@ addLog("  - 等待准备→召唤英雄" + config.summon.summonClickCount + "次
 addLog("OCR选择器: 初始待命");
 addLog("  - 优先词条: " + needWordList.length);
 addLog("  - 可选词条: " + allWordList.length);
-addLog("  - 间隔: " + (config.ocr.mainLoopInterval/1000) + "秒");
-addLog("  - 重试: " + config.ocr.maxRetryCount + "次");
+addLog("  - 间隔: " + (config.wordOcr.mainLoopInterval/1000) + "秒");
+addLog("  - 重试: " + config.wordOcr.maxRetryCount + "次");
 addLog("==================");
 addLog("点击绿色按钮开始对应功能");
 
