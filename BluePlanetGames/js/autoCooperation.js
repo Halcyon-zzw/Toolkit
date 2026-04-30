@@ -38,7 +38,9 @@ var config = {
         },
         button: {
             x: 200, y: 200
-        }
+        },
+        // OCR检测间隔（毫秒）
+        ocrCheckInterval: 5000
     },
 
     // ========== OCR词条选择配置 ==========
@@ -75,9 +77,44 @@ var config = {
         controlButton: {
             x: 50,
             y: 1600,
-            width: 60,
-            height: 40
+            width: 70,
+            height: 70
         }
+    },
+
+    // ========== 游戏就绪检测配置 ==========
+    gameCheck: {
+        // 加入按钮识别区域
+        joinOcrArea: { left: 580, top: 1710, right: 730, bottom: 1770 },
+
+        // 当前楼层识别区域
+        levelOcrArea: { left: 420, top: 280, right: 650, bottom: 360 },
+
+        // 方案主入口按钮
+        planButtonLocation: { left: 880, top: 1950, right: 940, bottom: 1990 },
+
+        // 方案2按钮（用于彩虹5层和其他）
+        plan2ButtonLocation: { left: 480, top: 720, right: 500, bottom: 740 },
+
+        // 方案4按钮（用于彩虹3-4层）
+        plan4ButtonLocation: { left: 830, top: 720, right: 850, bottom: 740 },
+
+        // 准备按钮
+        prepareButtonLocation: { left: 500, top: 1930, right: 600, bottom: 2000 },
+
+        // 楼层配置映射
+        levelConfig: {
+            "彩虹3层": "plan4",
+            "彩虹4层": "plan4",
+            "彩虹5层": "plan2",
+            "default": "plan2"
+        },
+
+        // 点击间隔基础值（毫秒）
+        clickBaseInterval: 100,
+
+        // 点击间隔随机范围（毫秒）
+        clickRandomRange: 50
     }
 };
 
@@ -148,6 +185,9 @@ var isExiting = false;
 var logWindow = null;
 var logLines = [];
 var isLogExpanded = true;
+
+// 上次OCR检测时间
+var lastOcrCheckTime = 0;
 
 // ==================== 日志窗口 ====================
 function addLog(msg) {
@@ -269,6 +309,7 @@ function resumeClicker() {
     clickerPaused = false;
     clickerRunning = true;
     clickStartTime = new Date().getTime();
+    lastOcrCheckTime = 0;  // 重置OCR检测时间
 
     ui.run(function() {
         stopBtn.setVisibility(0);
@@ -285,6 +326,138 @@ function resumeClicker() {
     startClickerThread();
 }
 
+// ==================== 游戏就绪检测 ====================
+function checkGameReady() {
+    try {
+        var img = captureScreen();
+        if (!img) {
+            addLog("状态: 截图失败，无法检测游戏状态");
+            return false;
+        }
+
+        var area = config.gameCheck.joinOcrArea;
+        var clip = images.clip(img, area.left, area.top,
+            area.right - area.left,
+            area.bottom - area.top);
+        img.recycle();
+
+        var result = paddle.ocr(clip);
+        clip.recycle();
+
+        if (result && result.length > 0) {
+            for (var i = 0; i < result.length; i++) {
+                var text = result[i].words || result[i].text || "";
+                text = text.replace(/[\s\n\r\t]+/g, "").trim();
+                if (text.indexOf("加入") >= 0) {
+                    addLog("状态: 游戏就绪");
+                    return true;
+                }
+            }
+        }
+
+        addLog("状态: 检测到游戏未就绪，等待中...");
+        return false;
+
+    } catch (e) {
+        addLog("状态: OCR检测异常: " + e.message);
+        return false;
+    }
+}
+
+// ==================== 楼层识别 ====================
+function recognizeLevel() {
+    try {
+        var img = captureScreen();
+        if (!img) {
+            addLog("楼层识别: 截图失败");
+            return null;
+        }
+
+        var area = config.gameCheck.levelOcrArea;
+        var clip = images.clip(img, area.left, area.top,
+            area.right - area.left,
+            area.bottom - area.top);
+        img.recycle();
+
+        var result = paddle.ocr(clip);
+        clip.recycle();
+
+        if (result && result.length > 0) {
+            for (var i = 0; i < result.length; i++) {
+                var text = result[i].words || result[i].text || "";
+                text = text.replace(/[\s\n\r\t]+/g, "").trim();
+
+                // 匹配彩虹X层
+                if (text.indexOf("彩虹") >= 0 && text.indexOf("层") >= 0) {
+                    return text;
+                }
+            }
+        }
+
+        addLog("楼层识别: 未识别到楼层信息");
+        return null;
+
+    } catch (e) {
+        addLog("楼层识别: OCR异常: " + e.message);
+        return null;
+    }
+}
+
+// ==================== 执行游戏准备流程 ====================
+// ==================== 执行游戏准备流程 ====================
+function executeGamePreparation() {
+    // 1. 识别楼层
+    var levelText = recognizeLevel();
+    var planType = config.gameCheck.levelConfig["default"];
+
+    if (levelText) {
+        if (config.gameCheck.levelConfig[levelText]) {
+            planType = config.gameCheck.levelConfig[levelText];
+        }
+        addLog("楼层识别: " + levelText + " → 使用方案" + (planType === "plan4" ? "4" : "2"));
+    } else {
+        addLog("楼层识别: 失败/为空 → 使用默认方案2");
+    }
+
+    // 2. 点击方案主入口按钮
+    var planBtn = config.gameCheck.planButtonLocation;
+    clickArea(planBtn);
+    addLog("点击: 方案入口 → 方案" + (planType === "plan4" ? "4" : "2") + "按钮 → 准备按钮");
+    sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
+
+    // 3. 点击对应方案按钮
+    var selectedPlanBtn;
+    if (planType === "plan4") {
+        selectedPlanBtn = config.gameCheck.plan4ButtonLocation;
+    } else {
+        selectedPlanBtn = config.gameCheck.plan2ButtonLocation;
+    }
+    clickArea(selectedPlanBtn);
+    sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
+
+    var whiteArea = config.gameCheck.levelOcrArea;
+    clickArea(whiteArea);
+    sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
+    clickArea(whiteArea);
+    sleep(config.gameCheck.clickBaseInterval + random(-config.gameCheck.clickRandomRange, config.gameCheck.clickRandomRange));
+
+    // 4. 点击准备按钮
+    clickArea(config.gameCheck.prepareButtonLocation);
+}
+
+// ==================== 点击区域辅助函数 ====================
+function clickArea(area) {
+    var x = random(area.left, area.right);
+    var y = random(area.top, area.bottom);
+    try {
+        addLog("点击(" + x + ", " + y + ")");
+        click(x, y);
+    } catch (e) {
+        addLog("点击失败: " + e.message);
+    }
+}
+
+// ==================== 点击器工作线程 ====================
 // ==================== 点击器工作线程 ====================
 function startClickerThread() {
     if (clickerThread != null && clickerThread.isAlive()) {
@@ -293,8 +466,10 @@ function startClickerThread() {
 
     clickerThread = threads.start(function() {
         var localCount = clickCount;
+        lastOcrCheckTime = new Date().getTime();
 
         while (!clickerPaused && clickerRunning && !isExiting) {
+            // 检查是否超时
             if (config.clicker.continuousClick.enabled) {
                 var now = new Date().getTime();
                 if (clickStartTime > 0) {
@@ -314,6 +489,28 @@ function startClickerThread() {
                 }
             }
 
+            // OCR检测游戏就绪状态（仅自动点击循环中执行）
+            if (clickerRunning && !clickerPaused) {
+                var currentTime = new Date().getTime();
+                if (currentTime - lastOcrCheckTime >= config.clicker.ocrCheckInterval) {
+                    lastOcrCheckTime = currentTime;
+
+                    if (!checkGameReady()) {
+                        addLog("状态: 游戏未就绪，跳出点击循环");
+                        addLog("状态: 开始执行游戏准备流程");
+                        executeGamePreparation();
+                        addLog("状态: 游戏准备流程完成，自动暂停点击器");
+
+                        // 自动暂停点击器，改变按钮状态
+                        ui.run(function() {
+                            pauseClicker();
+                        });
+                        break;
+                    }
+                }
+            }
+
+            // 执行点击
             localCount++;
             clickCount = localCount;
 
@@ -613,8 +810,8 @@ toast("正在初始化...");
 sleep(1000);
 
 // 创建日志窗口
-createLogWindow();
-sleep(500);
+// createLogWindow();
+// sleep(500);
 
 // 创建点击器控制按钮（右上角）
 createClickerControlWindow();
@@ -629,6 +826,7 @@ addLog("综合脚本就绪");
 addLog("点击器: 初始待命");
 addLog("  - 区域: (" + config.clicker.area.left + "," + config.clicker.area.top + ")");
 addLog("  - 间隔: " + config.clicker.time.min + "~" + config.clicker.time.max + "ms");
+addLog("  - OCR检测间隔: " + (config.clicker.ocrCheckInterval/1000) + "秒");
 if (config.clicker.continuousClick.enabled) {
     addLog("  - 连续点击: " + config.clicker.continuousClick.duration + "秒");
 }
