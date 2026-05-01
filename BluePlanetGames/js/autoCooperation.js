@@ -20,8 +20,6 @@ if (!requestScreenCapture()) {
     exit();
 }
 
-sleep(1000);
-
 // ==================== 可配置参数 ====================
 var config = {
     // ========== 点击器配置 ==========
@@ -68,7 +66,7 @@ var config = {
             wordOcrArea: { left: 80, top: 750, right: 990, bottom: 830 },
             // 三个词条位置
             wordPositions: [
-                { left: 80, top: 1100, right: 300, bottom: 1300 },
+                { left: 100, top: 1100, right: 300, bottom: 1300 },
                 { left: 430, top: 1100, right: 650, bottom: 1300 },
                 { left: 770, top: 1100, right: 990, bottom: 1300 }
             ]
@@ -80,17 +78,31 @@ var config = {
             y: 300,
             width: 80,
             height: 80
+        },
+
+        // ========== 词条OCR颜色预检 ==========
+        colorPreCheck: {
+            enabled: true,            // 是否启用颜色预检
+            points: [                 // 检查点坐标 (屏幕坐标)
+                { x: 450, y: 816 },
+                { x: 480, y: 816 },
+                { x: 500, y: 816 },
+                { x: 550, y: 816 },
+                { x: 600, y: 816 },
+                { x: 640, y: 816 }
+            ],
+            threshold: 30             // 颜色相似阈值 (每个通道差异和 <= threshold*3 认为相似)
         }
     },
 
     // ========== 游戏准备配置 ==========
     gamePrepare: {
-        // 停止自动加入判断的识别区域
+        // 停止自动加入判断的识别区域（原OCR配置，当颜色检测关闭时使用）
         joinOcrInfo: {
             checkText: "招募频道",
             checkArea: { left: 500, top: 420, right: 750, bottom: 510}
         },
-        
+
         // 当前楼层识别区域
         levelOcrArea: { left: 420, top: 280, right: 650, bottom: 360 },
 
@@ -119,7 +131,20 @@ var config = {
         clickBaseInterval: 100,
 
         // 点击间隔随机范围（毫秒）
-        clickRandomRange: 50
+        clickRandomRange: 50,
+
+        // ========== 自动点击停止颜色检测 ==========
+        stopColorCheck: {
+            enabled: true,            // 启用颜色检测替代OCR
+            points: [                 // 检测点坐标 (屏幕坐标)
+                { x: 1010, y: 600 },
+                { x: 1010, y: 700 },
+                { x: 1010, y: 800 },
+                { x: 1010, y: 900 },
+                { x: 1010, y: 1000 }
+            ],
+            threshold: 10             // 颜色相似阈值
+        }
     },
 
     // ========== 自动加入流程配置 ==========
@@ -239,6 +264,40 @@ var isLogExpanded = true;
 
 // 上次OCR检测时间
 var lastOcrCheckTime = 0;
+
+// ==================== 工具函数：颜色比较 ====================
+function isSimilar(color1, color2, threshold) {
+    let r1 = (color1 >> 16) & 0xff;
+    let g1 = (color1 >> 8) & 0xff;
+    let b1 = color1 & 0xff;
+    let r2 = (color2 >> 16) & 0xff;
+    let g2 = (color2 >> 8) & 0xff;
+    let b2 = color2 & 0xff;
+    let diff = Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
+    return diff <= threshold * 3;
+}
+
+// 判断图像上的一组点是否颜色都相似（均与第一个点比较）
+// 返回 true 表示所有点颜色相似，false 表示存在不同
+function areAllColorsSimilar(img, points, threshold) {
+    if (!points || points.length === 0) return true;
+    try {
+        var baseColor = images.pixel(img, points[0].x, points[0].y);
+        addLog("基准点 (" + points[0].x + "," + points[0].y + ") 颜色: " + colors.toString(baseColor));
+        for (var i = 1; i < points.length; i++) {
+            var color = images.pixel(img, points[i].x, points[i].y);
+            addLog("点 (" + points[i].x + "," + points[i].y + ") 颜色: " + colors.toString(color));
+            if (!isSimilar(baseColor, color, threshold)) {
+                addLog("  颜色差异过大，不相似");
+                return false;
+            }
+        }
+        return true;
+    } catch (e) {
+        addLog("颜色检测异常: " + e.message);
+        return false;
+    }
+}
 
 // ==================== 日志窗口 ====================
 function addLog(msg) {
@@ -470,44 +529,69 @@ function executeSummonFlow() {
     clickArea(config.summon.fluentButtonArea);
     randomDelay()
     clickArea(config.summon.floatButtonArea)
-
 }
 
-// ==================== 游戏就绪检测 ====================
+// ==================== 游戏就绪检测（优化版） ====================
 function checkGameReady() {
-    try {
-        var img = captureScreen();
-        if (!img) {
-            addLog("状态: 截图失败，无法检测游戏状态");
+    // 如果启用了颜色检测，使用颜色模式
+    if (config.gamePrepare.stopColorCheck.enabled) {
+        try {
+            var img = captureScreen();
+            if (!img) {
+                addLog("状态: 截图失败（颜色检测）");
+                return false;
+            }
+            addLog("===== 颜色检测：判断是否还在频道 =====");
+            // 如果所有点颜色相似（一致），表示还在频道，返回true；如果不一致，表示进入房间，返回false
+            var similar = areAllColorsSimilar(img, config.gamePrepare.stopColorCheck.points, config.gamePrepare.stopColorCheck.threshold);
+            img.recycle();
+            if (similar) {
+                addLog("状态: 颜色一致，未进入房间，等待中...");
+                return true;
+            } else {
+                addLog("状态: 颜色不一致，进入房间");
+                return false;
+            }
+        } catch (e) {
+            addLog("状态: 颜色检测异常: " + e.message);
             return false;
         }
+    } else {
+        // 否则使用原来的OCR检测
+        try {
+            var img = captureScreen();
+            if (!img) {
+                addLog("状态: 截图失败，无法检测游戏状态");
+                return false;
+            }
 
-        var area = config.gamePrepare.joinOcrInfo.checkArea;
-        var checkText = config.gamePrepare.joinOcrInfo.checkText;
-        var clip = images.clip(img, area.left, area.top,
-            area.right - area.left,
-            area.bottom - area.top);
-        img.recycle();
+            var area = config.gamePrepare.joinOcrInfo.checkArea;
+            var checkText = config.gamePrepare.joinOcrInfo.checkText;
+            var clip = images.clip(img, area.left, area.top,
+                area.right - area.left,
+                area.bottom - area.top);
+            img.recycle();
 
-        var result = paddle.ocr(clip);
-        clip.recycle();
+            var result = paddle.ocr(clip);
+            clip.recycle();
 
-        if (result && result.length > 0) {
-            for (var i = 0; i < result.length; i++) {
-                var text = result[i].words || result[i].text || "";
-                text = text.replace(/[\s\n\r\t]+/g, "").trim();
-                if (text.indexOf(checkText) >= 0) {
-                    addLog("状态: 未进入房间，等待中...");
-                    return true;
+            if (result && result.length > 0) {
+                for (var i = 0; i < result.length; i++) {
+                    var text = result[i].words || result[i].text || "";
+                    text = text.replace(/[\s\n\r\t]+/g, "").trim();
+                    if (text.indexOf(checkText) >= 0) {
+                        addLog("状态: 未进入房间，等待中...");
+                        return true;
+                    }
                 }
             }
+
+            return false;
+
+        } catch (e) {
+            addLog("状态: OCR检测异常: " + e.message);
+            return false;
         }
-
-        return false;
-
-    } catch (e) {
-        addLog("状态: OCR检测异常: " + e.message);
-        return false;
     }
 }
 
@@ -644,7 +728,7 @@ function startClickerThread() {
                 }
             }
 
-            // OCR检测游戏就绪状态（仅自动点击循环中执行）
+            // OCR/颜色检测游戏就绪状态
             if (clickerRunning && !clickerPaused) {
                 var currentTime = new Date().getTime();
                 if (currentTime - lastOcrCheckTime >= config.clicker.ocrCheckInterval) {
@@ -659,7 +743,7 @@ function startClickerThread() {
                         // 执行召唤流程
                         executeSummonFlow();
 
-                        // 自动暂停点击器，改变按钮状态
+                        // 自动暂停点击器
                         addLog("状态: 流程完成，自动暂停点击器");
                         ui.run(function() {
                             pauseClicker();
@@ -697,6 +781,19 @@ function captureAndOcr() {
         if (!img) {
             addLog("截图失败");
             return [];
+        }
+
+        // 如果启用了词条颜色预检
+        if (config.wordOcr.colorPreCheck.enabled) {
+            addLog("===== 词条颜色预检 =====");
+            var points = config.wordOcr.colorPreCheck.points;
+            var threshold = config.wordOcr.colorPreCheck.threshold;
+            if (!areAllColorsSimilar(img, points, threshold)) {
+                img.recycle();
+                addLog("词条颜色不一致，跳过OCR");
+                return [];
+            }
+            addLog("词条颜色一致，允许OCR识别");
         }
 
         var area = config.wordOcr.areas.wordOcrArea;
@@ -826,11 +923,11 @@ function startOcrThread() {
                     addLog("点击词条")
                     clickArea(config.wordOcr.areas.wordButtonArea);
                     randomDelay();
-                    //再次点击，快速点击推出boss箱子页面
+                    //再次点击，快速点击退出boss箱子页面
                     clickArea(config.wordOcr.areas.wordButtonArea);
                     sleep(1000);
 
-                    // OCR识别
+                    // OCR识别（内部包含颜色预检）
                     var words = captureAndOcr();
                     if (words.length > 0) {
                         addLog("OCR识别: 【" + words.join("】, 【") + "】");
@@ -969,21 +1066,24 @@ createOcrControlWindow();
 sleep(500);
 
 addLog("==================");
-addLog("综合脚本就绪");
+addLog("综合脚本就绪 (颜色优化版)");
 addLog("点击器: 初始待命");
 addLog("  - 区域: (" + config.clicker.area.left + "," + config.clicker.area.top + ")");
 addLog("  - 间隔: " + config.clicker.time.min + "~" + config.clicker.time.max + "ms");
-addLog("  - OCR检测间隔: " + (config.clicker.ocrCheckInterval/1000) + "秒");
+addLog("  - 停止检测: " + (config.gamePrepare.stopColorCheck.enabled ? "颜色模式" : "OCR模式"));
+if (config.gamePrepare.stopColorCheck.enabled) {
+    addLog("    检测点数: " + config.gamePrepare.stopColorCheck.points.length);
+}
+addLog("  - 检测间隔: " + (config.clicker.ocrCheckInterval/1000) + "秒");
 if (config.clicker.continuousClick.enabled) {
     addLog("  - 连续点击: " + config.clicker.continuousClick.duration + "秒");
 }
 addLog("自动加入流程: 已配置");
-addLog("  - 聊天框→队伍→难度→空白区域");
 addLog("自动召唤流程: 已配置");
-addLog("  - 等待准备→召唤英雄" + config.summon.summonClickCount + "次");
 addLog("OCR选择器: 初始待命");
 addLog("  - 优先词条: " + needWordList.length);
 addLog("  - 可选词条: " + allWordList.length);
+addLog("  - 颜色预检: " + (config.wordOcr.colorPreCheck.enabled ? "开启" : "关闭"));
 addLog("  - 间隔: " + (config.wordOcr.mainLoopInterval/1000) + "秒");
 addLog("  - 重试: " + config.wordOcr.maxRetryCount + "次");
 addLog("==================");
