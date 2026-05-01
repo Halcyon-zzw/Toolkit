@@ -61,9 +61,9 @@ var config = {
         // 坐标配置
         areas: {
             // 选择词条按钮
-            wordButton: { left: 240, top: 2200, right: 370, bottom: 2300 },
+            wordButtonArea: { left: 240, top: 2200, right: 370, bottom: 2300 },
             // 刷新按钮
-            refreshButton: { left: 400, top: 1550, right: 680, bottom: 1600 },
+            refreshButtonArea: { left: 400, top: 1550, right: 680, bottom: 1600 },
             // OCR识别区域
             wordOcrArea: { left: 80, top: 750, right: 990, bottom: 830 },
             // 三个词条位置
@@ -146,7 +146,14 @@ var config = {
         prepareStatusArea: { left: 330, top: 1900, right: 750, bottom: 2020 },
 
         // 召唤英雄位置
-        summonButtonLocation: { left: 730, top: 2200, right: 850, bottom: 2300 },
+        summonButtonArea: { left: 730, top: 2200, right: 850, bottom: 2300 },
+
+        // 流畅按钮位置
+        fluentButtonArea: { left: 70, top: 570, right: 80, bottom: 590 },
+
+        // 飘字按钮位置
+        floatButtonArea: { left: 70, top: 730, right: 80, bottom: 750 },
+
 
         // 准备状态检测间隔（毫秒）
         statusCheckInterval: 3000,
@@ -452,14 +459,18 @@ function executeSummonFlow() {
     sleep(config.summon.waitAfterPrepare);
 
     // 点击召唤按钮10次
-    addLog("开始召唤英雄，点击" + config.summon.summonClickCount + "次");
+    addLog("=====> 开始召唤英雄, " + config.summon.summonClickCount + "次 <=====");
     for (var i = 0; i < config.summon.summonClickCount && !isExiting; i++) {
         addLog("召唤点击: 第" + (i + 1) + "次");
-        clickArea(config.summon.summonButtonLocation);
+        clickArea(config.summon.summonButtonArea);
         sleep(config.summon.summonClickInterval);
     }
-
     addLog("===== 召唤流程完成 =====");
+    addLog("=====> 关闭流畅、飘字 <=====");
+    clickArea(config.summon.fluentButtonArea);
+    randomDelay()
+    clickArea(config.summon.floatButtonArea)
+
 }
 
 // ==================== 游戏就绪检测 ====================
@@ -813,10 +824,10 @@ function startOcrThread() {
 
                     // 点击词条按钮
                     addLog("点击词条")
-                    clickArea(config.wordOcr.areas.wordButton);
+                    clickArea(config.wordOcr.areas.wordButtonArea);
                     randomDelay();
                     //再次点击，快速点击推出boss箱子页面
-                    clickArea(config.wordOcr.areas.wordButton);
+                    clickArea(config.wordOcr.areas.wordButtonArea);
                     sleep(1000);
 
                     // OCR识别
@@ -843,7 +854,7 @@ function startOcrThread() {
                     // 刷新逻辑
                     if (!hasNeedWord) {
                         addLog("点击刷新词条");
-                        clickArea(config.wordOcr.areas.refreshButton);
+                        clickArea(config.wordOcr.areas.refreshButtonArea);
 
                         words = captureAndOcr();
                         if (words.length > 0) {
