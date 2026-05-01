@@ -179,7 +179,6 @@ var config = {
         // 飘字按钮位置
         floatButtonArea: { left: 70, top: 730, right: 80, bottom: 750 },
 
-
         // 准备状态检测间隔（毫秒）
         statusCheckInterval: 3000,
 
@@ -204,7 +203,7 @@ var needWordListRaw = [
     "哥斯拉:高速轰击", "哥斯拉:火球喷发", "哥斯拉:高速火球",
     "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:核能增幅",
     "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:灼烧岩浆",
-    "天使:神圣契约", "天使:圣羽加持", "天使:战神化身"
+    "天使:神圣契约", "天使:战神化身", "天使:奥术连奏"
 ];
 
 var allWordListRaw = [
@@ -216,7 +215,7 @@ var allWordListRaw = [
     "哥斯拉:高速轰击", "哥斯拉:火球喷发", "哥斯拉:高速火球",
     "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:核能增幅",
     "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:灼烧岩浆",
-    "天使:神圣契约", "天使:圣羽加持", "天使:战神化身", "天使:奥术连奏",
+    "天使:神圣契约", "天使:战神化身", "天使:奥术连奏", "天使:圣羽加持",
     "毒液:血肉盛宴"
 ];
 
@@ -257,11 +256,6 @@ var ocrControlWindow = null;
 // 通用状态
 var isExiting = false;
 
-// 日志系统
-var logWindow = null;
-var logLines = [];
-var isLogExpanded = true;
-
 // 上次OCR检测时间
 var lastOcrCheckTime = 0;
 
@@ -283,77 +277,19 @@ function areAllColorsSimilar(img, points, threshold) {
     if (!points || points.length === 0) return true;
     try {
         var baseColor = images.pixel(img, points[0].x, points[0].y);
-        addLog("基准点 (" + points[0].x + "," + points[0].y + ") 颜色: " + colors.toString(baseColor));
+        console.log("基准点 (" + points[0].x + "," + points[0].y + ") 颜色: " + colors.toString(baseColor));
         for (var i = 1; i < points.length; i++) {
             var color = images.pixel(img, points[i].x, points[i].y);
-            addLog("点 (" + points[i].x + "," + points[i].y + ") 颜色: " + colors.toString(color));
+            console.log("点 (" + points[i].x + "," + points[i].y + ") 颜色: " + colors.toString(color));
             if (!isSimilar(baseColor, color, threshold)) {
-                addLog("  颜色差异过大，不相似");
+                console.log("  颜色差异过大，不相似");
                 return false;
             }
         }
         return true;
     } catch (e) {
-        addLog("颜色检测异常: " + e.message);
+        console.log("颜色检测异常: " + e.message);
         return false;
-    }
-}
-
-// ==================== 日志窗口 ====================
-function addLog(msg) {
-    var logMsg = msg;
-    console.log(logMsg);
-    logLines.push(logMsg);
-
-    if (logLines.length > 50) {
-        logLines.shift();
-    }
-
-    if (logWindow && logWindow.logText) {
-        try {
-            ui.run(function() {
-                logWindow.logText.setText(logLines.join("\n"));
-            });
-        } catch (e) {}
-    }
-}
-
-function createLogWindow() {
-    if (logWindow) {
-        try { logWindow.close(); } catch(e) {}
-    }
-
-    try {
-        logWindow = floaty.window(
-            <frame bg="#66000000" layout_width="match_parent" layout_height="wrap_content">
-                <vertical layout_width="match_parent" layout_height="wrap_content" padding="5">
-                    <horizontal layout_width="match_parent" layout_height="wrap_content">
-                        <text text="日志" textColor="#ffffff" textSize="12sp" layout_weight="1"/>
-                        <button id="toggleBtn" text="收起" textSize="10sp" w="50" h="30" bg="#444444" textColor="#ffffff"/>
-                    </horizontal>
-                    <text id="logText" text="" textColor="#00ff00" textSize="10sp"
-                          layout_width="match_parent" layout_height="wrap_content"
-                          maxLines="10" visibility="visible"/>
-                </vertical>
-            </frame>
-        );
-
-        logWindow.setPosition(10, 50);
-
-        logWindow.toggleBtn.on("click", function() {
-            isLogExpanded = !isLogExpanded;
-            ui.run(function() {
-                if (isLogExpanded) {
-                    logWindow.toggleBtn.setText("收起");
-                    logWindow.logText.setVisibility(0);
-                } else {
-                    logWindow.toggleBtn.setText("展开");
-                    logWindow.logText.setVisibility(8);
-                }
-            });
-        });
-    } catch (e) {
-        console.log("创建日志窗口失败: " + e.message);
     }
 }
 
@@ -390,7 +326,7 @@ function createClickerControlWindow() {
         }
     });
 
-    addLog("点击器控制窗口已创建");
+    console.log("点击器控制窗口已创建");
 }
 
 // ==================== 点击器暂停 ====================
@@ -404,7 +340,7 @@ function pauseClicker() {
         startBtn.setVisibility(0);
     });
 
-    addLog("⏸️ 点击器已暂停");
+    console.log("⏸️ 点击器已暂停");
 
     if (clickerThread != null && clickerThread.isAlive()) {
         clickerThread.interrupt();
@@ -424,9 +360,9 @@ function resumeClicker() {
         startBtn.setVisibility(8);
     });
 
-    addLog("▶️ 点击器已启动");
+    console.log("▶️ 点击器已启动");
     if (config.clicker.continuousClick.enabled) {
-        addLog("⏰ 将连续点击 " + config.clicker.continuousClick.duration + " 秒后自动暂停");
+        console.log("⏰ 将连续点击 " + config.clicker.continuousClick.duration + " 秒后自动暂停");
     }
 
     startClickerThread();
@@ -434,29 +370,29 @@ function resumeClicker() {
 
 // ==================== 自动加入流程 ====================
 function executeAutoJoinFlow() {
-    addLog("===== 开始自动加入流程 =====");
+    console.log("===== 开始自动加入流程 =====");
 
     // 1. 点击聊天框
-    addLog("步骤1: 点击聊天框");
+    console.log("步骤1: 点击聊天框");
     clickArea(config.autoJoin.chatBoxLocation);
     sleep(config.autoJoin.stepDelay);
 
     // 2. 点击队伍
-    addLog("步骤2: 点击队伍");
+    console.log("步骤2: 点击队伍");
     clickArea(config.autoJoin.teamButtonLocation);
     sleep(config.autoJoin.stepDelay);
 
     // 3. 点击选择难度
-    addLog("步骤3: 点击选择难度");
+    console.log("步骤3: 点击选择难度");
     clickArea(config.autoJoin.selectDifficultyButtonLocation);
     sleep(config.autoJoin.stepDelay);
 
     // 4. 点击空白区域
-    addLog("步骤4: 点击空白区域");
+    console.log("步骤4: 点击空白区域");
     clickArea(config.autoJoin.teamBlankArea);
     sleep(config.autoJoin.stepDelay);
 
-    addLog("===== 自动加入流程完成 =====");
+    console.log("===== 自动加入流程完成 =====");
 }
 
 // ==================== 检查准备状态 ====================
@@ -464,7 +400,7 @@ function checkPrepareStatus() {
     try {
         var img = captureScreen();
         if (!img) {
-            addLog("准备状态检测: 截图失败");
+            console.log("准备状态检测: 截图失败");
             return false;
         }
 
@@ -482,27 +418,27 @@ function checkPrepareStatus() {
                 var text = result[i].words || result[i].text || "";
                 text = text.replace(/[\s\n\r\t]+/g, "").trim();
                 if (text.indexOf("已准备") >= 0) {
-                    addLog("准备状态: 检测到【已准备】");
+                    console.log("准备状态: 检测到【已准备】");
                     return true;
                 }
             }
         }
 
-        addLog("准备状态: 未检测到【已准备】");
+        console.log("准备状态: 未检测到【已准备】");
         return false;
 
     } catch (e) {
-        addLog("准备状态检测异常: " + e.message);
+        console.log("准备状态检测异常: " + e.message);
         return false;
     }
 }
 
 // ==================== 执行召唤流程 ====================
 function executeSummonFlow() {
-    addLog("===== 开始召唤流程 =====");
+    console.log("===== 开始召唤流程 =====");
 
     // 等待准备完成
-    addLog("已准备完成，每" + (config.summon.statusCheckInterval/1000) + "秒检测是否开始");
+    console.log("已准备完成，每" + (config.summon.statusCheckInterval/1000) + "秒检测是否开始");
     var isPrepared = true;
 
     while (isPrepared && !isExiting) {
@@ -514,18 +450,18 @@ function executeSummonFlow() {
 
     if (isExiting) return;
 
-    addLog("游戏开始，休眠" + (config.summon.waitAfterPrepare/1000) + "秒");
+    console.log("游戏开始，休眠" + (config.summon.waitAfterPrepare/1000) + "秒");
     sleep(config.summon.waitAfterPrepare);
 
     // 点击召唤按钮10次
-    addLog("=====> 开始召唤英雄, " + config.summon.summonClickCount + "次 <=====");
+    console.log("=====> 开始召唤英雄, " + config.summon.summonClickCount + "次 <=====");
     for (var i = 0; i < config.summon.summonClickCount && !isExiting; i++) {
-        addLog("召唤点击: 第" + (i + 1) + "次");
+        console.log("召唤点击: 第" + (i + 1) + "次");
         clickArea(config.summon.summonButtonArea);
         sleep(config.summon.summonClickInterval);
     }
-    addLog("===== 召唤流程完成 =====");
-    addLog("=====> 关闭流畅、飘字 <=====");
+    console.log("===== 召唤流程完成 =====");
+    console.log("=====> 关闭流畅、飘字 <=====");
     clickArea(config.summon.fluentButtonArea);
     randomDelay()
     clickArea(config.summon.floatButtonArea)
@@ -538,22 +474,22 @@ function checkGameReady() {
         try {
             var img = captureScreen();
             if (!img) {
-                addLog("状态: 截图失败（颜色检测）");
+                console.log("状态: 截图失败（颜色检测）");
                 return false;
             }
-            addLog("===== 颜色检测：判断是否还在频道 =====");
+            console.log("===== 颜色检测：判断是否还在频道 =====");
             // 如果所有点颜色相似（一致），表示还在频道，返回true；如果不一致，表示进入房间，返回false
             var similar = areAllColorsSimilar(img, config.gamePrepare.stopColorCheck.points, config.gamePrepare.stopColorCheck.threshold);
             img.recycle();
             if (similar) {
-                addLog("状态: 颜色一致，未进入房间，等待中...");
+                console.log("状态: 颜色一致，未进入房间，等待中...");
                 return true;
             } else {
-                addLog("状态: 颜色不一致，进入房间");
+                console.log("状态: 颜色不一致，进入房间");
                 return false;
             }
         } catch (e) {
-            addLog("状态: 颜色检测异常: " + e.message);
+            console.log("状态: 颜色检测异常: " + e.message);
             return false;
         }
     } else {
@@ -561,7 +497,7 @@ function checkGameReady() {
         try {
             var img = captureScreen();
             if (!img) {
-                addLog("状态: 截图失败，无法检测游戏状态");
+                console.log("状态: 截图失败，无法检测游戏状态");
                 return false;
             }
 
@@ -580,7 +516,7 @@ function checkGameReady() {
                     var text = result[i].words || result[i].text || "";
                     text = text.replace(/[\s\n\r\t]+/g, "").trim();
                     if (text.indexOf(checkText) >= 0) {
-                        addLog("状态: 未进入房间，等待中...");
+                        console.log("状态: 未进入房间，等待中...");
                         return true;
                     }
                 }
@@ -589,7 +525,7 @@ function checkGameReady() {
             return false;
 
         } catch (e) {
-            addLog("状态: OCR检测异常: " + e.message);
+            console.log("状态: OCR检测异常: " + e.message);
             return false;
         }
     }
@@ -600,7 +536,7 @@ function recognizeLevel() {
     try {
         var img = captureScreen();
         if (!img) {
-            addLog("楼层识别: 截图失败");
+            console.log("楼层识别: 截图失败");
             return null;
         }
 
@@ -625,18 +561,18 @@ function recognizeLevel() {
             }
         }
 
-        addLog("楼层识别: 未识别到楼层信息");
+        console.log("楼层识别: 未识别到楼层信息");
         return null;
 
     } catch (e) {
-        addLog("楼层识别: OCR异常: " + e.message);
+        console.log("楼层识别: OCR异常: " + e.message);
         return null;
     }
 }
 
 // ==================== 执行游戏准备流程 ====================
 function executeGamePreparation() {
-    addLog("===== 开始游戏准备流程 =====");
+    console.log("===== 开始游戏准备流程 =====");
 
     // 1. 识别楼层
     var levelText = recognizeLevel();
@@ -646,16 +582,16 @@ function executeGamePreparation() {
         if (config.gamePrepare.levelConfig[levelText]) {
             planType = config.gamePrepare.levelConfig[levelText];
         }
-        addLog("楼层识别: " + levelText + " → 使用方案" + (planType === "plan4" ? "4" : "2"));
+        console.log("楼层识别: " + levelText + " → 使用方案" + (planType === "plan4" ? "4" : "2"));
     } else {
-        addLog("楼层识别: 失败/为空 → 使用默认方案2");
+        console.log("楼层识别: 失败/为空 → 使用默认方案2");
     }
 
     // 2. 点击方案主入口按钮
     var planBtn = config.gamePrepare.planButtonLocation;
-    addLog("点击方案按钮");
+    console.log("点击方案按钮");
     clickArea(planBtn);
-    addLog("点击: 方案入口 → 方案" + (planType === "plan4" ? "4" : "2") + "按钮 → 准备按钮");
+    console.log("点击: 方案入口 → 方案" + (planType === "plan4" ? "4" : "2") + "按钮 → 准备按钮");
     sleep(config.gamePrepare.clickBaseInterval + random(-config.gamePrepare.clickRandomRange, config.gamePrepare.clickRandomRange));
 
     // 3. 点击对应方案按钮
@@ -665,23 +601,23 @@ function executeGamePreparation() {
     } else {
         selectedPlanBtn = config.gamePrepare.plan2ButtonLocation;
     }
-    addLog("点击具体方案:" + planType);
+    console.log("点击具体方案:" + planType);
     clickArea(selectedPlanBtn);
     sleep(500);
 
     var whiteArea = config.gamePrepare.levelOcrArea;
-    addLog("点击空白区域(第1次)");
+    console.log("点击空白区域(第1次)");
     clickArea(whiteArea);
     sleep(config.gamePrepare.clickBaseInterval + random(-config.gamePrepare.clickRandomRange, config.gamePrepare.clickRandomRange));
-    addLog("点击空白区域(第2次)");
+    console.log("点击空白区域(第2次)");
     clickArea(whiteArea);
     sleep(config.gamePrepare.clickBaseInterval + random(-config.gamePrepare.clickRandomRange, config.gamePrepare.clickRandomRange));
 
     // 4. 点击准备按钮
-    addLog("点击准备按钮");
+    console.log("点击准备按钮");
     clickArea(config.gamePrepare.prepareButtonLocation);
 
-    addLog("===== 游戏准备流程完成 =====");
+    console.log("===== 游戏准备流程完成 =====");
 }
 
 // ==================== 点击区域辅助函数 ====================
@@ -689,10 +625,10 @@ function clickArea(area) {
     var x = random(area.left, area.right);
     var y = random(area.top, area.bottom);
     try {
-        addLog("点击(" + x + ", " + y + ")");
+        console.log("点击(" + x + ", " + y + ")");
         click(x, y);
     } catch (e) {
-        addLog("点击失败: " + e.message);
+        console.log("点击失败: " + e.message);
     }
 }
 
@@ -707,11 +643,11 @@ function startClickerThread() {
         lastOcrCheckTime = new Date().getTime();
 
         // 先执行自动加入流程
-        addLog("执行自动加入流程");
+        console.log("执行自动加入流程");
         executeAutoJoinFlow();
 
         // 开始主循环
-        addLog("开始自动点击循环");
+        console.log("开始自动点击循环");
         while (!clickerPaused && clickerRunning && !isExiting) {
             // 检查是否超时
             if (config.clicker.continuousClick.enabled) {
@@ -735,7 +671,7 @@ function startClickerThread() {
                     lastOcrCheckTime = currentTime;
 
                     if (!checkGameReady()) {
-                        addLog("状态: 进入房间");
+                        console.log("状态: 进入房间");
 
                         // 执行准备流程
                         executeGamePreparation();
@@ -744,7 +680,7 @@ function startClickerThread() {
                         executeSummonFlow();
 
                         // 自动暂停点击器
-                        addLog("状态: 流程完成，自动暂停点击器");
+                        console.log("状态: 流程完成，自动暂停点击器");
                         ui.run(function() {
                             pauseClicker();
                         });
@@ -764,13 +700,13 @@ function startClickerThread() {
 
             if (localCount % 50 === 0) {
                 var elapsed = clickStartTime > 0 ? ((new Date().getTime() - clickStartTime) / 1000).toFixed(0) : 0;
-                addLog("📊 已完成 " + localCount + " 次点击 | 已运行 " + elapsed + " 秒");
+                console.log("📊 已完成 " + localCount + " 次点击 | 已运行 " + elapsed + " 秒");
             }
 
             sleep(random(config.clicker.time.min, config.clicker.time.max));
         }
 
-        addLog("点击器工作线程已停止");
+        console.log("点击器工作线程已停止");
     });
 }
 
@@ -779,21 +715,21 @@ function captureAndOcr() {
     try {
         var img = captureScreen();
         if (!img) {
-            addLog("截图失败");
+            console.log("截图失败");
             return [];
         }
 
         // 如果启用了词条颜色预检
         if (config.wordOcr.colorPreCheck.enabled) {
-            addLog("===== 词条颜色预检 =====");
+            console.log("===== 词条颜色预检 =====");
             var points = config.wordOcr.colorPreCheck.points;
             var threshold = config.wordOcr.colorPreCheck.threshold;
             if (!areAllColorsSimilar(img, points, threshold)) {
                 img.recycle();
-                addLog("词条颜色不一致，跳过OCR");
+                console.log("词条颜色不一致，跳过OCR");
                 return [];
             }
-            addLog("词条颜色一致，允许OCR识别");
+            console.log("词条颜色一致，允许OCR识别");
         }
 
         var area = config.wordOcr.areas.wordOcrArea;
@@ -818,11 +754,11 @@ function captureAndOcr() {
             return words;
         }
 
-        addLog("OCR耗时: " + (new Date() - start) + "ms, 结果为空");
+        console.log("OCR耗时: " + (new Date() - start) + "ms, 结果为空");
         return [];
 
     } catch (e) {
-        addLog("OCR异常: " + e.message);
+        console.log("OCR异常: " + e.message);
         return [];
     }
 }
@@ -882,7 +818,7 @@ function startOcr() {
         ocrControlWindow.ocrControlBtn.setBackgroundColor(colors.parseColor("#F44336"));
     });
 
-    addLog("OCR脚本已启动");
+    console.log("OCR脚本已启动");
     toast("OCR脚本已启动");
 
     startOcrThread();
@@ -901,7 +837,7 @@ function stopOcr() {
         ocrControlWindow.ocrControlBtn.setBackgroundColor(colors.parseColor("#4CAF50"));
     });
 
-    addLog("OCR脚本已停止");
+    console.log("OCR脚本已停止");
     toast("OCR脚本已停止");
 }
 
@@ -912,15 +848,15 @@ function startOcrThread() {
     }
 
     ocrThread = threads.start(function() {
-        addLog("OCR工作线程启动");
+        console.log("OCR工作线程启动");
 
         while (ocrRunning && !isExiting) {
             try {
-                addLog("=============start===============")
+                console.log("=============start===============")
                 for (var retry = 0; retry < config.wordOcr.maxRetryCount && ocrRunning; retry++) {
 
                     // 点击词条按钮
-                    addLog("点击词条")
+                    console.log("点击词条")
                     clickArea(config.wordOcr.areas.wordButtonArea);
                     randomDelay();
                     //再次点击，快速点击退出boss箱子页面
@@ -930,11 +866,11 @@ function startOcrThread() {
                     // OCR识别（内部包含颜色预检）
                     var words = captureAndOcr();
                     if (words.length > 0) {
-                        addLog("OCR识别: 【" + words.join("】, 【") + "】");
+                        console.log("OCR识别: 【" + words.join("】, 【") + "】");
                     }
 
                     if (words.length < 3) {
-                        addLog("词条数量:" + words.length);
+                        console.log("词条数量:" + words.length);
                         sleep(500);
                         break;
                     }
@@ -950,16 +886,16 @@ function startOcrThread() {
 
                     // 刷新逻辑
                     if (!hasNeedWord) {
-                        addLog("点击刷新词条");
+                        console.log("点击刷新词条");
                         clickArea(config.wordOcr.areas.refreshButtonArea);
 
                         words = captureAndOcr();
                         if (words.length > 0) {
-                            addLog("刷新后: " + words.join(", "));
+                            console.log("刷新后: " + words.join(", "));
                         }
 
                         if (words.length < 3) {
-                            addLog("刷新后识别失败");
+                            console.log("刷新后识别失败");
                             break;
                         }
                     }
@@ -971,7 +907,7 @@ function startOcrThread() {
                         var idx = words.indexOf(needWordList[w]);
                         if (idx >= 0 && idx < 3) {
                             selectedIndex = idx;
-                            addLog("命中优先词条: 【" + needWordList[w] + "】");
+                            console.log("命中优先词条: 【" + needWordList[w] + "】");
                             break;
                         }
                     }
@@ -981,38 +917,38 @@ function startOcrThread() {
                             var idx2 = words.indexOf(allWordList[w2]);
                             if (idx2 >= 0 && idx2 < 3) {
                                 selectedIndex = idx2;
-                                addLog("命中可选: " + allWordList[w2]);
+                                console.log("命中可选: " + allWordList[w2]);
                                 break;
                             }
                         }
                     }
 
                     if (selectedIndex >= 0) {
-                        addLog("点击词条:" + (selectedIndex + 1));
+                        console.log("点击词条:" + (selectedIndex + 1));
                         clickArea(config.wordOcr.areas.wordPositions[selectedIndex]);
                         break;
                     } else {
                         // 随机选择词条
                         var randomIndex = Math.floor(Math.random() * config.wordOcr.areas.wordPositions.length);
                         clickArea(config.wordOcr.areas.wordPositions[randomIndex]);
-                        addLog("无可用词条, 随机选择词条: " + words[randomIndex]);
+                        console.log("无可用词条, 随机选择词条: " + words[randomIndex]);
                         break;
                     }
                 }
 
-                addLog("=============end===============")
+                console.log("=============end===============")
                 // 等待下一个循环
                 if (ocrRunning && !isExiting) {
                     sleep(config.wordOcr.mainLoopInterval);
                 }
 
             } catch (e) {
-                addLog("OCR错误: " + e.message);
+                console.log("OCR错误: " + e.message);
                 sleep(1000);
             }
         }
 
-        addLog("OCR工作线程退出");
+        console.log("OCR工作线程退出");
     });
 }
 
@@ -1039,11 +975,7 @@ function cleanup() {
         try { ocrControlWindow.close(); } catch(e) {}
     }
 
-    if (logWindow != null) {
-        try { logWindow.close(); } catch(e) {}
-    }
-
-    addLog("脚本已完全退出");
+    console.log("脚本已完全退出");
     toastLog("脚本已完全退出");
 }
 
@@ -1053,10 +985,6 @@ events.on("exit", cleanup);
 toast("正在初始化...");
 sleep(1000);
 
-// 创建日志窗口
-// createLogWindow();
-// sleep(500);
-
 // 创建点击器控制按钮（右上角）
 createClickerControlWindow();
 sleep(500);
@@ -1065,29 +993,29 @@ sleep(500);
 createOcrControlWindow();
 sleep(500);
 
-addLog("==================");
-addLog("综合脚本就绪 (颜色优化版)");
-addLog("点击器: 初始待命");
-addLog("  - 区域: (" + config.clicker.area.left + "," + config.clicker.area.top + ")");
-addLog("  - 间隔: " + config.clicker.time.min + "~" + config.clicker.time.max + "ms");
-addLog("  - 停止检测: " + (config.gamePrepare.stopColorCheck.enabled ? "颜色模式" : "OCR模式"));
+console.log("==================");
+console.log("综合脚本就绪 (颜色优化版)");
+console.log("点击器: 初始待命");
+console.log("  - 区域: (" + config.clicker.area.left + "," + config.clicker.area.top + ")");
+console.log("  - 间隔: " + config.clicker.time.min + "~" + config.clicker.time.max + "ms");
+console.log("  - 停止检测: " + (config.gamePrepare.stopColorCheck.enabled ? "颜色模式" : "OCR模式"));
 if (config.gamePrepare.stopColorCheck.enabled) {
-    addLog("    检测点数: " + config.gamePrepare.stopColorCheck.points.length);
+    console.log("    检测点数: " + config.gamePrepare.stopColorCheck.points.length);
 }
-addLog("  - 检测间隔: " + (config.clicker.ocrCheckInterval/1000) + "秒");
+console.log("  - 检测间隔: " + (config.clicker.ocrCheckInterval/1000) + "秒");
 if (config.clicker.continuousClick.enabled) {
-    addLog("  - 连续点击: " + config.clicker.continuousClick.duration + "秒");
+    console.log("  - 连续点击: " + config.clicker.continuousClick.duration + "秒");
 }
-addLog("自动加入流程: 已配置");
-addLog("自动召唤流程: 已配置");
-addLog("OCR选择器: 初始待命");
-addLog("  - 优先词条: " + needWordList.length);
-addLog("  - 可选词条: " + allWordList.length);
-addLog("  - 颜色预检: " + (config.wordOcr.colorPreCheck.enabled ? "开启" : "关闭"));
-addLog("  - 间隔: " + (config.wordOcr.mainLoopInterval/1000) + "秒");
-addLog("  - 重试: " + config.wordOcr.maxRetryCount + "次");
-addLog("==================");
-addLog("点击绿色按钮开始对应功能");
+console.log("自动加入流程: 已配置");
+console.log("自动召唤流程: 已配置");
+console.log("OCR选择器: 初始待命");
+console.log("  - 优先词条: " + needWordList.length);
+console.log("  - 可选词条: " + allWordList.length);
+console.log("  - 颜色预检: " + (config.wordOcr.colorPreCheck.enabled ? "开启" : "关闭"));
+console.log("  - 间隔: " + (config.wordOcr.mainLoopInterval/1000) + "秒");
+console.log("  - 重试: " + config.wordOcr.maxRetryCount + "次");
+console.log("==================");
+console.log("点击绿色按钮开始对应功能");
 
 toast("初始化完成，可独立控制两个功能");
 
