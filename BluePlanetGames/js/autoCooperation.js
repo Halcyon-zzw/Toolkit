@@ -74,9 +74,9 @@ var config = {
             ]
         },
 
-        // 控制按钮位置
+        // 开启自动词条按钮位置
         controlButton: {
-            x: 100,
+            x: 140,
             y: 300,
             width: 80,
             height: 80
@@ -111,7 +111,8 @@ var config = {
             "彩虹3层": "plan4",
             "彩虹4层": "plan4",
             "彩虹5层": "plan2",
-            "default": "plan2"
+            "彩虹6层": "plan4",
+            "default": "plan4"
         },
 
         // 点击间隔基础值（毫秒）
@@ -814,6 +815,8 @@ function startOcrThread() {
                     addLog("点击词条")
                     clickArea(config.wordOcr.areas.wordButton);
                     randomDelay();
+                    //再次点击，快速点击推出boss箱子页面
+                    clickArea(config.wordOcr.areas.wordButton);
                     sleep(1000);
 
                     // OCR识别
