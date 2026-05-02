@@ -82,8 +82,8 @@ var config = {
 
         // ========== 词条OCR颜色预检 ==========
         colorPreCheck: {
-            enabled: true,            // 是否启用颜色预检
-            points: [                 // 检查点坐标 (屏幕坐标)
+            enabled: true,
+            points: [
                 { x: 450, y: 816 },
                 { x: 480, y: 816 },
                 { x: 500, y: 816 },
@@ -91,8 +91,29 @@ var config = {
                 { x: 600, y: 816 },
                 { x: 640, y: 816 }
             ],
-            threshold: 30             // 颜色相似阈值 (每个通道差异和 <= threshold*3 认为相似)
-        }
+            threshold: 30
+        },
+
+        // ========== 结算页面检测（返回按钮颜色） ==========
+        settlementCheck: {
+            enabled: true,
+            points: [
+                { x: 680, y: 2060 },
+                { x: 880, y: 2060 },
+                { x: 680, y: 2100 },
+                { x: 880, y: 2100 }
+            ],
+            threshold: 10
+        },
+
+        // 宝箱点击区域
+        boxArea: { left: 270, top: 1150, right: 290, bottom: 1170 },
+
+        // 结算页面返回按钮区域（与检测点矩形一致）
+        settlementBackButtonArea: { left: 680, top: 2060, right: 880, bottom: 2100 },
+
+        // 点击宝箱后等待时间（毫秒）
+        waitBeforeBack: 4000
     },
 
     // ========== 游戏准备配置 ==========
@@ -149,8 +170,11 @@ var config = {
 
     // ========== 自动加入流程配置 ==========
     autoJoin: {
-        // 聊天框位置
-        chatBoxLocation: { left: 990, top: 1020, right: 1010, bottom: 1040 },
+        // 主页面聊天框位置
+        mainChatBoxLocation: { left: 990, top: 1020, right: 1010, bottom: 1040 },
+
+        // 合作模式聊天框位置
+        cooperationChatBoxLocation: { left: 990, top: 860, right: 1010, bottom: 880 },
 
         // 队伍位置
         teamButtonLocation: { left: 80, top: 1410, right: 100, bottom: 1430 },
@@ -201,8 +225,8 @@ var needWordListRaw = [
     "猴子:乱点天宫", "猴子:风卷残云", "猴子:翻江倒海", "猴子:乘胜追击",
     "猴子:战意升腾", "猴子:斗战激昂", "猴子:无处遁行", "猴子:无处通行",
     "哥斯拉:高速轰击", "哥斯拉:火球喷发", "哥斯拉:高速火球",
-    "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:核能增幅",
-    "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:灼烧岩浆",
+    "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:灼烧岩浆",
+    "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:核能增幅",
     "天使:神圣契约", "天使:战神化身", "天使:奥术连奏"
 ];
 
@@ -213,8 +237,8 @@ var allWordListRaw = [
     "猴子:乱点天宫", "猴子:风卷残云", "猴子:翻江倒海", "猴子:乘胜追击",
     "猴子:战意升腾", "猴子:斗战激昂", "猴子:无处遁形", "猴子:无处通行",
     "哥斯拉:高速轰击", "哥斯拉:火球喷发", "哥斯拉:高速火球",
-    "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:核能增幅",
-    "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:灼烧岩浆",
+    "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:灼烧岩浆",
+    "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:核能增幅",
     "天使:神圣契约", "天使:战神化身", "天使:奥术连奏", "天使:圣羽加持",
     "毒液:血肉盛宴"
 ];
@@ -255,6 +279,7 @@ var ocrControlWindow = null;
 
 // 通用状态
 var isExiting = false;
+var settlementDetected = false;  // 新增：结算页面检测标志
 
 // 上次OCR检测时间
 var lastOcrCheckTime = 0;
@@ -272,7 +297,6 @@ function isSimilar(color1, color2, threshold) {
 }
 
 // 判断图像上的一组点是否颜色都相似（均与第一个点比较）
-// 返回 true 表示所有点颜色相似，false 表示存在不同
 function areAllColorsSimilar(img, points, threshold) {
     if (!points || points.length === 0) return true;
     try {
@@ -353,7 +377,7 @@ function resumeClicker() {
     clickerPaused = false;
     clickerRunning = true;
     clickStartTime = new Date().getTime();
-    lastOcrCheckTime = 0;  // 重置OCR检测时间
+    lastOcrCheckTime = 0;
 
     ui.run(function() {
         stopBtn.setVisibility(0);
@@ -372,22 +396,22 @@ function resumeClicker() {
 function executeAutoJoinFlow() {
     console.log("===== 开始自动加入流程 =====");
 
-    // 1. 点击聊天框
-    console.log("步骤1: 点击聊天框");
-    clickArea(config.autoJoin.chatBoxLocation);
+    console.log("步骤1: 点击主页面聊天框");
+    clickArea(config.autoJoin.mainChatBoxLocation);
     sleep(config.autoJoin.stepDelay);
 
-    // 2. 点击队伍
+    console.log("步骤1.1: 点击合作模式聊天框");
+    clickArea(config.autoJoin.cooperationChatBoxLocation);
+    sleep(config.autoJoin.stepDelay);
+
     console.log("步骤2: 点击队伍");
     clickArea(config.autoJoin.teamButtonLocation);
     sleep(config.autoJoin.stepDelay);
 
-    // 3. 点击选择难度
     console.log("步骤3: 点击选择难度");
     clickArea(config.autoJoin.selectDifficultyButtonLocation);
     sleep(config.autoJoin.stepDelay);
 
-    // 4. 点击空白区域
     console.log("步骤4: 点击空白区域");
     clickArea(config.autoJoin.teamBlankArea);
     sleep(config.autoJoin.stepDelay);
@@ -453,7 +477,6 @@ function executeSummonFlow() {
     console.log("游戏开始，休眠" + (config.summon.waitAfterPrepare/1000) + "秒");
     sleep(config.summon.waitAfterPrepare);
 
-    // 点击召唤按钮10次
     console.log("=====> 开始召唤英雄, " + config.summon.summonClickCount + "次 <=====");
     for (var i = 0; i < config.summon.summonClickCount && !isExiting; i++) {
         console.log("召唤点击: 第" + (i + 1) + "次");
@@ -642,11 +665,9 @@ function startClickerThread() {
         var localCount = clickCount;
         lastOcrCheckTime = new Date().getTime();
 
-        // 先执行自动加入流程
         console.log("执行自动加入流程");
         executeAutoJoinFlow();
 
-        // 开始主循环
         console.log("开始自动点击循环");
         while (!clickerPaused && clickerRunning && !isExiting) {
             // 检查是否超时
@@ -710,7 +731,7 @@ function startClickerThread() {
     });
 }
 
-// ==================== OCR功能 ====================
+// ==================== OCR功能（带结算检测） ====================
 function captureAndOcr() {
     try {
         var img = captureScreen();
@@ -719,7 +740,18 @@ function captureAndOcr() {
             return [];
         }
 
-        // 如果启用了词条颜色预检
+        // === 结算页面检测（优先于词条预检） ===
+        if (config.wordOcr.settlementCheck.enabled) {
+            console.log("===== 结算页面检测 =====");
+            if (areAllColorsSimilar(img, config.wordOcr.settlementCheck.points, config.wordOcr.settlementCheck.threshold)) {
+                console.log("检测到结算画面，返回按钮颜色一致");
+                settlementDetected = true;
+                img.recycle();
+                return [];
+            }
+        }
+
+        // === 词条颜色预检 ===
         if (config.wordOcr.colorPreCheck.enabled) {
             console.log("===== 词条颜色预检 =====");
             var points = config.wordOcr.colorPreCheck.points;
@@ -768,7 +800,6 @@ function randomDelay() {
     var delay = random(config.wordOcr.actionDelay.min, config.wordOcr.actionDelay.max);
     sleep(delay);
 }
-
 
 // ==================== OCR控制窗口 ====================
 function createOcrControlWindow() {
@@ -833,7 +864,7 @@ function stopOcr() {
     }
 
     ui.run(function() {
-        ocrControlWindow.ocrControlBtn.setText("OCR开始");
+        ocrControlWindow.ocrControlBtn.setText("词");
         ocrControlWindow.ocrControlBtn.setBackgroundColor(colors.parseColor("#4CAF50"));
     });
 
@@ -841,7 +872,7 @@ function stopOcr() {
     toast("OCR脚本已停止");
 }
 
-// ==================== OCR工作线程 ====================
+// ==================== OCR工作线程（含结算处理） ====================
 function startOcrThread() {
     if (ocrThread && ocrThread.isAlive()) {
         ocrThread.interrupt();
@@ -849,13 +880,13 @@ function startOcrThread() {
 
     ocrThread = threads.start(function() {
         console.log("OCR工作线程启动");
+        settlementDetected = false;
 
         while (ocrRunning && !isExiting) {
             try {
                 console.log("=============start===============")
                 for (var retry = 0; retry < config.wordOcr.maxRetryCount && ocrRunning; retry++) {
 
-                    // 点击词条按钮
                     console.log("点击词条")
                     clickArea(config.wordOcr.areas.wordButtonArea);
                     randomDelay();
@@ -865,6 +896,8 @@ function startOcrThread() {
 
                     // OCR识别（内部包含颜色预检）
                     var words = captureAndOcr();
+                    if (settlementDetected) break;      // 结算中断
+
                     if (words.length > 0) {
                         console.log("OCR识别: 【" + words.join("】, 【") + "】");
                     }
@@ -890,6 +923,8 @@ function startOcrThread() {
                         clickArea(config.wordOcr.areas.refreshButtonArea);
 
                         words = captureAndOcr();
+                        if (settlementDetected) break;
+
                         if (words.length > 0) {
                             console.log("刷新后: " + words.join(", "));
                         }
@@ -936,8 +971,9 @@ function startOcrThread() {
                     }
                 }
 
+                if (settlementDetected) break;   // 退出while循环
+
                 console.log("=============end===============")
-                // 等待下一个循环
                 if (ocrRunning && !isExiting) {
                     sleep(config.wordOcr.mainLoopInterval);
                 }
@@ -946,6 +982,39 @@ function startOcrThread() {
                 console.log("OCR错误: " + e.message);
                 sleep(1000);
             }
+        }
+
+        // === 结算处理 ===
+        if (settlementDetected) {
+            console.log("===== 检测到结算，处理中 =====");
+            // 点击宝箱
+            console.log("点击宝箱");
+            clickArea(config.wordOcr.boxArea);
+            sleep(config.wordOcr.waitBeforeBack);
+            // 点击返回
+            console.log("点击结算返回按钮");
+            clickArea(config.wordOcr.settlementBackButtonArea);
+
+            // 关闭词条功能状态
+            ocrRunning = false;
+            ui.run(function() {
+                ocrControlWindow.ocrControlBtn.setText("词");
+                ocrControlWindow.ocrControlBtn.setBackgroundColor(colors.parseColor("#4CAF50"));
+            });
+            console.log("词条功能已自动关闭");
+
+            // 启动自动点击（寻找下一把合作）
+            console.log("启动自动点击功能");
+            if (!clickerRunning) {
+                resumeClicker();
+            } else {
+                // 如果已经在运行，重新启动以确保执行完整流程
+                pauseClicker();
+                sleep(500);
+                resumeClicker();
+            }
+
+            settlementDetected = false;
         }
 
         console.log("OCR工作线程退出");
@@ -994,7 +1063,7 @@ createOcrControlWindow();
 sleep(500);
 
 console.log("==================");
-console.log("综合脚本就绪 (颜色优化版)");
+console.log("综合脚本就绪 (颜色优化版 + 结算检测)");
 console.log("点击器: 初始待命");
 console.log("  - 区域: (" + config.clicker.area.left + "," + config.clicker.area.top + ")");
 console.log("  - 间隔: " + config.clicker.time.min + "~" + config.clicker.time.max + "ms");
@@ -1012,6 +1081,7 @@ console.log("OCR选择器: 初始待命");
 console.log("  - 优先词条: " + needWordList.length);
 console.log("  - 可选词条: " + allWordList.length);
 console.log("  - 颜色预检: " + (config.wordOcr.colorPreCheck.enabled ? "开启" : "关闭"));
+console.log("  - 结算检测: " + (config.wordOcr.settlementCheck.enabled ? "开启" : "关闭"));
 console.log("  - 间隔: " + (config.wordOcr.mainLoopInterval/1000) + "秒");
 console.log("  - 重试: " + config.wordOcr.maxRetryCount + "次");
 console.log("==================");
