@@ -213,7 +213,7 @@ var config = {
         statusCheckInterval: 3000,
 
         // 准备完成后的等待时间（毫秒）
-        waitAfterPrepare: 8000,
+        waitAfterPrepare: 5000,
 
         // 召唤点击次数
         summonClickCount: 10,
@@ -238,19 +238,6 @@ var firstWordListRaw = [
 
 var secondWordListRaw = [
     "天使:战神化身", "天使:奥术连奏", "天使:圣羽加持",
-    "毒液:血肉盛宴"
-];
-
-var allWordListRaw = [
-    "猴子:化身仗势", "猴子:万化随行", "猴子:应物随心",
-    "猴子:大闹天宫",
-    "猴子:天地倾", "猴子:江海翻", "猴子:称心如意",
-    "猴子:乱点天宫", "猴子:风卷残云", "猴子:翻江倒海", "猴子:乘胜追击",
-    "猴子:战意升腾", "猴子:斗战激昂", "猴子:无处遁形", "猴子:无处通形",
-    "哥斯拉:高速轰击", "哥斯拉:火球喷发", "哥斯拉:高速火球",
-    "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:灼烧岩浆", "哥斯拉:岩浆扩散",
-    "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:核能增幅",
-    "天使:神圣契约", "天使:战神化身", "天使:奥术连奏", "天使:圣羽加持",
     "毒液:血肉盛宴"
 ];
 
@@ -490,6 +477,10 @@ function executeSummonFlow() {
     console.log("游戏开始，休眠" + (config.summon.waitAfterPrepare/1000) + "秒");
     sleep(config.summon.waitAfterPrepare);
 
+
+    //选择天使词条
+    selectTianShiWord();
+
     console.log("=====> 开始召唤英雄, " + config.summon.summonClickCount + "次 <=====");
     for (var i = 0; i < config.summon.summonClickCount && !isExiting; i++) {
         console.log("召唤点击: 第" + (i + 1) + "次");
@@ -668,6 +659,19 @@ function clickArea(area) {
     }
 }
 
+function selectTianShiWord() {
+    var words = captureAndOcrWord(false);
+
+    console.log("天使词条: " + words.join(", "));
+
+    if (words.length < 3) {
+        console.log("天使词条识别失败");
+        return;
+    }
+    // 选择词条
+    selectWord(words);
+}
+
 // ==================== 点击器工作线程 ====================
 function startClickerThread() {
     if (clickerThread != null && clickerThread.isAlive()) {
@@ -744,8 +748,15 @@ function startClickerThread() {
     });
 }
 
-// ==================== OCR功能（带结算检测） ====================
-function captureAndOcr() {
+/**
+ * 截图，ocr获取词条（带结算检测）
+ * @returns {*[]}
+ */
+function captureAndOcrWord(colorCheck) {
+    // 兼容无参调用，默认开启颜色检测
+    if (colorCheck === undefined) {
+        colorCheck = true;
+    }
     try {
         var img = captureScreen();
         if (!img) {
@@ -753,29 +764,32 @@ function captureAndOcr() {
             return [];
         }
 
-        // === 结算页面检测（优先于词条预检） ===
-        if (config.wordOcr.settlementCheck.enabled) {
-            console.log("===== 结算页面检测 =====");
-            if (areAllColorsSimilar(img, config.wordOcr.settlementCheck.points, config.wordOcr.settlementCheck.threshold)) {
-                console.log("检测到结算画面，返回按钮颜色一致");
-                settlementDetected = true;
-                img.recycle();
-                return [];
+        if (colorCheck) {
+            // === 结算页面检测（优先于词条预检） ===
+            if (config.wordOcr.settlementCheck.enabled) {
+                console.log("===== 结算页面检测 =====");
+                if (areAllColorsSimilar(img, config.wordOcr.settlementCheck.points, config.wordOcr.settlementCheck.threshold)) {
+                    console.log("检测到结算画面，返回按钮颜色一致");
+                    settlementDetected = true;
+                    img.recycle();
+                    return [];
+                }
+            }
+
+            // === 词条颜色预检 ===
+            if (config.wordOcr.colorPreCheck.enabled) {
+                console.log("===== 词条颜色预检 =====");
+                var points = config.wordOcr.colorPreCheck.points;
+                var threshold = config.wordOcr.colorPreCheck.threshold;
+                if (!areAllColorsSimilar(img, points, threshold)) {
+                    img.recycle();
+                    console.log("词条颜色不一致，跳过OCR");
+                    return [];
+                }
+                console.log("词条颜色一致，允许OCR识别");
             }
         }
 
-        // === 词条颜色预检 ===
-        if (config.wordOcr.colorPreCheck.enabled) {
-            console.log("===== 词条颜色预检 =====");
-            var points = config.wordOcr.colorPreCheck.points;
-            var threshold = config.wordOcr.colorPreCheck.threshold;
-            if (!areAllColorsSimilar(img, points, threshold)) {
-                img.recycle();
-                console.log("词条颜色不一致，跳过OCR");
-                return [];
-            }
-            console.log("词条颜色一致，允许OCR识别");
-        }
 
         var area = config.wordOcr.areas.wordOcrArea;
         var clip = images.clip(img, area.left, area.top,
@@ -949,49 +963,46 @@ function startOcrWordThread() {
                 sleep(1000);
 
                 // OCR识别（内部包含颜色预检）
-                var words = captureAndOcr();
+                var words = captureAndOcrWord();
                 if (settlementDetected) break;      // 跳出 while 循环
 
-                if (words.length > 0) {
-                    console.log("OCR识别: 【" + words.join("】, 【") + "】");
-                }
+                console.log("OCR识别: 【" + words.join("】, 【") + "】");
 
                 if (words.length < 3) {
-                    console.log("词条数量:" + words.length);
+                    console.log("ocr识别失败, 词条数量小于3");
+                    continue;
+                }
+
+                // 检查是否包含优先词条
+                var hasNeedWord = false;
+                for (var i = 0; i < words.length; i++) {
+                    if (firstWordList.indexOf(words[i]) >= 0) {
+                        hasNeedWord = true;
+                        break;
+                    }
+                }
+
+                // 刷新逻辑
+                if (!hasNeedWord) {
+                    console.log("点击刷新词条");
+                    clickArea(config.wordOcr.areas.refreshButtonArea);
                     sleep(500);
+
+                    words = captureAndOcrWord();
+                    if (settlementDetected) break;   // 跳出 while
+
+                    console.log("刷新后: " + words.join(", "));
+
+                    if (words.length < 3) {
+                        console.log("刷新后识别失败");
+                        continue;
+                    }
+                    // 选择词条
+                    selectWord(words);
+
                 } else {
-                    // 检查是否包含优先词条
-                    var hasNeedWord = false;
-                    for (var i = 0; i < words.length; i++) {
-                        if (firstWordList.indexOf(words[i]) >= 0) {
-                            hasNeedWord = true;
-                            break;
-                        }
-                    }
-
-                    // 刷新逻辑
-                    if (!hasNeedWord) {
-                        console.log("点击刷新词条");
-                        clickArea(config.wordOcr.areas.refreshButtonArea);
-                        sleep(500);
-
-                        words = captureAndOcr();
-                        if (settlementDetected) break;   // 跳出 while
-
-                        if (words.length > 0) {
-                            console.log("刷新后: " + words.join(", "));
-                        }
-
-                        if (words.length < 3) {
-                            console.log("刷新后识别失败");
-                        } else {
-                            // 刷新后重新选择词条
-                            selectWord(words);
-                        }
-                    } else {
-                        // 有优先词条，直接选择
-                        selectWord(words);
-                    }
+                    // 有优先词条，直接选择
+                    selectWord(words);
                 }
 
                 if (settlementDetected) break;   // 跳出 while 循环
@@ -1073,20 +1084,13 @@ function cleanup() {
 // ==================== 主程序 ====================
 events.on("exit", cleanup);
 
-toast("正在初始化...");
-sleep(1000);
-
 // 创建点击器控制按钮（右上角）
 createClickerControlWindow();
-sleep(500);
 
 // 创建OCR控制按钮（左侧）
 createOcrControlWindow();
-sleep(500);
 
-console.log("==================");
-console.log("  - 区域: (" + config.clicker.area.left + "," + config.clicker.area.top + ")");
-console.log("  - 间隔: " + config.clicker.gapTime.min + "~" + config.clicker.gapTime.max + "ms");
+console.log("=========初始化开始=========");
 console.log("  - 停止检测: " + (config.gamePrepare.stopColorCheck.enabled ? "颜色模式" : "OCR模式"));
 if (config.gamePrepare.stopColorCheck.enabled) {
     console.log("    检测点数: " + config.gamePrepare.stopColorCheck.points.length);
@@ -1097,12 +1101,7 @@ if (config.clicker.continuousClick.enabled) {
 }
 console.log("  - 颜色预检: " + (config.wordOcr.colorPreCheck.enabled ? "开启" : "关闭"));
 console.log("  - 结算检测: " + (config.wordOcr.settlementCheck.enabled ? "开启" : "关闭"));
-console.log("  - 间隔: " + (config.wordOcr.mainLoopInterval/1000) + "秒");
-console.log("  - 重试: " + config.wordOcr.maxRetryCount + "次");
-console.log("==================");
-console.log("点击绿色按钮开始对应功能");
-
-toast("初始化完成，可独立控制两个功能");
+console.log("=========初始化完成=========");
 
 // 保活
 setInterval(function() {}, 60000);
