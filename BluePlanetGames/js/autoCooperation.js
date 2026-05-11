@@ -884,6 +884,44 @@ function stopWordOcr() {
     toast("OCR脚本已停止");
 }
 
+/**
+ * 选择词条
+ * @param words 词条
+ */
+function selectWord(words) {
+    var selectedIndex = -1;
+
+    for (var w = 0; w < needWordList.length; w++) {
+        var idx = words.indexOf(needWordList[w]);
+        if (idx >= 0 && idx < 3) {
+            selectedIndex = idx;
+            console.log("命中优先词条: 【" + needWordList[w] + "】");
+            break;
+        }
+    }
+
+    if (selectedIndex < 0) {
+        for (var w2 = 0; w2 < allWordList.length; w2++) {
+            var idx2 = words.indexOf(allWordList[w2]);
+            if (idx2 >= 0 && idx2 < 3) {
+                selectedIndex = idx2;
+                console.log("命中可选: " + allWordList[w2]);
+                break;
+            }
+        }
+    }
+
+    if (selectedIndex >= 0) {
+        console.log("点击词条:" + (selectedIndex + 1));
+        clickArea(config.wordOcr.areas.wordAreaList[selectedIndex]);
+    } else {
+        // 随机选择词条
+        var randomIndex = Math.floor(Math.random() * config.wordOcr.areas.wordAreaList.length);
+        clickArea(config.wordOcr.areas.wordAreaList[randomIndex]);
+        console.log("无可用词条, 随机选择词条: " + words[randomIndex]);
+    }
+}
+
 // ==================== OCR词条工作线程（含结算页面处理） ====================
 function startOcrWordThread() {
     if (ocrThread && ocrThread.isAlive()) {
@@ -942,70 +980,11 @@ function startOcrWordThread() {
                             console.log("刷新后识别失败");
                         } else {
                             // 刷新后重新判断
-                            var selectedIndex = -1;
-
-                            for (var w = 0; w < needWordList.length; w++) {
-                                var idx = words.indexOf(needWordList[w]);
-                                if (idx >= 0 && idx < 3) {
-                                    selectedIndex = idx;
-                                    console.log("命中优先词条: 【" + needWordList[w] + "】");
-                                    break;
-                                }
-                            }
-
-                            if (selectedIndex < 0) {
-                                for (var w2 = 0; w2 < allWordList.length; w2++) {
-                                    var idx2 = words.indexOf(allWordList[w2]);
-                                    if (idx2 >= 0 && idx2 < 3) {
-                                        selectedIndex = idx2;
-                                        console.log("命中可选: " + allWordList[w2]);
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (selectedIndex >= 0) {
-                                console.log("点击词条:" + (selectedIndex + 1));
-                                clickArea(config.wordOcr.areas.wordAreaList[selectedIndex]);
-                            } else {
-                                // 随机选择词条
-                                var randomIndex = Math.floor(Math.random() * config.wordOcr.areas.wordAreaList.length);
-                                clickArea(config.wordOcr.areas.wordAreaList[randomIndex]);
-                                console.log("无可用词条, 随机选择词条: " + words[randomIndex]);
-                            }
+                            selectWord(words);
                         }
                     } else {
                         // 有优先词条，直接选择
-                        var selectedIndex = -1;
-
-                        for (var w = 0; w < needWordList.length; w++) {
-                            var idx = words.indexOf(needWordList[w]);
-                            if (idx >= 0 && idx < 3) {
-                                selectedIndex = idx;
-                                console.log("命中优先词条: 【" + needWordList[w] + "】");
-                                break;
-                            }
-                        }
-                        // 次优先词条
-                        if (selectedIndex < 0) {
-                            for (var w2 = 0; w2 < allWordList.length; w2++) {
-                                var idx2 = words.indexOf(allWordList[w2]);
-                                if (idx2 >= 0 && idx2 < 3) {
-                                    selectedIndex = idx2;
-                                    console.log("命中次优选词条: " + allWordList[w2]);
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (selectedIndex >= 0) {
-                            console.log("点击词条:" + (selectedIndex + 1));
-                            clickArea(config.wordOcr.areas.wordAreaList[selectedIndex]);
-                        } else {
-                            var randomIndex = Math.floor(Math.random() * config.wordOcr.areas.wordAreaList.length);
-                            clickArea(config.wordOcr.areas.wordAreaList[randomIndex]);
-                            console.log("无可用词条, 随机选择词条: " + words[randomIndex]);
-                        }
+                        selectWord(words);
                     }
                 }
 
