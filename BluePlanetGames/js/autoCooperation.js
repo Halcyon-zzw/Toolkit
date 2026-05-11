@@ -22,12 +22,68 @@ if (!requestScreenCapture()) {
 
 // ==================== 可配置参数 ====================
 var config = {
+
+    // ========== 游戏准备配置 ==========
+    gamePrepare: {
+
+        // 楼层配置映射
+        levelConfig: {
+            "彩虹3层": "plan4",
+            "彩虹4层": "plan4",
+            "彩虹5层": "plan2",
+            "彩虹6层": "plan4",
+            "default": "plan4"
+        },
+
+        // 停止自动加入判断的识别区域（原OCR配置，当颜色检测关闭时使用）
+        joinOcrInfo: {
+            checkText: "招募频道",
+            checkArea: { left: 500, top: 420, right: 750, bottom: 510}
+        },
+
+        // 当前楼层识别区域
+        levelOcrArea: { left: 420, top: 280, right: 650, bottom: 360 },
+
+        // 方案主入口按钮
+        planButtonLocation: { left: 880, top: 1950, right: 940, bottom: 1990 },
+
+        // 方案2按钮（用于彩虹5层和其他）
+        plan2ButtonLocation: { left: 480, top: 720, right: 500, bottom: 740 },
+
+        // 方案4按钮（用于彩虹3-4层）
+        plan4ButtonLocation: { left: 830, top: 720, right: 850, bottom: 740 },
+
+        // 准备按钮
+        prepareButtonLocation: { left: 500, top: 1930, right: 600, bottom: 2000 },
+
+        // 点击间隔基础值（毫秒）
+        clickBaseInterval: 100,
+
+        // 点击间隔随机范围（毫秒）
+        clickRandomRange: 50,
+
+        // ========== 自动点击停止颜色检测 ==========
+        stopColorCheck: {
+            enabled: true,            // 启用颜色检测替代OCR
+            points: [                 // 检测点坐标 (屏幕坐标)
+                { x: 1010, y: 600 },
+                { x: 1010, y: 700 },
+                { x: 1010, y: 800 },
+                { x: 1010, y: 900 },
+                { x: 1010, y: 1000 }
+            ],
+            threshold: 10             // 颜色相似阈值
+        }
+    },
+
+
     // ========== 点击器配置 ==========
     clicker: {
+        //点击区域
         area: {
             left: 580, top: 1720, right: 650, bottom: 1780
         },
-        time: {
+        gapTime: {
             min: 300, max: 500
         },
         continuousClick: {
@@ -45,7 +101,7 @@ var config = {
     // ========== OCR词条选择配置 ==========
     wordOcr: {
         // 主循环间隔（毫秒）
-        mainLoopInterval: 10000,
+        mainLoopInterval: 5000,
 
         // 子循环最大重试次数
         maxRetryCount: 3,
@@ -65,7 +121,7 @@ var config = {
             // OCR识别区域
             wordOcrArea: { left: 80, top: 750, right: 990, bottom: 830 },
             // 三个词条位置
-            wordPositions: [
+            wordAreaList: [
                 { left: 100, top: 1100, right: 300, bottom: 1300 },
                 { left: 430, top: 1100, right: 650, bottom: 1300 },
                 { left: 770, top: 1100, right: 990, bottom: 1300 }
@@ -74,7 +130,7 @@ var config = {
 
         // 开启自动词条按钮位置
         controlButton: {
-            x: 140,
+            x: 160,
             y: 300,
             width: 80,
             height: 80
@@ -116,57 +172,6 @@ var config = {
         waitBeforeBack: 4000
     },
 
-    // ========== 游戏准备配置 ==========
-    gamePrepare: {
-        // 停止自动加入判断的识别区域（原OCR配置，当颜色检测关闭时使用）
-        joinOcrInfo: {
-            checkText: "招募频道",
-            checkArea: { left: 500, top: 420, right: 750, bottom: 510}
-        },
-
-        // 当前楼层识别区域
-        levelOcrArea: { left: 420, top: 280, right: 650, bottom: 360 },
-
-        // 方案主入口按钮
-        planButtonLocation: { left: 880, top: 1950, right: 940, bottom: 1990 },
-
-        // 方案2按钮（用于彩虹5层和其他）
-        plan2ButtonLocation: { left: 480, top: 720, right: 500, bottom: 740 },
-
-        // 方案4按钮（用于彩虹3-4层）
-        plan4ButtonLocation: { left: 830, top: 720, right: 850, bottom: 740 },
-
-        // 准备按钮
-        prepareButtonLocation: { left: 500, top: 1930, right: 600, bottom: 2000 },
-
-        // 楼层配置映射
-        levelConfig: {
-            "彩虹3层": "plan4",
-            "彩虹4层": "plan4",
-            "彩虹5层": "plan2",
-            "彩虹6层": "plan4",
-            "default": "plan4"
-        },
-
-        // 点击间隔基础值（毫秒）
-        clickBaseInterval: 100,
-
-        // 点击间隔随机范围（毫秒）
-        clickRandomRange: 50,
-
-        // ========== 自动点击停止颜色检测 ==========
-        stopColorCheck: {
-            enabled: true,            // 启用颜色检测替代OCR
-            points: [                 // 检测点坐标 (屏幕坐标)
-                { x: 1010, y: 600 },
-                { x: 1010, y: 700 },
-                { x: 1010, y: 800 },
-                { x: 1010, y: 900 },
-                { x: 1010, y: 1000 }
-            ],
-            threshold: 10             // 颜色相似阈值
-        }
-    },
 
     // ========== 自动加入流程配置 ==========
     autoJoin: {
@@ -191,8 +196,8 @@ var config = {
 
     // ========== 自动召唤配置 ==========
     summon: {
-        // 准备状态检测区域
-        prepareStatusArea: { left: 330, top: 1900, right: 750, bottom: 2020 },
+        // 准备状态ocr检测区域
+        prepareStatusOcrArea: { left: 330, top: 1900, right: 750, bottom: 2020 },
 
         // 召唤英雄位置
         summonButtonArea: { left: 730, top: 2200, right: 850, bottom: 2300 },
@@ -218,16 +223,21 @@ var config = {
 };
 
 // ==================== 词条配置 ====================
-var needWordListRaw = [
+var firstWordListRaw = [
     "猴子:化身仗势", "猴子:万化随形", "猴子:应物随心",
     "猴子:大闹天宫",
     "猴子:天地倾", "猴子:江海翻", "猴子:称心如意",
     "猴子:乱点天宫", "猴子:风卷残云", "猴子:翻江倒海", "猴子:乘胜追击",
-    "猴子:战意升腾", "猴子:斗战激昂", "猴子:无处遁行", "猴子:无处通行",
+    "猴子:战意升腾", "猴子:斗战激昂", "猴子:无处遁形", "猴子:无处通形",
     "哥斯拉:高速轰击", "哥斯拉:火球喷发", "哥斯拉:高速火球",
-    "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:灼烧岩浆",
+    "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:灼烧岩浆", "哥斯拉:岩浆扩散",
     "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:核能增幅",
     "天使:神圣契约", "天使:战神化身", "天使:奥术连奏"
+];
+
+var secondWordList = [
+    "天使:战神化身", "天使:奥术连奏", "天使:圣羽加持",
+    "毒液:血肉盛宴"
 ];
 
 var allWordListRaw = [
@@ -235,9 +245,9 @@ var allWordListRaw = [
     "猴子:大闹天宫",
     "猴子:天地倾", "猴子:江海翻", "猴子:称心如意",
     "猴子:乱点天宫", "猴子:风卷残云", "猴子:翻江倒海", "猴子:乘胜追击",
-    "猴子:战意升腾", "猴子:斗战激昂", "猴子:无处遁形", "猴子:无处通行",
+    "猴子:战意升腾", "猴子:斗战激昂", "猴子:无处遁形", "猴子:无处通形",
     "哥斯拉:高速轰击", "哥斯拉:火球喷发", "哥斯拉:高速火球",
-    "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:灼烧岩浆",
+    "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:灼烧岩浆", "哥斯拉:岩浆扩散",
     "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:核能增幅",
     "天使:神圣契约", "天使:战神化身", "天使:奥术连奏", "天使:圣羽加持",
     "毒液:血肉盛宴"
@@ -258,7 +268,7 @@ function extractWordNames(rawList) {
     return result;
 }
 
-var needWordList = extractWordNames(needWordListRaw);
+var needWordList = extractWordNames(firstWordListRaw);
 var allWordList = extractWordNames(allWordListRaw);
 
 // ==================== 全局变量 ====================
@@ -326,7 +336,7 @@ function createClickerControlWindow() {
     clickerControlWindow = floaty.window(
         <vertical layout_width="wrap_content" layout_height="wrap_content">
             <button id="stop" text="停" w="40" h="40" bg="#ff4444" textColor="#ffffff" textSize="12sp" visibility="gone"/>
-            <button id="start" text="始" w="40" h="40" bg="#44ff44" textColor="#000000" textSize="12sp"/>
+            <button id="start" text="点" w="40" h="40" bg="#44ff44" textColor="#000000" textSize="12sp"/>
         </vertical>
     );
 
@@ -428,7 +438,7 @@ function checkPrepareStatus() {
             return false;
         }
 
-        var area = config.summon.prepareStatusArea;
+        var area = config.summon.prepareStatusOcrArea;
         var clip = images.clip(img, area.left, area.top,
             area.right - area.left,
             area.bottom - area.top);
@@ -490,8 +500,8 @@ function executeSummonFlow() {
     clickArea(config.summon.floatButtonArea)
 }
 
-// ==================== 游戏就绪检测（优化版） ====================
-function checkGameReady() {
+// ==================== 检测是否进入房间 ====================
+function checkJoinRoom() {
     // 如果启用了颜色检测，使用颜色模式
     if (config.gamePrepare.stopColorCheck.enabled) {
         try {
@@ -685,13 +695,13 @@ function startClickerThread() {
                 }
             }
 
-            // OCR/颜色检测游戏就绪状态
+            // OCR/颜色检测是否进入房间
             if (clickerRunning && !clickerPaused) {
                 var currentTime = new Date().getTime();
                 if (currentTime - lastOcrCheckTime >= config.clicker.ocrCheckInterval) {
                     lastOcrCheckTime = currentTime;
 
-                    if (!checkGameReady()) {
+                    if (!checkJoinRoom()) {
                         console.log("状态: 进入房间");
 
                         // 执行准备流程
@@ -724,7 +734,7 @@ function startClickerThread() {
                 console.log("📊 已完成 " + localCount + " 次点击 | 已运行 " + elapsed + " 秒");
             }
 
-            sleep(random(config.clicker.time.min, config.clicker.time.max));
+            sleep(random(config.clicker.gapTime.min, config.clicker.gapTime.max));
         }
 
         console.log("点击器工作线程已停止");
@@ -795,7 +805,9 @@ function captureAndOcr() {
     }
 }
 
-// ==================== OCR工具函数 ====================
+/**
+ * 随机休眠
+ */
 function randomDelay() {
     var delay = random(config.wordOcr.actionDelay.min, config.wordOcr.actionDelay.max);
     sleep(delay);
@@ -822,9 +834,9 @@ function createOcrControlWindow() {
 
         ocrControlWindow.ocrControlBtn.on("click", function() {
             if (!ocrRunning) {
-                startOcr();
+                startOcrWord();
             } else {
-                stopOcr();
+                stopWordOcr();
             }
         });
     } catch (e) {
@@ -832,8 +844,8 @@ function createOcrControlWindow() {
     }
 }
 
-// ==================== OCR启停控制 ====================
-function startOcr() {
+// ==================== OCR识别词条启停控制 ====================
+function startOcrWord() {
     if (ocrRunning) return;
 
     if (auto.service === null) {
@@ -852,10 +864,10 @@ function startOcr() {
     console.log("OCR脚本已启动");
     toast("OCR脚本已启动");
 
-    startOcrThread();
+    startOcrWordThread();
 }
 
-function stopOcr() {
+function stopWordOcr() {
     ocrRunning = false;
 
     if (ocrThread && ocrThread.isAlive()) {
@@ -872,8 +884,8 @@ function stopOcr() {
     toast("OCR脚本已停止");
 }
 
-// ==================== OCR工作线程（含结算处理） ====================
-function startOcrThread() {
+// ==================== OCR词条工作线程（含结算页面处理） ====================
+function startOcrWordThread() {
     if (ocrThread && ocrThread.isAlive()) {
         ocrThread.interrupt();
     }
@@ -885,29 +897,26 @@ function startOcrThread() {
         while (ocrRunning && !isExiting) {
             try {
                 console.log("=============start===============")
-                for (var retry = 0; retry < config.wordOcr.maxRetryCount && ocrRunning; retry++) {
 
-                    console.log("点击词条")
-                    clickArea(config.wordOcr.areas.wordButtonArea);
-                    randomDelay();
-                    //再次点击，快速点击退出boss箱子页面
-                    clickArea(config.wordOcr.areas.wordButtonArea);
-                    sleep(1000);
+                console.log("点击词条")
+                clickArea(config.wordOcr.areas.wordButtonArea);
+                randomDelay();
+                //再次点击，快速点击退出boss箱子页面
+                clickArea(config.wordOcr.areas.wordButtonArea);
+                sleep(1000);
 
-                    // OCR识别（内部包含颜色预检）
-                    var words = captureAndOcr();
-                    if (settlementDetected) break;      // 结算中断
+                // OCR识别（内部包含颜色预检）
+                var words = captureAndOcr();
+                if (settlementDetected) break;      // 跳出 while 循环
 
-                    if (words.length > 0) {
-                        console.log("OCR识别: 【" + words.join("】, 【") + "】");
-                    }
+                if (words.length > 0) {
+                    console.log("OCR识别: 【" + words.join("】, 【") + "】");
+                }
 
-                    if (words.length < 3) {
-                        console.log("词条数量:" + words.length);
-                        sleep(500);
-                        break;
-                    }
-
+                if (words.length < 3) {
+                    console.log("词条数量:" + words.length);
+                    sleep(500);
+                } else {
                     // 检查是否包含优先词条
                     var hasNeedWord = false;
                     for (var i = 0; i < words.length; i++) {
@@ -923,7 +932,7 @@ function startOcrThread() {
                         clickArea(config.wordOcr.areas.refreshButtonArea);
 
                         words = captureAndOcr();
-                        if (settlementDetected) break;
+                        if (settlementDetected) break;   // 跳出 while
 
                         if (words.length > 0) {
                             console.log("刷新后: " + words.join(", "));
@@ -931,47 +940,76 @@ function startOcrThread() {
 
                         if (words.length < 3) {
                             console.log("刷新后识别失败");
-                            break;
+                        } else {
+                            // 刷新后重新判断
+                            var selectedIndex = -1;
+
+                            for (var w = 0; w < needWordList.length; w++) {
+                                var idx = words.indexOf(needWordList[w]);
+                                if (idx >= 0 && idx < 3) {
+                                    selectedIndex = idx;
+                                    console.log("命中优先词条: 【" + needWordList[w] + "】");
+                                    break;
+                                }
+                            }
+
+                            if (selectedIndex < 0) {
+                                for (var w2 = 0; w2 < allWordList.length; w2++) {
+                                    var idx2 = words.indexOf(allWordList[w2]);
+                                    if (idx2 >= 0 && idx2 < 3) {
+                                        selectedIndex = idx2;
+                                        console.log("命中可选: " + allWordList[w2]);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (selectedIndex >= 0) {
+                                console.log("点击词条:" + (selectedIndex + 1));
+                                clickArea(config.wordOcr.areas.wordAreaList[selectedIndex]);
+                            } else {
+                                // 随机选择词条
+                                var randomIndex = Math.floor(Math.random() * config.wordOcr.areas.wordAreaList.length);
+                                clickArea(config.wordOcr.areas.wordAreaList[randomIndex]);
+                                console.log("无可用词条, 随机选择词条: " + words[randomIndex]);
+                            }
                         }
-                    }
+                    } else {
+                        // 有优先词条，直接选择
+                        var selectedIndex = -1;
 
-                    // 选择词条
-                    var selectedIndex = -1;
-
-                    for (var w = 0; w < needWordList.length; w++) {
-                        var idx = words.indexOf(needWordList[w]);
-                        if (idx >= 0 && idx < 3) {
-                            selectedIndex = idx;
-                            console.log("命中优先词条: 【" + needWordList[w] + "】");
-                            break;
-                        }
-                    }
-
-                    if (selectedIndex < 0) {
-                        for (var w2 = 0; w2 < allWordList.length; w2++) {
-                            var idx2 = words.indexOf(allWordList[w2]);
-                            if (idx2 >= 0 && idx2 < 3) {
-                                selectedIndex = idx2;
-                                console.log("命中可选: " + allWordList[w2]);
+                        for (var w = 0; w < needWordList.length; w++) {
+                            var idx = words.indexOf(needWordList[w]);
+                            if (idx >= 0 && idx < 3) {
+                                selectedIndex = idx;
+                                console.log("命中优先词条: 【" + needWordList[w] + "】");
                                 break;
                             }
                         }
-                    }
+                        // 次优先词条
+                        if (selectedIndex < 0) {
+                            for (var w2 = 0; w2 < allWordList.length; w2++) {
+                                var idx2 = words.indexOf(allWordList[w2]);
+                                if (idx2 >= 0 && idx2 < 3) {
+                                    selectedIndex = idx2;
+                                    console.log("命中次优选词条: " + allWordList[w2]);
+                                    break;
+                                }
+                            }
+                        }
 
-                    if (selectedIndex >= 0) {
-                        console.log("点击词条:" + (selectedIndex + 1));
-                        clickArea(config.wordOcr.areas.wordPositions[selectedIndex]);
-                        break;
-                    } else {
-                        // 随机选择词条
-                        var randomIndex = Math.floor(Math.random() * config.wordOcr.areas.wordPositions.length);
-                        clickArea(config.wordOcr.areas.wordPositions[randomIndex]);
-                        console.log("无可用词条, 随机选择词条: " + words[randomIndex]);
-                        break;
+                        if (selectedIndex >= 0) {
+                            console.log("点击词条:" + (selectedIndex + 1));
+                            clickArea(config.wordOcr.areas.wordAreaList[selectedIndex]);
+                        } else {
+                            var randomIndex = Math.floor(Math.random() * config.wordOcr.areas.wordAreaList.length);
+                            clickArea(config.wordOcr.areas.wordAreaList[randomIndex]);
+                            console.log("无可用词条, 随机选择词条: " + words[randomIndex]);
+                        }
                     }
                 }
 
-                if (settlementDetected) break;   // 退出while循环
+                if (settlementDetected) break;   // 跳出 while 循环
 
                 console.log("=============end===============")
                 if (ocrRunning && !isExiting) {
@@ -1008,7 +1046,6 @@ function startOcrThread() {
             if (!clickerRunning) {
                 resumeClicker();
             } else {
-                // 如果已经在运行，重新启动以确保执行完整流程
                 pauseClicker();
                 sleep(500);
                 resumeClicker();
@@ -1066,7 +1103,7 @@ console.log("==================");
 console.log("综合脚本就绪 (颜色优化版 + 结算检测)");
 console.log("点击器: 初始待命");
 console.log("  - 区域: (" + config.clicker.area.left + "," + config.clicker.area.top + ")");
-console.log("  - 间隔: " + config.clicker.time.min + "~" + config.clicker.time.max + "ms");
+console.log("  - 间隔: " + config.clicker.gapTime.min + "~" + config.clicker.gapTime.max + "ms");
 console.log("  - 停止检测: " + (config.gamePrepare.stopColorCheck.enabled ? "颜色模式" : "OCR模式"));
 if (config.gamePrepare.stopColorCheck.enabled) {
     console.log("    检测点数: " + config.gamePrepare.stopColorCheck.points.length);
