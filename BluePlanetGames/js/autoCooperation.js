@@ -129,8 +129,8 @@ var config = {
         controlButton: {
             x: 200,
             y: 300,
-            width: 80,
-            height: 80
+            width: 100,
+            height: 100
         },
 
         // ========== 词条OCR颜色预检 ==========
@@ -229,11 +229,11 @@ var firstWordListRaw = [
     "哥斯拉:高速轰击", "哥斯拉:火球喷发", "哥斯拉:高速火球",
     "哥斯拉:轰击爆发", "哥斯拉:帝皇支援", "哥斯拉:灼烧岩浆", "哥斯拉:岩浆扩散",
     "哥斯拉:万兽之王", "哥斯拉:致命强化", "哥斯拉:核能增幅",
-    "天使:神圣契约", "天使:战神化身", "天使:奥术连奏"
+    "天使:神圣契约", "天使:战神化身"
 ];
 
 var secondWordListRaw = [
-    "天使:战神化身", "天使:奥术连奏", "天使:圣羽加持",
+    "天使:战神化身", "天使:奥术连奏", "天使:圣羽加持", "天使:奥术连奏",
     "毒液:血肉盛宴"
 ];
 
@@ -434,14 +434,14 @@ function checkPrepareStatus() {
             for (var i = 0; i < result.length; i++) {
                 var text = result[i].words || result[i].text || "";
                 text = text.replace(/[\s\n\r\t]+/g, "").trim();
-                if (text.indexOf("已准备") >= 0) {
-                    console.log("准备状态: 检测到【已准备】");
+                if (text.indexOf("取消准备") >= 0) {
+                    console.log("准备状态: 检测到【取消准备】");
                     return true;
                 }
             }
         }
 
-        console.log("准备状态: 未检测到【已准备】");
+        console.log("准备状态: 未检测到【取消准备】");
         return false;
 
     } catch (e) {
@@ -469,8 +469,6 @@ function executeSummonFlow() {
 
     console.log("游戏开始，休眠" + (config.summon.waitAfterPrepare/1000) + "秒");
     sleep(config.summon.waitAfterPrepare);
-
-
     //选择天使词条
     selectTianShiWord();
 
@@ -853,7 +851,7 @@ function startOcrWord() {
     ocrRunning = true;
 
     ui.run(function() {
-        ocrControlWindow.ocrControlBtn.setText("OCR停止");
+        ocrControlWindow.ocrControlBtn.setText("停");
         ocrControlWindow.ocrControlBtn.setBackgroundColor(colors.parseColor("#F44336"));
     });
 
