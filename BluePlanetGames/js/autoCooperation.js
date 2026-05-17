@@ -63,10 +63,10 @@ var config = {
         // 点击间隔随机范围（毫秒）
         clickRandomRange: 50,
 
-        // ========== 自动点击停止颜色检测 ==========
+        // ========== 自动点击停止颜色检测，检查到下列点颜色不一样时停止点击 ==========
         stopColorCheck: {
             enabled: true,            // 启用颜色检测替代OCR
-            points: [                 // 检测点坐标 (屏幕坐标)
+            points: [                 // 检测点坐标 (合作房间页面的空白位置)
                 { x: 1010, y: 600 },
                 { x: 1010, y: 700 },
                 { x: 1010, y: 800 },
@@ -86,10 +86,6 @@ var config = {
         },
         gapTime: {
             min: 300, max: 500
-        },
-        continuousClick: {
-            enabled: true,
-            duration: 300
         },
         //自动加入按钮偏移位置
         button: {
@@ -385,9 +381,6 @@ function resumeClicker() {
     });
 
     console.log("▶️ 点击器已启动");
-    if (config.clicker.continuousClick.enabled) {
-        console.log("⏰ 将连续点击 " + config.clicker.continuousClick.duration + " 秒后自动暂停");
-    }
 
     startClickerThread();
 }
@@ -687,20 +680,6 @@ function startClickerThread() {
 
         console.log("开始自动点击循环");
         while (!clickerPaused && clickerRunning && !isExiting) {
-            // 检查是否超时
-            if (config.clicker.continuousClick.enabled) {
-                var now = new Date().getTime();
-                if (clickStartTime > 0) {
-                    var elapsedSeconds = (now - clickStartTime) / 1000;
-
-                    if (elapsedSeconds >= config.clicker.continuousClick.duration) {
-                        ui.run(function() {
-                            pauseClicker();
-                        });
-                        break;
-                    }
-                }
-            }
 
             // OCR/颜色检测是否进入房间
             if (clickerRunning && !clickerPaused) {
@@ -1096,9 +1075,6 @@ if (config.gamePrepare.stopColorCheck.enabled) {
     console.log("    检测点数: " + config.gamePrepare.stopColorCheck.points.length);
 }
 console.log("  - 检测间隔: " + (config.clicker.ocrCheckInterval/1000) + "秒");
-if (config.clicker.continuousClick.enabled) {
-    console.log("  - 连续点击: " + config.clicker.continuousClick.duration + "秒");
-}
 console.log("  - 颜色预检: " + (config.wordOcr.colorPreCheck.enabled ? "开启" : "关闭"));
 console.log("  - 结算检测: " + (config.wordOcr.settlementCheck.enabled ? "开启" : "关闭"));
 console.log("=========初始化完成=========");
