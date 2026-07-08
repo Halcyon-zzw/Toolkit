@@ -3,8 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/BluePlanetGames/BluePlanetGames.iml" filepath="$PROJECT_DIR$/BluePlanetGames/BluePlanetGames.iml" />
+      <module fileurl="file://$PROJECT_DIR$/games/KingFarm/KingFarm.iml" filepath="$PROJECT_DIR$/games/KingFarm/KingFarm.iml" />
       <module fileurl="file://$PROJECT_DIR$/TileGames/TileGames.iml" filepath="$PROJECT_DIR$/TileGames/TileGames.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/Toolkit.iml" filepath="$PROJECT_DIR$/.idea/Toolkit.iml" />
+      <module fileurl="file://$PROJECT_DIR$/games/games.iml" filepath="$PROJECT_DIR$/games/games.iml" />
     </modules>
   </component>
 </project>
