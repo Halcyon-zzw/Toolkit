@@ -23,1724 +23,613 @@
             --danger-light: #fee2e2;
             --radius: 10px;
             --radius-sm: 6px;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-            --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
-            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-lg: 0 12px 32px rgba(0,0,0,0.12);
             --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: 0.2s ease;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: var(--font);
             background: var(--bg);
             color: var(--text);
             line-height: 1.5;
             min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
-
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px 24px 40px;
-        }
-
-        /* Header */
+        .app-container { max-width: 1500px; margin:0 auto; padding:20px 24px 40px; }
         .app-header {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 24px;
-            padding: 20px 24px;
-            background: var(--surface);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
+            display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+            gap:12px; margin-bottom:24px; padding:20px 24px;
+            background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow);
+            border:1px solid var(--border);
         }
-        .app-header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .app-header h1 .icon {
-            font-size: 1.6rem;
-        }
-        .header-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-
-        /* Buttons */
+        .header-actions { display:flex; gap:8px; align-items:center; }
         .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 9px 16px;
-            border-radius: var(--radius-sm);
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            border: 1px solid transparent;
-            transition: all var(--transition);
-            white-space: nowrap;
-            font-family: var(--font);
-            letter-spacing: 0.01em;
-            text-decoration: none;
-            outline: none;
-            position: relative;
-            user-select: none;
+            display:inline-flex; align-items:center; gap:6px; padding:9px 16px;
+            border-radius:var(--radius-sm); font-size:0.875rem; font-weight:500;
+            cursor:pointer; border:1px solid transparent; transition:all var(--transition);
+            white-space:nowrap; font-family:var(--font); outline:none;
+            background:var(--surface); color:var(--text); border-color:var(--border);
         }
-        .btn:active {
-            transform: scale(0.97);
+        .btn-primary { background:var(--primary); color:#fff; border-color:var(--primary); }
+        .btn-primary:hover { background:var(--primary-hover); }
+        .btn-outline:hover { background:#f9fafb; }
+        .btn-success { background:var(--success); color:#fff; border-color:var(--success); }
+        .btn-success:hover { background:#059669; }
+        .btn-danger { background:var(--danger); color:#fff; border-color:var(--danger); }
+        .btn-danger:hover { background:var(--danger-hover); }
+        .btn-sm { padding:6px 11px; font-size:0.8rem; }
+        .btn:disabled { opacity:0.45; cursor:not-allowed; }
+        .tooltip-wrapper { position:relative; display:inline-flex; }
+        .tooltip-text {
+            visibility:hidden; opacity:0; position:absolute; bottom:calc(100% + 8px);
+            left:50%; transform:translateX(-50%); background:#1e293b; color:#fff;
+            padding:6px 12px; border-radius:6px; font-size:0.75rem; white-space:nowrap;
+            pointer-events:none; transition:opacity 0.2s; z-index:100;
         }
-        .btn-primary {
-            background: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-        }
-        .btn-primary:hover {
-            background: var(--primary-hover);
-            border-color: var(--primary-hover);
-            box-shadow: var(--shadow-md);
-        }
-        .btn-outline {
-            background: var(--surface);
-            color: var(--text);
-            border-color: var(--border);
-        }
-        .btn-outline:hover {
-            background: #f9fafb;
-            border-color: #cbd5e1;
-            box-shadow: var(--shadow-sm);
-        }
-        .btn-success {
-            background: var(--success);
-            color: #fff;
-            border-color: var(--success);
-        }
-        .btn-success:hover {
-            background: #059669;
-            border-color: #059669;
-            box-shadow: var(--shadow-md);
-        }
-        .btn-danger {
-            background: var(--danger);
-            color: #fff;
-            border-color: var(--danger);
-        }
-        .btn-danger:hover {
-            background: var(--danger-hover);
-            border-color: var(--danger-hover);
-            box-shadow: var(--shadow-md);
-        }
-        .btn-sm {
-            padding: 6px 11px;
-            font-size: 0.8rem;
-            border-radius: 5px;
-        }
-        .btn-xs {
-            padding: 4px 8px;
-            font-size: 0.72rem;
-            border-radius: 4px;
-        }
-        .btn:disabled {
-            opacity: 0.45;
-            cursor: not-allowed;
-            pointer-events: auto;
-        }
-        .btn-icon {
-            width: 34px;
-            height: 34px;
-            padding: 0;
-            justify-content: center;
-            border-radius: 50%;
-            font-size: 1rem;
-        }
-
-        /* Tooltip */
-        .tooltip-wrapper {
-            position: relative;
-            display: inline-flex;
-        }
-        .tooltip-wrapper .tooltip-text {
-            visibility: hidden;
-            opacity: 0;
-            position: absolute;
-            bottom: calc(100% + 8px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e293b;
-            color: #fff;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            white-space: nowrap;
-            pointer-events: none;
-            transition: opacity 0.2s;
-            z-index: 100;
-            letter-spacing: 0.01em;
-            box-shadow: var(--shadow-lg);
-        }
-        .tooltip-wrapper .tooltip-text::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 5px solid transparent;
-            border-top-color: #1e293b;
-        }
-        .tooltip-wrapper:hover .tooltip-text,
-        .tooltip-wrapper:focus-within .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* Table Container */
+        .tooltip-wrapper:hover .tooltip-text { visibility:visible; opacity:1; }
         .table-wrapper {
-            background: var(--surface);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            overflow: hidden;
+            background:var(--surface); border-radius:var(--radius);
+            box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden;
         }
-        .table-scroll {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            max-height: 75vh;
-            overflow-y: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 1100px;
-            font-size: 0.875rem;
-        }
-        thead {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
+        .table-scroll { overflow-x:auto; max-height:75vh; overflow-y:auto; }
+        table { width:100%; border-collapse:collapse; min-width:1400px; font-size:0.875rem; }
         thead th {
-            background: #f8fafc;
-            padding: 13px 14px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: var(--text-secondary);
-            border-bottom: 2px solid #e5e7eb;
-            white-space: nowrap;
-            user-select: none;
+            background:#f8fafc; padding:13px 14px; text-align:left; font-weight:600;
+            font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em;
+            color:var(--text-secondary); border-bottom:2px solid #e5e7eb;
+            white-space:nowrap; user-select:none;
         }
-        thead th.sortable {
-            cursor: pointer;
-            transition: color var(--transition);
-            position: relative;
-            padding-right: 28px;
+        thead th.sortable { cursor:pointer; position:relative; padding-right:28px; }
+        thead th.sortable:hover { color:var(--primary); }
+        .sort-icon { position:absolute; right:8px; font-size:0.7rem; opacity:0.5; }
+        .sort-active .sort-icon { opacity:1; color:var(--primary); }
+        .reset-sort {
+            position:absolute; right:24px; font-size:0.65rem; cursor:pointer;
+            opacity:0; transition:opacity 0.2s; color:var(--text-muted);
         }
-        thead th.sortable:hover {
-            color: var(--primary);
-        }
-        thead th .sort-icon {
-            position: absolute;
-            right: 8px;
-            font-size: 0.7rem;
-            opacity: 0.5;
-            transition: all var(--transition);
-        }
-        thead th.sort-active .sort-icon {
-            opacity: 1;
-            color: var(--primary);
-        }
-        thead th .reset-sort {
-            position: absolute;
-            right: 24px;
-            font-size: 0.65rem;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity var(--transition);
-            color: var(--text-muted);
-        }
-        thead th.sort-active .reset-sort {
-            opacity: 0.7;
-        }
-        thead th .reset-sort:hover {
-            opacity: 1;
-            color: var(--danger);
-        }
-        tbody td {
-            padding: 14px;
-            border-bottom: 1px solid #f1f3f4;
-            vertical-align: middle;
-            transition: background var(--transition);
-        }
-        tbody tr {
-            transition: background var(--transition);
-        }
-        tbody tr:hover {
-            background: #fafbfc;
-        }
-        tbody tr.row-warning {
-            background: var(--warning-light);
-        }
-        tbody tr.row-warning:hover {
-            background: #fef0c7;
-        }
-        tbody tr.row-success {
-            background: var(--success-light);
-        }
-        tbody tr.row-success:hover {
-            background: #c6f6d5;
-        }
-        tbody tr.row-editing {
-            background: #f0f4ff;
-            box-shadow: inset 3px 0 0 var(--primary);
-        }
-        tbody tr.row-editing:hover {
-            background: #e8eeff;
-        }
+        .sort-active .reset-sort { opacity:0.7; }
+        .reset-sort:hover { opacity:1; color:var(--danger); }
+        tbody td { padding:12px 14px; border-bottom:1px solid #f1f3f4; vertical-align:middle; }
+        tbody tr.row-warning { background:var(--warning-light); }
+        tbody tr.row-success { background:var(--success-light); }
+        tbody tr.row-editing { background:#f0f4ff; box-shadow:inset 3px 0 0 var(--primary); }
 
-        /* Progress Bar */
-        .progress-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 130px;
-        }
-        .progress-bar-wrap {
-            flex: 1;
-            height: 8px;
-            background: #e5e7eb;
-            border-radius: 10px;
-            overflow: hidden;
-            min-width: 60px;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.5s ease, background 0.5s ease;
-        }
-        .progress-bar-fill.green {
-            background: #10b981;
-        }
-        .progress-bar-fill.orange {
-            background: #f59e0b;
-        }
-        .progress-bar-fill.red {
-            background: #ef4444;
-        }
-        .progress-time {
-            font-weight: 600;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            color: var(--text);
-            min-width: 55px;
-            text-align: right;
-            font-variant-numeric: tabular-nums;
-            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
-        }
+        .mature-cell { display:flex; flex-direction:column; gap:4px; }
+        .mature-time { font-weight:700; font-family:'SF Mono', 'Consolas', monospace; white-space:nowrap; }
+        .mature-ripe-badge { display:inline-block; background:#ef4444; color:white; font-size:0.7rem; padding:2px 6px; border-radius:4px; margin-left:6px; font-weight:600; }
+        .water-reduction-hint { display:block; font-size:0.7rem; color:#ef4444; animation: hintFadeIn 0.3s ease, hintFadeOut 0.6s ease 2.4s forwards; margin-top:2px; }
+        @keyframes hintFadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; } }
+        @keyframes hintFadeOut { to { opacity:0; } }
 
-        /* Mature countdown */
-        .mature-countdown {
-            font-weight: 700;
-            font-size: 0.9rem;
-            font-variant-numeric: tabular-nums;
-            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
-            position: relative;
-        }
-        .water-reduction-hint {
-            display: block;
-            font-size: 0.7rem;
-            font-weight: 400;
-            color: #ef4444;
-            font-family: var(--font);
-            animation: hintFadeIn 0.3s ease, hintFadeOut 0.6s ease 2.4s forwards;
-            margin-top: 2px;
-            white-space: nowrap;
-        }
-        @keyframes hintFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-4px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        @keyframes hintFadeOut {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0;
-            }
-        }
+        .mature-progress { display:flex; align-items:center; gap:6px; }
+        .boss-hp-stack { flex:1; min-width:80px; height:8px; background:#e5e7eb; border-radius:10px; overflow:hidden; position:relative; }
+        .boss-hp-layer { position:absolute; left:0; top:0; bottom:0; transition:width 0.5s ease; }
+        .layer-label { font-size:0.7rem; font-weight:600; color:var(--text-secondary); white-space:nowrap; min-width:20px; text-align:center; }
 
-        /* Dry badge */
-        .dry-badge {
-            display: inline-block;
-            background: #fef2f2;
-            color: #dc2626;
-            font-size: 0.68rem;
-            padding: 2px 7px;
-            border-radius: 10px;
-            font-weight: 600;
-            margin-left: 4px;
-            letter-spacing: 0.03em;
-        }
-
-        /* Cross-day badge */
-        .cross-day-badge {
-            display: inline-block;
-            background: #e0e7ff;
-            color: #4338ca;
-            font-size: 0.68rem;
-            padding: 2px 7px;
-            border-radius: 10px;
-            font-weight: 600;
-            margin-left: 4px;
-            letter-spacing: 0.03em;
-        }
-
-        /* Edit inputs */
-        .edit-input {
-            width: 80px;
-            padding: 7px 9px;
-            border: 1.5px solid #d1d5db;
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
-            font-family: var(--font);
-            text-align: center;
-            transition: all var(--transition);
-            background: #fff;
-        }
-        .edit-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.1);
-        }
-        .edit-input.small {
-            width: 72px;
-            font-family: 'SF Mono', 'Consolas', monospace;
-            letter-spacing: 1px;
-        }
-        .edit-select {
-            padding: 7px 10px;
-            border: 1.5px solid #d1d5db;
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
-            font-family: var(--font);
-            background: #fff;
-            cursor: pointer;
-            transition: all var(--transition);
-            min-width: 120px;
-        }
-        .edit-select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.1);
-        }
-        .time-edit-group {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-        }
-        .edit-user-input {
-            width: 110px;
-            padding: 7px 9px;
-            border: 1.5px solid #d1d5db;
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
-            font-family: var(--font);
-            transition: all var(--transition);
-            background: #fff;
-        }
-        .edit-user-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.1);
-        }
-
-        /* Toast */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            pointer-events: none;
-        }
-        .toast {
-            pointer-events: auto;
-            background: #1e293b;
-            color: #fff;
-            padding: 12px 18px;
-            border-radius: var(--radius-sm);
-            font-size: 0.875rem;
-            font-weight: 500;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: toastSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-            max-width: 420px;
-        }
-        .toast .toast-undo {
-            background: #fff;
-            color: #1e293b;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.8rem;
-            font-family: var(--font);
-            transition: all var(--transition);
-            white-space: nowrap;
-        }
-        .toast .toast-undo:hover {
-            background: #e2e8f0;
-        }
-        .toast .toast-close {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            font-size: 1rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            transition: all var(--transition);
-        }
-        .toast .toast-close:hover {
-            color: #fff;
-            background: rgba(255, 255, 255, 0.15);
-        }
-        @keyframes toastSlideIn {
-            from {
-                opacity: 0;
-                transform: translateX(60px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.45);
-            z-index: 8000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.2s ease;
-        }
-        .modal {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 24px 28px;
-            box-shadow: var(--shadow-lg);
-            max-width: 420px;
-            width: 90%;
-            animation: scaleIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        .modal h3 {
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-        .modal p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 18px;
-        }
-        .modal-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-        }
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.94);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .app-container {
-                padding: 10px 8px 30px;
-            }
-            .app-header {
-                padding: 14px 16px;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-            .app-header h1 {
-                font-size: 1.2rem;
-            }
-            .btn {
-                padding: 7px 12px;
-                font-size: 0.8rem;
-            }
-            .table-scroll {
-                max-height: 60vh;
-            }
-            table {
-                min-width: 900px;
-            }
-            thead th,
-            tbody td {
-                padding: 10px 8px;
-                font-size: 0.75rem;
-            }
-            .edit-input,
-            .edit-user-input {
-                width: 60px;
-                padding: 5px 6px;
-                font-size: 0.75rem;
-            }
-            .edit-select {
-                padding: 5px 7px;
-                font-size: 0.75rem;
-                min-width: 90px;
-            }
-            .progress-container {
-                min-width: 90px;
-                gap: 4px;
-            }
-            .progress-time {
-                font-size: 0.7rem;
-                min-width: 42px;
-            }
-            .toast {
-                max-width: 90vw;
-                font-size: 0.8rem;
-                padding: 10px 14px;
-            }
-        }
-        @media (max-width: 480px) {
-            .header-actions {
-                flex-direction: column;
-                width: 100%;
-            }
-            .header-actions .btn {
-                width: 100%;
-                justify-content: center;
-            }
-            table {
-                min-width: 750px;
-            }
-            .btn-sm {
-                padding: 4px 7px;
-                font-size: 0.7rem;
-            }
-        }
+        .water-vertical { display:flex; flex-direction:column; gap:4px; min-width:120px; }
+        .progress-bar-wrap { height:8px; background:#e5e7eb; border-radius:10px; overflow:hidden; }
+        .progress-bar-fill { height:100%; border-radius:10px; transition:width 0.5s ease; }
+        .progress-bar-fill.green { background:#10b981; }
+        .progress-bar-fill.orange { background:#f59e0b; }
+        .progress-bar-fill.red { background:#ef4444; }
+        .dry-badge { display:inline-block; background:#fef2f2; color:#dc2626; font-size:0.68rem; padding:2px 7px; border-radius:10px; margin-left:4px; }
+        .cross-day-badge { display:inline-block; background:#e0e7ff; color:#4338ca; font-size:0.68rem; padding:2px 7px; border-radius:10px; margin-left:4px; }
+        .edit-input { width:90px; padding:6px 8px; border:1.5px solid #d1d5db; border-radius:var(--radius-sm); font-size:0.85rem; font-family:'SF Mono','Consolas',monospace; text-align:center; }
+        .edit-input:focus { border-color:var(--primary); outline:none; box-shadow:0 0 0 3px rgba(79,110,247,0.1); }
+        .edit-user-input { width:110px; padding:6px 8px; border:1.5px solid #d1d5db; border-radius:var(--radius-sm); font-size:0.85rem; }
+        .edit-select { padding:6px 8px; border:1.5px solid #d1d5db; border-radius:var(--radius-sm); font-size:0.85rem; background:white; cursor:pointer; }
+        .toast-container { position:fixed; top:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+        .toast { background:#1e293b; color:#fff; padding:12px 18px; border-radius:var(--radius-sm); font-size:0.875rem; box-shadow:var(--shadow-lg); display:flex; align-items:center; gap:10px; animation:toastSlideIn 0.35s ease; max-width:400px; }
+        .toast-undo { background:#fff; color:#1e293b; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:600; font-size:0.8rem; }
+        .toast-close { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1rem; }
+        @keyframes toastSlideIn { from { transform:translateX(60px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:8000; display:flex; align-items:center; justify-content:center; }
+        .modal { background:white; border-radius:var(--radius); padding:24px; box-shadow:var(--shadow-lg); max-width:400px; width:90%; }
+        .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+        .immediate-mature { color:#10b981; font-weight:600; }
+        .approx-mature { color:#f59e0b; }
+        @media (max-width:768px) { .app-container { padding:10px 8px; } table { min-width:1100px; } }
     </style>
 </head>
 <body>
 <div class="app-container">
-    <!-- Header -->
     <div class="app-header">
-        <h1><span class="icon">🌾</span>作物倒计时管理系统</h1>
+        <h1>🌾 作物倒计时管理系统</h1>
         <div class="header-actions">
-            <button class="btn btn-outline btn-sm" id="btnExport" title="导出数据为JSON文件">📥 导出</button>
-            <button class="btn btn-outline btn-sm" id="btnImport" title="从JSON文件导入数据">📤 导入</button>
+            <button class="btn btn-outline btn-sm" id="btnExport">📥 导出</button>
+            <button class="btn btn-outline btn-sm" id="btnImport">📤 导入</button>
             <input type="file" id="importFileInput" accept=".json" style="display:none;">
             <button class="btn btn-primary" id="btnAddRow">＋ 添加行</button>
         </div>
     </div>
-
-    <!-- Table -->
     <div class="table-wrapper">
         <div class="table-scroll" id="tableScroll">
             <table>
-                <thead>
-                <tr>
-                    <th>用户</th>
-                    <th>作物类型</th>
-                    <th>成熟倒计时</th>
-                    <th>浇水湿润倒计时</th>
-                    <th>水分干枯时间</th>
-                    <th class="sortable" id="thMatureTime" title="点击排序">
-                        预计成熟时间
-                        <span class="sort-icon">↕</span>
-                        <span class="reset-sort" id="resetSort" title="重置排序">↺</span>
-                    </th>
-                    <th>操作</th>
-                </tr>
-                </thead>
+                <thead><tr>
+                    <th>用户</th><th>作物类型</th>
+                    <th class="sortable" id="thMature">成熟倒计时<span class="sort-icon">↕</span><span class="reset-sort" id="resetSort">↺</span></th>
+                    <th>浇水湿润倒计时</th><th>水分干枯时间</th><th>浇水减少时间</th><th>浇水成熟剩余时间</th><th>操作</th>
+                </tr></thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
-        <div id="emptyState" style="display:none; padding:48px 20px; text-align:center; color:var(--text-muted);">
-            <div style="font-size:3rem; margin-bottom:12px;">📋</div>
-            <p style="font-size:1rem;">暂无数据，请点击「添加行」或导入数据</p>
-        </div>
+        <div id="emptyState" style="display:none; padding:48px; text-align:center; color:var(--text-muted);">📋<p>暂无数据</p></div>
     </div>
 </div>
-
-<!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
-
-<!-- Modal Container -->
 <div id="modalContainer"></div>
 
 <script>
     (function() {
-        // ============ Constants ============
         const CROP_CONFIG = {
-            '16h': {
-                matureTotal: 16 * 3600,
-                waterMax: 5 * 3600 + 20 * 60,
-                waterThreshold: 5 * 3600,
-                label: '16h作物',
-            },
-            '32h': {
-                matureTotal: 32 * 3600,
-                waterMax: 10 * 3600 + 40 * 60,
-                waterThreshold: 10 * 3600,
-                label: '32h作物',
-            },
+            '16h': { matureTotal:57600, waterMax:19200, waterThreshold:18000, label:'16h作物' },
+            '32h': { matureTotal:115200, waterMax:38400, waterThreshold:36000, label:'32h作物' }
         };
-
+        // 高对比度层级颜色：蓝 → 橙 → 红 → 绿 → 紫
+        const LAYER_COLORS = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6'];
         const STORAGE_KEY = 'crop-management-data';
         const SORT_DEFAULT = 'default';
-        const SORT_MATURE_DESC = 'matureDesc';
-        const UNDO_TIMEOUT = 5000;
-        const WATER_HINT_DURATION = 3000;
+        const SORT_MATURE_ASC = 'matureAsc';
+        const UNDO_TIMEOUT = 5000, WATER_HINT_DURATION = 3000;
 
-        // ============ State ============
-        let rows = [];
-        let nextId = 1;
-        let nextCreateOrder = 1;
-        let sortState = SORT_DEFAULT;
-        let editingRowId = null;
-        let editSnapshot = null;
-        let lastSaveTime = Date.now();
-        let dataVersion = 1;
-        let tickInterval = null;
-        let undoData = {};
+        let rows = [], nextId = 1, nextCreateOrder = 1, sortState = SORT_DEFAULT;
+        let editingRowId = null, editSnapshot = null, lastSaveTime = Date.now(), undoData = {};
 
-        // ============ DOM Refs ============
-        const tableBody = document.getElementById('tableBody');
-        const emptyState = document.getElementById('emptyState');
-        const toastContainer = document.getElementById('toastContainer');
-        const modalContainer = document.getElementById('modalContainer');
-        const thMatureTime = document.getElementById('thMatureTime');
-        const resetSortBtn = document.getElementById('resetSort');
-        const btnAddRow = document.getElementById('btnAddRow');
-        const btnExport = document.getElementById('btnExport');
-        const btnImport = document.getElementById('btnImport');
-        const importFileInput = document.getElementById('importFileInput');
-        const tableScroll = document.getElementById('tableScroll');
+        const $ = s => document.querySelector(s);
+        const tableBody = $('#tableBody'), emptyState = $('#emptyState');
+        const toastContainer = $('#toastContainer'), modalContainer = $('#modalContainer');
+        const thMature = $('#thMature'), resetSortBtn = $('#resetSort'), tableScroll = $('#tableScroll');
 
-        // ============ Utilities ============
-        function formatTime(seconds) {
-            if (seconds <= 0) return '00:00:00';
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = Math.floor(seconds % 60);
-            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        function formatTime(s) {
+            if (s<=0) return '00:00:00';
+            const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = Math.floor(s%60);
+            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
         }
-
-        function formatTimeHM(seconds) {
-            if (seconds <= 0) return '0h 0m';
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            return `${h}h ${m}m`;
-        }
-
+        function formatTimeHM(s) { if(s<=0) return '0h 0m'; return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m`; }
         function formatAbsoluteTime(secondsFromNow) {
-            const ts = Date.now() + Math.max(0, secondsFromNow) * 1000;
-            const d = new Date(ts);
-            const M = String(d.getMonth() + 1).padStart(2, '0');
-            const D = String(d.getDate()).padStart(2, '0');
-            const H = String(d.getHours()).padStart(2, '0');
-            const min = String(d.getMinutes()).padStart(2, '0');
-            return `${M}-${D} ${H}:${min}`;
+            const d = new Date(Date.now() + Math.max(0,secondsFromNow)*1000);
+            return `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
         }
-
-        function isCrossingDay(secondsFromNow) {
-            if (secondsFromNow <= 0) return false;
-            const now = new Date();
-            const target = new Date(now.getTime() + secondsFromNow * 1000);
-            return now.getDate() !== target.getDate() ||
-                now.getMonth() !== target.getMonth() ||
-                now.getFullYear() !== target.getFullYear();
+        function isCrossingDay(s) {
+            if(s<=0) return false;
+            const now = new Date(), target = new Date(now.getTime()+s*1000);
+            return now.getDate()!==target.getDate() || now.getMonth()!==target.getMonth() || now.getFullYear()!==target.getFullYear();
         }
+        function calcWaterReduction(row) { const c=CROP_CONFIG[row.cropType]; return Math.floor((c.waterMax - row.waterCountdown)/4); }
 
-        function generateId() {
-            return nextId++;
-        }
-
-        function generateCreateOrder() {
-            return nextCreateOrder++;
-        }
-
-        function clampZero(val) {
-            return Math.max(0, val);
-        }
-
-        function getCropConfig(cropType) {
-            return CROP_CONFIG[cropType] || CROP_CONFIG['16h'];
-        }
-
-        // ============ Persistence ============
-        function saveToStorage() {
-            lastSaveTime = Date.now();
-            const data = {
-                version: dataVersion,
-                nextId: nextId,
-                nextCreateOrder: nextCreateOrder,
-                lastSaveTime: lastSaveTime,
-                rows: rows.map(r => ({
-                    id: r.id,
-                    user: r.user,
-                    cropType: r.cropType,
-                    matureCountdown: r.matureCountdown,
-                    waterCountdown: r.waterCountdown,
-                    createOrder: r.createOrder,
-                    createdAt: r.createdAt,
-                })),
-            };
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-            } catch (e) {
-                console.warn('localStorage 存储失败', e);
-            }
-        }
-
-        function loadFromStorage() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return false;
-                const data = JSON.parse(raw);
-                if (!data || !Array.isArray(data.rows)) return false;
-
-                nextId = data.nextId || 1;
-                nextCreateOrder = data.nextCreateOrder || 1;
-                dataVersion = data.version || 1;
-                const savedTime = data.lastSaveTime || Date.now();
-                const elapsed = Math.floor((Date.now() - savedTime) / 1000);
-
-                rows = data.rows.map(r => ({
-                    id: r.id,
-                    user: r.user || '',
-                    cropType: r.cropType || '16h',
-                    matureCountdown: clampZero((r.matureCountdown || 0) - elapsed),
-                    waterCountdown: clampZero((r.waterCountdown || 0) - elapsed),
-                    createOrder: r.createOrder || 0,
-                    createdAt: r.createdAt || Date.now(),
-                }));
-
-                if (rows.length > 0) {
-                    const maxId = Math.max(...rows.map(r => r.id));
-                    const maxCO = Math.max(...rows.map(r => r.createOrder));
-                    nextId = Math.max(nextId, maxId + 1);
-                    nextCreateOrder = Math.max(nextCreateOrder, maxCO + 1);
+        function calcWaterMatureRemaining(row) {
+            if (row.matureCountdown <= 0) return { text: '-', cls: '' };
+            const reduction = calcWaterReduction(row);
+            if (reduction >= row.matureCountdown) return { text: '浇水立即成熟', cls: 'immediate-mature' };
+            const remainingAfterWater = row.matureCountdown - reduction;
+            const targetWater = Math.floor(remainingAfterWater / 5 * 4);
+            if (row.waterCountdown > targetWater) {
+                const waitMinutes = Math.ceil(targetWater / 60);
+                if (waitMinutes >= 60) {
+                    const h = Math.floor(waitMinutes / 60);
+                    const m = waitMinutes % 60;
+                    return { text: `约${h}小时${m}分钟后成熟`, cls: 'approx-mature' };
                 }
-
-                lastSaveTime = Date.now();
-                return true;
-            } catch (e) {
-                console.warn('localStorage 读取失败', e);
-                return false;
+                return { text: `约${waitMinutes}分钟后成熟`, cls: 'approx-mature' };
             }
-        }
-
-        function checkMultiTab() {
-            const key = 'crop-management-heartbeat';
-            const now = Date.now();
-            const lastHeartbeat = localStorage.getItem(key);
-            if (lastHeartbeat && now - parseInt(lastHeartbeat) < 3000) {
-                showToast('⚠️ 检测到可能有其他标签页也在使用，建议仅单标签页操作', null, 4000);
-            }
-            localStorage.setItem(key, String(now));
-            setInterval(() => {
-                localStorage.setItem(key, String(Date.now()));
-            }, 5000);
-        }
-
-        // ============ Toast ============
-        function showToast(message, undoCallback, duration = 3500) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `
-                    <span>${message}</span>
-                    ${undoCallback ? '<button class="toast-undo">撤销</button>' : ''}
-                    <button class="toast-close">✕</button>
-                `;
-            toastContainer.appendChild(toast);
-
-            let timeoutId;
-            const removeToast = () => {
-                clearTimeout(timeoutId);
-                if (toast.parentNode) {
-                    toast.style.opacity = '0';
-                    toast.style.transform = 'translateX(60px)';
-                    toast.style.transition = 'all 0.3s ease';
-                    setTimeout(() => {
-                        if (toast.parentNode) toast.remove();
-                    }, 300);
-                }
-            };
-
-            if (undoCallback) {
-                const undoBtn = toast.querySelector('.toast-undo');
-                undoBtn.addEventListener('click', () => {
-                    undoCallback();
-                    removeToast();
-                });
-            }
-
-            const closeBtn = toast.querySelector('.toast-close');
-            closeBtn.addEventListener('click', removeToast);
-
-            timeoutId = setTimeout(removeToast, duration);
-        }
-
-        // ============ Modal ============
-        function showConfirmModal(title, message, onConfirm) {
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                    <div class="modal">
-                        <h3>${title}</h3>
-                        <p>${message}</p>
-                        <div class="modal-actions">
-                            <button class="btn btn-outline btn-sm" id="modalCancel">取消</button>
-                            <button class="btn btn-danger btn-sm" id="modalConfirm">确认删除</button>
-                        </div>
-                    </div>
-                `;
-            modalContainer.appendChild(overlay);
-
-            overlay.querySelector('#modalCancel').addEventListener('click', () => overlay.remove());
-            overlay.querySelector('#modalConfirm').addEventListener('click', () => {
-                overlay.remove();
-                onConfirm();
-            });
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) overlay.remove();
-            });
-        }
-
-        // ============ Water Hint ============
-        function showWaterHint(rowId, reductionSeconds) {
-            const hintEl = document.getElementById(`water-hint-${rowId}`);
-            if (hintEl) hintEl.remove();
-            const matureCell = document.getElementById(`mature-cell-${rowId}`);
-            if (!matureCell) return;
-
-            const hint = document.createElement('span');
-            hint.className = 'water-reduction-hint';
-            hint.id = `water-hint-${rowId}`;
-            hint.textContent = `- ${formatTimeHM(reductionSeconds)}`;
-            matureCell.appendChild(hint);
-
-            setTimeout(() => {
-                if (hint.parentNode) hint.remove();
-            }, WATER_HINT_DURATION);
-        }
-
-        // ============ Row Operations ============
-        function getRowById(id) {
-            return rows.find(r => r.id === id);
-        }
-
-        function getRowIndexById(id) {
-            return rows.findIndex(r => r.id === id);
-        }
-
-        function getSortedRows() {
-            let sorted = [...rows];
-            if (sortState === SORT_MATURE_DESC) {
-                sorted.sort((a, b) => b.matureCountdown - a.matureCountdown);
-            } else {
-                sorted.sort((a, b) => a.createOrder - b.createOrder);
-            }
-            return sorted;
-        }
-
-        function addRow(user = '', cropType = '16h', matureCountdown = null, waterCountdown = null) {
-            const cfg = getCropConfig(cropType);
-            const newRow = {
-                id: generateId(),
-                user: user,
-                cropType: cropType,
-                matureCountdown: matureCountdown !== null ? matureCountdown : cfg.matureTotal,
-                waterCountdown: waterCountdown !== null ? waterCountdown : cfg.waterMax,
-                createOrder: generateCreateOrder(),
-                createdAt: Date.now(),
-            };
-            rows.push(newRow);
-            saveToStorage();
-            return newRow;
-        }
-
-        function deleteRow(rowId) {
-            const idx = getRowIndexById(rowId);
-            if (idx >= 0) {
-                if (editingRowId === rowId) cancelEdit();
-                rows.splice(idx, 1);
-                saveToStorage();
-            }
+            return { text: '-', cls: '' };
         }
 
         function canWater(row) {
-            if (row.matureCountdown <= 0) return { can: false, reason: '作物已成熟，无法浇水' };
-            const cfg = getCropConfig(row.cropType);
-            if (row.waterCountdown >= cfg.waterThreshold) {
-                return {
-                    can: false,
-                    reason: `剩余湿润时间需低于${formatTimeHM(cfg.waterThreshold)}才能浇水（当前${formatTimeHM(row.waterCountdown)}）`
-                };
-            }
-            return { can: true, reason: '' };
+            if(row.matureCountdown<=0) return {can:false,reason:'已成熟'};
+            const c=CROP_CONFIG[row.cropType];
+            if(row.waterCountdown >= c.waterThreshold) return {can:false,reason:`需低于${formatTimeHM(c.waterThreshold)}`};
+            return {can:true,reason:''};
         }
 
+        function renderBossHpBar(remaining) {
+            const segSize = 36000;
+            const currentLayers = Math.ceil(remaining / segSize);
+            const currentLayerIndex = currentLayers - 1;
+            const remainingInTopLayer = remaining % segSize;
+            const topLayerPercent = remainingInTopLayer === 0 ? 100 : Math.min(100, (remainingInTopLayer / segSize) * 100);
+
+            const container = document.createElement('div');
+            container.className = 'mature-progress';
+
+            const stack = document.createElement('div');
+            stack.className = 'boss-hp-stack';
+
+            for (let i = 0; i < currentLayers; i++) {
+                const layerDiv = document.createElement('div');
+                layerDiv.className = 'boss-hp-layer';
+                layerDiv.style.backgroundColor = LAYER_COLORS[i % LAYER_COLORS.length];
+                if (i < currentLayerIndex) {
+                    layerDiv.style.width = '100%';
+                } else if (i === currentLayerIndex) {
+                    layerDiv.style.width = topLayerPercent + '%';
+                }
+                stack.appendChild(layerDiv);
+            }
+
+            container.appendChild(stack);
+
+            const label = document.createElement('span');
+            label.className = 'layer-label';
+            label.textContent = `x${currentLayers}`;
+            container.appendChild(label);
+
+            return container;
+        }
+
+        function saveToStorage() {
+            lastSaveTime = Date.now();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                version:11, nextId, nextCreateOrder, lastSaveTime,
+                rows: rows.map(r=>({id:r.id,user:r.user,cropType:r.cropType,matureCountdown:r.matureCountdown,waterCountdown:r.waterCountdown,createOrder:r.createOrder,createdAt:r.createdAt}))
+            }));
+        }
+        function loadFromStorage() {
+            const raw = localStorage.getItem(STORAGE_KEY); if(!raw) return false;
+            try {
+                const data = JSON.parse(raw); if(!data.rows) return false;
+                nextId = data.nextId||1; nextCreateOrder = data.nextCreateOrder||1;
+                const elapsed = Math.floor((Date.now() - (data.lastSaveTime||Date.now()))/1000);
+                rows = data.rows.map(r=>({
+                    id:r.id, user:r.user||'', cropType:r.cropType||'16h',
+                    matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed),
+                    waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed),
+                    createOrder:r.createOrder||0, createdAt:r.createdAt||Date.now()
+                }));
+                if(rows.length) {
+                    nextId = Math.max(nextId, Math.max(...rows.map(r=>r.id))+1);
+                    nextCreateOrder = Math.max(nextCreateOrder, Math.max(...rows.map(r=>r.createOrder))+1);
+                }
+                lastSaveTime = Date.now(); return true;
+            } catch(e) { return false; }
+        }
+        function showToast(msg, undoCallback, duration=3500) {
+            const toast = document.createElement('div'); toast.className='toast';
+            toast.innerHTML = `<span>${msg}</span>${undoCallback?'<button class="toast-undo">撤销</button>':''}<button class="toast-close">✕</button>`;
+            toastContainer.appendChild(toast);
+            const remove = () => {
+                if(toast.parentNode) { toast.style.opacity='0'; toast.style.transform='translateX(60px)'; toast.style.transition='0.3s'; setTimeout(()=>toast.remove(),300); }
+            };
+            if(undoCallback) toast.querySelector('.toast-undo').onclick = ()=>{ undoCallback(); remove(); };
+            toast.querySelector('.toast-close').onclick = remove;
+            setTimeout(remove, duration);
+        }
+        function showConfirm(title,msg,onConfirm) {
+            const overlay = document.createElement('div'); overlay.className='modal-overlay';
+            overlay.innerHTML = `<div class="modal"><h3>${title}</h3><p>${msg}</p><div class="modal-actions"><button class="btn btn-outline btn-sm" id="modalCancel">取消</button><button class="btn btn-danger btn-sm" id="modalConfirm">确认</button></div></div>`;
+            modalContainer.appendChild(overlay);
+            overlay.querySelector('#modalCancel').onclick = ()=>overlay.remove();
+            overlay.querySelector('#modalConfirm').onclick = ()=>{ overlay.remove(); onConfirm(); };
+            overlay.onclick = e => { if(e.target===overlay) overlay.remove(); };
+        }
+        function getSortedRows() {
+            const sorted = [...rows];
+            if(sortState === SORT_MATURE_ASC) {
+                sorted.sort((a,b) => a.matureCountdown - b.matureCountdown);
+            } else {
+                sorted.sort((a,b) => a.createOrder - b.createOrder);
+            }
+            return sorted;
+        }
+        function addRow(user='', cropType='16h') {
+            const c=CROP_CONFIG[cropType];
+            const newRow = { id:nextId++, user, cropType, matureCountdown:c.matureTotal, waterCountdown:c.waterMax, createOrder:nextCreateOrder++, createdAt:Date.now() };
+            rows.push(newRow); saveToStorage(); return newRow;
+        }
+        function deleteRow(id) { if(editingRowId===id) cancelEdit(); rows = rows.filter(r=>r.id!==id); saveToStorage(); }
         function doWater(row) {
-            const cfg = getCropConfig(row.cropType);
-            const remainingWater = row.waterCountdown;
-            const reduction = Math.floor((cfg.waterMax - remainingWater) / 4);
-            row.waterCountdown = cfg.waterMax;
-            row.matureCountdown = clampZero(row.matureCountdown - reduction);
-            saveToStorage();
-            showWaterHint(row.id, reduction);
+            const c=CROP_CONFIG[row.cropType], reduction = Math.floor((c.waterMax - row.waterCountdown)/4);
+            row.waterCountdown = c.waterMax; row.matureCountdown = Math.max(0, row.matureCountdown - reduction);
+            saveToStorage(); showWaterHint(row.id, reduction);
         }
-
-        function doPlant(row, cropType) {
-            const cfg = getCropConfig(cropType);
-            const prevState = {
-                user: row.user,
-                cropType: row.cropType,
-                matureCountdown: row.matureCountdown,
-                waterCountdown: row.waterCountdown,
-            };
-            undoData[row.id] = prevState;
-
-            row.cropType = cropType;
-            row.matureCountdown = cfg.matureTotal;
-            row.waterCountdown = cfg.waterMax;
-            const reduction = Math.floor(cfg.waterMax / 4);
-            row.matureCountdown = clampZero(row.matureCountdown - reduction);
-            row.waterCountdown = cfg.waterMax;
-            saveToStorage();
-            showWaterHint(row.id, reduction);
-
-            const rowId = row.id;
-            showToast(`✅ 已播种 ${cfg.label}，减少 ${formatTimeHM(reduction)}`, () => {
-                if (undoData[rowId]) {
-                    const prev = undoData[rowId];
-                    const r = getRowById(rowId);
-                    if (r) {
-                        r.user = prev.user;
-                        r.cropType = prev.cropType;
-                        r.matureCountdown = prev.matureCountdown;
-                        r.waterCountdown = prev.waterCountdown;
-                        saveToStorage();
-                        renderTable();
-                    }
-                    delete undoData[rowId];
-                }
-            }, UNDO_TIMEOUT);
-
-            setTimeout(() => {
-                delete undoData[row.id];
-            }, UNDO_TIMEOUT + 1000);
+        function showWaterHint(rowId, reduction) {
+            const cell = document.getElementById(`mature-cell-${rowId}`); if(!cell) return;
+            const old = document.getElementById(`hint-${rowId}`); if(old) old.remove();
+            const hint = document.createElement('span'); hint.className='water-reduction-hint'; hint.id=`hint-${rowId}`;
+            hint.textContent = `- ${formatTimeHM(reduction)}`; cell.appendChild(hint);
+            setTimeout(()=>hint.remove(), WATER_HINT_DURATION);
         }
-
-        // ============ Edit Logic ============
         function enterEdit(rowId) {
-            if (editingRowId !== null && editingRowId !== rowId) cancelEdit();
-            const row = getRowById(rowId);
-            if (!row) return;
-
+            if(editingRowId && editingRowId!==rowId) cancelEdit();
+            const row = rows.find(r=>r.id===rowId); if(!row) return;
             editingRowId = rowId;
-            editSnapshot = {
-                matureCountdown: row.matureCountdown,
-                waterCountdown: row.waterCountdown,
-                snapshotTime: Date.now(),
-                matureDirty: false,
-                waterDirty: false,
-                cropTypeChanged: false,
-                originalCropType: row.cropType,
-                originalUser: row.user,
-            };
+            editSnapshot = { mature:row.matureCountdown, water:row.waterCountdown, time:Date.now(), crop:row.cropType, user:row.user, matureDirty:false, waterDirty:false, cropChanged:false };
             renderTable();
         }
-
         function cancelEdit() {
-            if (editingRowId === null) return;
-            const row = getRowById(editingRowId);
-            if (row && editSnapshot) {
-                row.matureCountdown = editSnapshot.matureCountdown;
-                row.waterCountdown = editSnapshot.waterCountdown;
-                row.cropType = editSnapshot.originalCropType;
-                row.user = editSnapshot.originalUser;
-            }
-            editingRowId = null;
-            editSnapshot = null;
-            saveToStorage();
-            renderTable();
+            if(!editingRowId) return;
+            const row = rows.find(r=>r.id===editingRowId);
+            if(row && editSnapshot) { row.matureCountdown=editSnapshot.mature; row.waterCountdown=editSnapshot.water; row.cropType=editSnapshot.crop; row.user=editSnapshot.user; }
+            editingRowId=null; editSnapshot=null; saveToStorage(); renderTable();
         }
-
         function saveEdit(rowId) {
-            if (editingRowId !== rowId) return;
-            const row = getRowById(rowId);
-            if (!row) return;
-
-            const elapsed = Math.floor((Date.now() - editSnapshot.snapshotTime) / 1000);
-
-            if (editSnapshot.cropTypeChanged) {
-                const cfg = getCropConfig(row.cropType);
-                row.matureCountdown = cfg.matureTotal;
-                row.waterCountdown = cfg.waterMax;
+            if(editingRowId!==rowId) return;
+            const row = rows.find(r=>r.id===rowId); if(!row) return;
+            const elapsed = Math.floor((Date.now() - editSnapshot.time)/1000);
+            if(editSnapshot.cropChanged) {
+                const c = CROP_CONFIG[row.cropType];
+                row.matureCountdown = editSnapshot.matureDirty ? row.matureCountdown : c.matureTotal;
+                row.waterCountdown = editSnapshot.waterDirty ? row.waterCountdown : c.waterMax;
             } else {
-                if (editSnapshot.matureDirty) {
-                    // User modified - value already set in row via input
-                } else {
-                    row.matureCountdown = clampZero(editSnapshot.matureCountdown - elapsed);
-                }
-                if (editSnapshot.waterDirty) {
-                    // User modified - value already set in row via input
-                } else {
-                    row.waterCountdown = clampZero(editSnapshot.waterCountdown - elapsed);
-                }
+                if(!editSnapshot.matureDirty) row.matureCountdown = Math.max(0, editSnapshot.mature - elapsed);
+                if(!editSnapshot.waterDirty) row.waterCountdown = Math.max(0, editSnapshot.water - elapsed);
             }
-
-            editingRowId = null;
-            editSnapshot = null;
-            saveToStorage();
-            renderTable();
+            editingRowId=null; editSnapshot=null; saveToStorage(); renderTable();
         }
-
-        function markMatureDirty() { if (editSnapshot) editSnapshot.matureDirty = true; }
-        function markWaterDirty() { if (editSnapshot) editSnapshot.waterDirty = true; }
-        function markCropTypeChanged() { if (editSnapshot) editSnapshot.cropTypeChanged = true; }
-
-        // ============ Render ============
+        function parseTimeInput(val) {
+            const digits = val.replace(/\D/g,'').slice(0,4); if(digits.length<4) return null;
+            const h = parseInt(digits.substring(0,2),10), m = Math.min(59, parseInt(digits.substring(2,4),10));
+            return h*3600 + m*60;
+        }
         function renderTable() {
-            const sortedRows = getSortedRows();
-            tableBody.innerHTML = '';
+            const sorted = getSortedRows(); tableBody.innerHTML = '';
+            if(sorted.length===0) { emptyState.style.display='block'; tableScroll.style.display='none'; }
+            else { emptyState.style.display='none'; tableScroll.style.display='block'; }
+            sorted.forEach(row => {
+                const isEdit = editingRowId===row.id, c=CROP_CONFIG[row.cropType];
+                const waterPercent = c.waterMax ? Math.min(100,(row.waterCountdown/c.waterMax)*100) : 0;
+                const waterColor = waterPercent>50?'green':(waterPercent>=20?'orange':'red');
+                const isMature = row.matureCountdown<=0, isWarn = !isMature && row.matureCountdown<=3600;
+                const reduction = calcWaterReduction(row);
+                const matureWait = calcWaterMatureRemaining(row);
+                const waterStatus = canWater(row);
+                let cls = ''; if(isEdit) cls='row-editing'; else if(isMature) cls='row-success'; else if(isWarn) cls='row-warning';
+                const tr = document.createElement('tr'); tr.className=cls; tr.dataset.id=row.id;
 
-            if (sortedRows.length === 0) {
-                emptyState.style.display = 'block';
-                tableScroll.style.display = 'none';
-            } else {
-                emptyState.style.display = 'none';
-                tableScroll.style.display = 'block';
-            }
-
-            sortedRows.forEach(row => {
-                const isEditing = editingRowId === row.id;
-                const isMature = row.matureCountdown <= 0;
-                const isWarning = row.matureCountdown > 0 && row.matureCountdown <= 3600;
-                const cfg = getCropConfig(row.cropType);
-                const waterPercent = cfg.waterMax > 0 ? Math.min(100, Math.max(0, (row.waterCountdown / cfg.waterMax) * 100)) : 0;
-                const waterColorClass = waterPercent > 50 ? 'green' : (waterPercent >= 20 ? 'orange' : 'red');
-                const waterResult = canWater(row);
-                const matureCrossDay = isCrossingDay(row.matureCountdown);
-                const dryCrossDay = isCrossingDay(row.waterCountdown);
-
-                let rowClass = '';
-                if (isEditing) rowClass = 'row-editing';
-                else if (isMature) rowClass = 'row-success';
-                else if (isWarning) rowClass = 'row-warning';
-
-                const tr = document.createElement('tr');
-                tr.className = rowClass;
-                tr.setAttribute('data-row-id', row.id);
-
-                // User cell
                 const tdUser = document.createElement('td');
-                if (isEditing) {
-                    tdUser.innerHTML = `<input class="edit-user-input" id="editUser-${row.id}" value="${escapeHtml(row.user)}" placeholder="用户名">`;
-                } else {
-                    tdUser.textContent = row.user || '—';
-                }
+                if(isEdit) tdUser.innerHTML = `<input class="edit-user-input" id="eu-${row.id}" value="${escapeHtml(row.user)}" placeholder="用户名">`;
+                else tdUser.textContent = row.user||'—';
                 tr.appendChild(tdUser);
 
-                // Crop type cell
                 const tdCrop = document.createElement('td');
-                if (isEditing) {
-                    tdCrop.innerHTML = `
-                            <select class="edit-select" id="editCrop-${row.id}">
-                                <option value="16h" ${row.cropType === '16h' ? 'selected' : ''}>16h作物</option>
-                                <option value="32h" ${row.cropType === '32h' ? 'selected' : ''}>32h作物</option>
-                            </select>
-                        `;
-                } else {
-                    tdCrop.textContent = cfg.label;
-                }
+                if(isEdit) tdCrop.innerHTML = `<select class="edit-select" id="ec-${row.id}"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select>`;
+                else tdCrop.textContent = c.label;
                 tr.appendChild(tdCrop);
 
-                // Mature countdown cell
-                const tdMature = document.createElement('td');
-                tdMature.id = `mature-cell-${row.id}`;
-                tdMature.className = 'mature-countdown';
-                if (isEditing) {
-                    const h = Math.floor(row.matureCountdown / 3600);
-                    const m = Math.floor((row.matureCountdown % 3600) / 60);
-                    const hhmm = String(h).padStart(2,'0') + String(m).padStart(2,'0');
-                    tdMature.innerHTML = `
-                            <input class="edit-input small" id="editMature-${row.id}" type="text" value="${hhmm}" maxlength="4" placeholder="HHMM" style="font-family:monospace;">
-                        `;
+                const tdMature = document.createElement('td'); tdMature.id=`mature-cell-${row.id}`; tdMature.className='mature-cell';
+                if(isEdit) {
+                    const h = Math.floor(row.matureCountdown/3600), m = Math.floor((row.matureCountdown%3600)/60);
+                    tdMature.innerHTML = `<input class="edit-input" id="em-${row.id}" value="${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}" maxlength="4" placeholder="HHMM">`;
                 } else {
-                    tdMature.innerHTML = `<span>${formatTime(row.matureCountdown)}</span>`;
+                    const timeSpan = document.createElement('span'); timeSpan.className='mature-time';
+                    timeSpan.innerHTML = formatTime(row.matureCountdown) + (isMature?' <span class="mature-ripe-badge">熟</span>':'');
+                    tdMature.appendChild(timeSpan);
+                    if (isMature) {
+                        const emptyBar = document.createElement('div'); emptyBar.className='mature-progress';
+                        const stack = document.createElement('div'); stack.className='boss-hp-stack';
+                        emptyBar.appendChild(stack);
+                        tdMature.appendChild(emptyBar);
+                    } else {
+                        tdMature.appendChild(renderBossHpBar(row.matureCountdown));
+                    }
                 }
                 tr.appendChild(tdMature);
 
-                // Water countdown cell
                 const tdWater = document.createElement('td');
-                if (isEditing) {
-                    const h = Math.floor(row.waterCountdown / 3600);
-                    const m = Math.floor((row.waterCountdown % 3600) / 60);
-                    const hhmm = String(h).padStart(2,'0') + String(m).padStart(2,'0');
-                    tdWater.innerHTML = `
-                            <input class="edit-input small" id="editWater-${row.id}" type="text" value="${hhmm}" maxlength="4" placeholder="HHMM" style="font-family:monospace;">
-                        `;
+                if(isEdit) {
+                    const h=Math.floor(row.waterCountdown/3600), m=Math.floor((row.waterCountdown%3600)/60);
+                    tdWater.innerHTML = `<input class="edit-input" id="ew-${row.id}" value="${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}" maxlength="4" placeholder="HHMM">`;
                 } else {
-                    tdWater.innerHTML = `
-                            <div class="progress-container">
-                                <div class="progress-bar-wrap">
-                                    <div class="progress-bar-fill ${waterColorClass}" style="width:${waterPercent}%;"></div>
-                                </div>
-                                <span class="progress-time">${formatTime(row.waterCountdown)}</span>
-                                ${row.waterCountdown <= 0 ? '<span class="dry-badge">干枯</span>' : ''}
-                            </div>
-                        `;
+                    tdWater.innerHTML = `<div class="water-vertical"><span style="font-weight:600;font-family:monospace;">${formatTime(row.waterCountdown)}${row.waterCountdown<=0?' <span class="dry-badge">干枯</span>':''}</span><div class="progress-bar-wrap"><div class="progress-bar-fill ${waterColor}" style="width:${waterPercent}%"></div></div></div>`;
                 }
                 tr.appendChild(tdWater);
 
-                // Dry time cell
-                const tdDryTime = document.createElement('td');
-                tdDryTime.style.fontSize = '0.8rem';
-                tdDryTime.style.whiteSpace = 'nowrap';
-                tdDryTime.innerHTML = `${formatAbsoluteTime(row.waterCountdown)}${dryCrossDay ? ' <span class="cross-day-badge">跨</span>' : ''}`;
-                tr.appendChild(tdDryTime);
+                const tdDry = document.createElement('td'); tdDry.style.fontSize='0.8rem';
+                tdDry.innerHTML = `${formatAbsoluteTime(row.waterCountdown)}${isCrossingDay(row.waterCountdown)?' <span class="cross-day-badge">跨</span>':''}`;
+                tr.appendChild(tdDry);
 
-                // Mature time cell
-                const tdMatureTime = document.createElement('td');
-                tdMatureTime.style.fontSize = '0.8rem';
-                tdMatureTime.style.whiteSpace = 'nowrap';
-                if (isMature) {
-                    tdMatureTime.style.color = 'var(--success)';
-                    tdMatureTime.style.fontWeight = '600';
-                }
-                tdMatureTime.innerHTML = `${formatAbsoluteTime(row.matureCountdown)}${matureCrossDay ? ' <span class="cross-day-badge">跨</span>' : ''}`;
-                tr.appendChild(tdMatureTime);
+                const tdRed = document.createElement('td'); tdRed.textContent = formatTimeHM(reduction); tr.appendChild(tdRed);
 
-                // Actions cell
-                const tdActions = document.createElement('td');
-                tdActions.style.whiteSpace = 'nowrap';
-                if (isEditing) {
-                    tdActions.innerHTML = `
-                            <button class="btn btn-success btn-sm" id="saveBtn-${row.id}" style="margin-right:4px;">💾 保存</button>
-                            <button class="btn btn-outline btn-sm" id="cancelBtn-${row.id}">✕ 取消</button>
-                        `;
+                const tdWait = document.createElement('td'); tdWait.style.fontSize='0.8rem';
+                tdWait.innerHTML = `<span class="${matureWait.cls}">${matureWait.text}</span>`;
+                tr.appendChild(tdWait);
+
+                const tdAct = document.createElement('td'); tdAct.style.whiteSpace='nowrap';
+                if(isEdit) {
+                    tdAct.innerHTML = `<button class="btn btn-success btn-sm" id="save-${row.id}">💾 保存</button> <button class="btn btn-outline btn-sm" id="cancel-${row.id}">✕ 取消</button>`;
                 } else {
-                    const waterDisabled = !waterResult.can;
-                    const waterTitle = waterResult.can ? '浇水加速成熟' : waterResult.reason;
-                    tdActions.innerHTML = `
-                            <button class="btn btn-outline btn-sm" id="editBtn-${row.id}" style="margin-right:4px;">✎ 修改</button>
-                            <span class="tooltip-wrapper" style="margin-right:4px;">
-                                <button class="btn btn-primary btn-sm" id="waterBtn-${row.id}" ${waterDisabled ? 'disabled' : ''}>💧 浇水</button>
-                                ${waterDisabled ? `<span class="tooltip-text">${escapeHtml(waterTitle)}</span>` : ''}
-                            </span>
-                            <button class="btn btn-success btn-sm" id="plantBtn-${row.id}" style="margin-right:4px;">🌱 播种</button>
-                            <button class="btn btn-danger btn-sm" id="deleteBtn-${row.id}">🗑 删除</button>
-                        `;
+                    tdAct.innerHTML = `
+                    <button class="btn btn-outline btn-sm edit-btn" data-id="${row.id}">✎ 修改</button>
+                    <span class="tooltip-wrapper">
+                        <button class="btn btn-primary btn-sm water-btn" data-id="${row.id}" ${!waterStatus.can?'disabled':''}>💧 浇水</button>
+                        ${!waterStatus.can?`<span class="tooltip-text">${waterStatus.reason}</span>`:''}
+                    </span>
+                    <span class="plant-area" data-id="${row.id}"><button class="btn btn-success btn-sm plant-trigger">🌱 播种</button></span>
+                    <button class="btn btn-danger btn-sm delete-btn" data-id="${row.id}">🗑 删除</button>`;
                 }
-                tr.appendChild(tdActions);
-
+                tr.appendChild(tdAct);
                 tableBody.appendChild(tr);
-
-                if (isEditing) {
-                    attachEditListeners(row);
-                } else {
-                    attachRowListeners(row);
-                }
             });
 
-            updateSortHeaderUI();
-        }
-
-        function attachEditListeners(row) {
-            const rowId = row.id;
-            const saveBtn = document.getElementById(`saveBtn-${rowId}`);
-            const cancelBtn = document.getElementById(`cancelBtn-${rowId}`);
-            const cropSelect = document.getElementById(`editCrop-${rowId}`);
-            const matureInput = document.getElementById(`editMature-${rowId}`);
-            const waterInput = document.getElementById(`editWater-${rowId}`);
-            const userInput = document.getElementById(`editUser-${rowId}`);
-
-            if (saveBtn) saveBtn.addEventListener('click', () => saveEditFromInputs(rowId));
-            if (cancelBtn) cancelBtn.addEventListener('click', () => cancelEdit());
-
-            if (cropSelect) cropSelect.addEventListener('change', () => markCropTypeChanged());
-            if (matureInput) matureInput.addEventListener('input', () => markMatureDirty());
-            if (waterInput) waterInput.addEventListener('input', () => markWaterDirty());
-
-            // Enter key to save
-            const enterHandler = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    saveEditFromInputs(rowId);
-                }
-            };
-            if (matureInput) matureInput.addEventListener('keydown', enterHandler);
-            if (waterInput) waterInput.addEventListener('keydown', enterHandler);
-            if (userInput) userInput.addEventListener('keydown', enterHandler);
-            if (cropSelect) cropSelect.addEventListener('keydown', enterHandler);
-        }
-
-        function saveEditFromInputs(rowId) {
-            const r = getRowById(rowId);
-            if (!r) return;
-
-            const userInput = document.getElementById(`editUser-${rowId}`);
-            const cropSelect = document.getElementById(`editCrop-${rowId}`);
-            const matureInput = document.getElementById(`editMature-${rowId}`);
-            const waterInput = document.getElementById(`editWater-${rowId}`);
-
-            if (userInput) r.user = userInput.value;
-            if (cropSelect) {
-                const newCrop = cropSelect.value;
-                if (newCrop !== editSnapshot.originalCropType) {
-                    r.cropType = newCrop;
-                    markCropTypeChanged();
-                }
-            }
-            if (matureInput) {
-                const val = matureInput.value.replace(/\D/g, '').slice(0, 4);
-                if (val.length === 4) {
-                    const h = parseInt(val.substring(0, 2), 10) || 0;
-                    const m = Math.min(59, parseInt(val.substring(2, 4), 10) || 0);
-                    r.matureCountdown = h * 3600 + m * 60;
-                } else if (val.length > 0) {
-                    // handle partial input gracefully: assume minutes only? Better to keep old if invalid.
-                }
-            }
-            if (waterInput) {
-                const val = waterInput.value.replace(/\D/g, '').slice(0, 4);
-                if (val.length === 4) {
-                    const h = parseInt(val.substring(0, 2), 10) || 0;
-                    const m = Math.min(59, parseInt(val.substring(2, 4), 10) || 0);
-                    r.waterCountdown = h * 3600 + m * 60;
-                }
-            }
-            saveEdit(rowId);
-        }
-
-        function attachRowListeners(row) {
-            const rowId = row.id;
-            const editBtn = document.getElementById(`editBtn-${rowId}`);
-            const waterBtn = document.getElementById(`waterBtn-${rowId}`);
-            const plantBtn = document.getElementById(`plantBtn-${rowId}`);
-            const deleteBtn = document.getElementById(`deleteBtn-${rowId}`);
-
-            if (editBtn) editBtn.addEventListener('click', () => enterEdit(rowId));
-            if (waterBtn) waterBtn.addEventListener('click', () => {
-                const r = getRowById(rowId);
-                if (r && canWater(r).can) {
-                    doWater(r);
+            document.querySelectorAll('.edit-btn').forEach(b=>b.onclick=function(){ enterEdit(Number(this.dataset.id)); });
+            document.querySelectorAll('.water-btn').forEach(b=>b.onclick=function(){
+                const row = rows.find(r=>r.id===Number(this.dataset.id));
+                if(row && canWater(row).can) { doWater(row); renderTable(); }
+            });
+            document.querySelectorAll('.delete-btn').forEach(b=>b.onclick=function(){
+                const id=Number(this.dataset.id); const row=rows.find(r=>r.id===id);
+                showConfirm('确认删除',`删除用户"${row?.user||'未命名'}"的记录？`,()=>{ deleteRow(id); renderTable(); showToast('已删除'); });
+            });
+            document.querySelectorAll('.plant-trigger').forEach(btn=>{ btn.onclick=function(){
+                const area=this.closest('.plant-area'), rowId=Number(area.dataset.id), row=rows.find(r=>r.id===rowId);
+                if(!row) return;
+                if(editingRowId && editingRowId!==rowId) cancelEdit();
+                area.innerHTML = `<select class="edit-select plant-select" style="width:100px;"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select> <button class="btn btn-success btn-sm plant-confirm">✅</button> <button class="btn btn-outline btn-sm plant-cancel">✕</button>`;
+                area.querySelector('.plant-confirm').onclick=function(){
+                    const sel=area.querySelector('.plant-select').value;
+                    const prev={user:row.user,cropType:row.cropType,mature:row.matureCountdown,water:row.waterCountdown};
+                    undoData[row.id]=prev; row.cropType=sel; const c=CROP_CONFIG[sel];
+                    row.matureCountdown=c.matureTotal; row.waterCountdown=c.waterMax;
+                    const reduction=Math.floor(c.waterMax/4); row.matureCountdown=Math.max(0,row.matureCountdown-reduction);
+                    saveToStorage(); showWaterHint(row.id,reduction);
+                    showToast(`✅ 已播种 ${c.label}，-${formatTimeHM(reduction)}`,()=>{
+                        if(undoData[row.id]){ const p=undoData[row.id]; row.user=p.user; row.cropType=p.cropType; row.matureCountdown=p.mature; row.waterCountdown=p.water; delete undoData[row.id]; saveToStorage(); renderTable(); }
+                    },UNDO_TIMEOUT);
                     renderTable();
-                }
-            });
-            if (plantBtn) plantBtn.addEventListener('click', () => {
-                const r = getRowById(rowId);
-                if (!r) return;
-                if (editingRowId !== null && editingRowId !== rowId) cancelEdit();
-                enterEdit(rowId);
-                setTimeout(() => {
-                    const cropSelect = document.getElementById(`editCrop-${rowId}`);
-                    if (cropSelect) {
-                        cropSelect.focus();
-                        const plantHandler = function(e) {
-                            const newCrop = cropSelect.value;
-                            if (newCrop === r.cropType) {
-                                // Same type, planting invalid
-                                cancelEdit();
-                                showToast('⚠️ 同类型作物播种无效');
-                                return;
+                };
+                area.querySelector('.plant-cancel').onclick = ()=>renderTable();
+            }});
+
+            if(editingRowId) {
+                const row = rows.find(r=>r.id===editingRowId);
+                if(row) {
+                    const saveBtn = document.getElementById(`save-${row.id}`);
+                    if(saveBtn) saveBtn.onclick = ()=>{
+                        const userInput=document.getElementById(`eu-${row.id}`), cropSel=document.getElementById(`ec-${row.id}`);
+                        const matInput=document.getElementById(`em-${row.id}`), watInput=document.getElementById(`ew-${row.id}`);
+                        if(userInput) row.user = userInput.value;
+                        if(cropSel && cropSel.value !== editSnapshot.crop) {
+                            row.cropType = cropSel.value;
+                            editSnapshot.cropChanged = true;
+                            if(!editSnapshot.matureDirty) {
+                                const cfg = CROP_CONFIG[row.cropType];
+                                row.matureCountdown = cfg.matureTotal;
+                                if(matInput) { const h=Math.floor(cfg.matureTotal/3600), m=Math.floor((cfg.matureTotal%3600)/60); matInput.value = String(h).padStart(2,'0')+String(m).padStart(2,'0'); }
                             }
-                            r.cropType = newCrop;
-                            editingRowId = null;
-                            editSnapshot = null;
-                            doPlant(r, newCrop);
-                            renderTable();
-                        };
-                        cropSelect.addEventListener('change', plantHandler, { once: true });
-
-                        // Also handle save button click during planting
-                        const saveBtn = document.getElementById(`saveBtn-${rowId}`);
-                        if (saveBtn) {
-                            saveBtn.addEventListener('click', function handler() {
-                                const newCrop = document.getElementById(`editCrop-${rowId}`)?.value || r.cropType;
-                                if (newCrop === r.cropType) {
-                                    cancelEdit();
-                                    showToast('⚠️ 同类型作物播种无效');
-                                    return;
-                                }
-                                r.cropType = newCrop;
-                                editingRowId = null;
-                                editSnapshot = null;
-                                doPlant(r, newCrop);
-                                renderTable();
-                            }, { once: true });
+                            if(!editSnapshot.waterDirty) {
+                                const cfg = CROP_CONFIG[row.cropType];
+                                row.waterCountdown = cfg.waterMax;
+                                if(watInput) { const h=Math.floor(cfg.waterMax/3600), m=Math.floor((cfg.waterMax%3600)/60); watInput.value = String(h).padStart(2,'0')+String(m).padStart(2,'0'); }
+                            }
                         }
-                    }
-                }, 100);
-            });
-            if (deleteBtn) deleteBtn.addEventListener('click', () => {
-                showConfirmModal('确认删除', `确定要删除用户"${row.user || '未命名'}"的${getCropConfig(row.cropType).label}记录吗？`, () => {
-                    deleteRow(rowId);
-                    renderTable();
-                    showToast('🗑 已删除记录');
-                });
-            });
+                        if(matInput) { const sec=parseTimeInput(matInput.value); if(sec!==null){ row.matureCountdown=sec; editSnapshot.matureDirty=true; } }
+                        if(watInput) { const sec=parseTimeInput(watInput.value); if(sec!==null){ row.waterCountdown=sec; editSnapshot.waterDirty=true; } }
+                        saveEdit(row.id);
+                    };
+                    document.getElementById(`cancel-${row.id}`).onclick = ()=>cancelEdit();
+                    const enterHandler = e => { if(e.key==='Enter') saveBtn?.click(); };
+                    ['eu','em','ew','ec'].forEach(prefix => {
+                        const el = document.getElementById(`${prefix}-${row.id}`);
+                        if(el) el.addEventListener('keydown', enterHandler);
+                    });
+                }
+            }
+            updateSortUI();
         }
-
-        function updateSortHeaderUI() {
-            if (sortState === SORT_MATURE_DESC) {
-                thMatureTime.classList.add('sort-active');
-                thMatureTime.querySelector('.sort-icon').textContent = '↓';
+        function updateSortUI() {
+            if(sortState === SORT_MATURE_ASC) {
+                thMature.classList.add('sort-active');
+                thMature.querySelector('.sort-icon').textContent = '↑';
             } else {
-                thMatureTime.classList.remove('sort-active');
-                thMatureTime.querySelector('.sort-icon').textContent = '↕';
+                thMature.classList.remove('sort-active');
+                thMature.querySelector('.sort-icon').textContent = '↕';
             }
         }
+        function escapeHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+        thMature.onclick = e => {
+            if(e.target === resetSortBtn || resetSortBtn.contains(e.target)) return;
+            sortState = sortState === SORT_DEFAULT ? SORT_MATURE_ASC : SORT_DEFAULT;
+            renderTable();
+        };
+        resetSortBtn.onclick = e => { e.stopPropagation(); sortState = SORT_DEFAULT; renderTable(); };
+        document.getElementById('btnAddRow').onclick = ()=>{ if(editingRowId) cancelEdit(); const row=addRow(); renderTable(); enterEdit(row.id); };
+        document.getElementById('btnExport').onclick = ()=>{
+            const data = { exportTime:Date.now(), rows:rows.map(r=>({...r})), nextId, nextCreateOrder };
+            const blob = new Blob([JSON.stringify(data)],{type:'application/json'});
+            const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`crop-data-${new Date().toISOString().slice(0,10)}.json`; a.click();
+            showToast('已导出');
+        };
+        document.getElementById('btnImport').onclick = ()=>document.getElementById('importFileInput').click();
+        document.getElementById('importFileInput').onchange = e => {
+            const file = e.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const data = JSON.parse(ev.target.result); if(!data.rows) throw new Error('格式错误');
+                    const elapsed = Math.floor((Date.now() - (data.exportTime||Date.now()))/1000);
+                    rows = data.rows.map(r=>({
+                        id:r.id, user:r.user||'', cropType:r.cropType||'16h',
+                        matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed),
+                        waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed),
+                        createOrder:r.createOrder||0, createdAt:r.createdAt||Date.now()
+                    }));
+                    nextId = data.nextId||1; nextCreateOrder = data.nextCreateOrder||1;
+                    sortState=SORT_DEFAULT; editingRowId=null; editSnapshot=null; saveToStorage(); renderTable();
+                    showToast(`导入成功 (${rows.length}条)`);
+                } catch(ex) { showToast('导入失败: '+ex.message); }
+            };
+            reader.readAsText(file); e.target.value='';
+        };
 
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-
-        // ============ Tick & Dynamic Update ============
-        function tick() {
-            let changed = false;
-            for (const row of rows) {
-                if (editingRowId === row.id) continue;
-                if (row.matureCountdown > 0) {
-                    row.matureCountdown = clampZero(row.matureCountdown - 1);
-                    changed = true;
-                }
-                if (row.waterCountdown > 0) {
-                    row.waterCountdown = clampZero(row.waterCountdown - 1);
-                    changed = true;
-                }
-            }
-            if (changed) {
+        setInterval(()=>{
+            let changed=false;
+            rows.forEach(r=>{ if(editingRowId===r.id) return; if(r.matureCountdown>0){ r.matureCountdown=Math.max(0,r.matureCountdown-1); changed=true; } if(r.waterCountdown>0){ r.waterCountdown=Math.max(0,r.waterCountdown-1); changed=true; } });
+            if(changed) {
                 updateDynamicDisplay();
+                if(Math.floor(Date.now()/10000)!==Math.floor((Date.now()-1000)/10000)) saveToStorage();
             }
+            if(Math.floor(Date.now()/60000)!==Math.floor((Date.now()-1000)/60000)) {
+                updateWaterMatureRemainingColumn();
+            }
+        },1000);
+
+        function updateWaterMatureRemainingColumn() {
+            document.querySelectorAll('tbody tr[data-id]').forEach(tr=>{
+                const id=Number(tr.dataset.id), row=rows.find(r=>r.id===id);
+                if(!row || editingRowId===id) return;
+                const matureWait = calcWaterMatureRemaining(row);
+                const tdWait = tr.children[6];
+                if(tdWait) tdWait.innerHTML = `<span class="${matureWait.cls}">${matureWait.text}</span>`;
+            });
         }
 
         function updateDynamicDisplay() {
-            const sortedRows = getSortedRows();
-            const allRows = document.querySelectorAll('tbody tr[data-row-id]');
-            const rowMap = {};
-            allRows.forEach(tr => {
-                rowMap[parseInt(tr.getAttribute('data-row-id'))] = tr;
-            });
-
-            sortedRows.forEach((row, displayIndex) => {
-                const tr = rowMap[row.id];
-                if (!tr) return;
-                const isEditing = editingRowId === row.id;
-
-                if (!isEditing) {
-                    tr.className = '';
-                    if (row.matureCountdown <= 0) tr.className = 'row-success';
-                    else if (row.matureCountdown > 0 && row.matureCountdown <= 3600) tr.className = 'row-warning';
-                }
-
-                // Mature countdown
-                if (!isEditing) {
-                    const matureCell = tr.querySelector(`#mature-cell-${row.id}`);
-                    if (matureCell) {
-                        const span = matureCell.querySelector('span');
-                        if (span && !matureCell.querySelector('.water-reduction-hint')) {
-                            span.textContent = formatTime(row.matureCountdown);
-                        } else if (!span && !matureCell.querySelector('.water-reduction-hint')) {
-                            matureCell.innerHTML = `<span>${formatTime(row.matureCountdown)}</span>`;
-                        } else if (span && matureCell.querySelector('.water-reduction-hint')) {
-                            span.textContent = formatTime(row.matureCountdown);
-                        }
-                    }
-                }
-
-                // Water progress
-                if (!isEditing) {
-                    const progressContainer = tr.querySelector('.progress-container');
-                    if (progressContainer) {
-                        const cfg = getCropConfig(row.cropType);
-                        const waterPercent = cfg.waterMax > 0 ? Math.min(100, Math.max(0, (row.waterCountdown / cfg.waterMax) * 100)) : 0;
-                        const waterColorClass = waterPercent > 50 ? 'green' : (waterPercent >= 20 ? 'orange' : 'red');
-                        const fill = progressContainer.querySelector('.progress-bar-fill');
-                        const timeSpan = progressContainer.querySelector('.progress-time');
-                        if (fill) {
-                            fill.style.width = waterPercent + '%';
-                            fill.className = 'progress-bar-fill ' + waterColorClass;
-                        }
-                        if (timeSpan) timeSpan.textContent = formatTime(row.waterCountdown);
-                        const parent = progressContainer.parentElement;
-                        const dryBadge = parent?.querySelector('.dry-badge');
-                        if (row.waterCountdown <= 0 && !dryBadge && parent) {
-                            const badge = document.createElement('span');
-                            badge.className = 'dry-badge';
-                            badge.textContent = '干枯';
-                            parent.appendChild(badge);
-                        } else if (row.waterCountdown > 0 && dryBadge) {
-                            dryBadge.remove();
-                        }
-                    }
-                }
-
-                // Dry time cell (index 4)
-                const dryTimeTd = tr.querySelectorAll('td')[4];
-                if (dryTimeTd && !isEditing) {
-                    const dryCross = isCrossingDay(row.waterCountdown);
-                    dryTimeTd.innerHTML = `${formatAbsoluteTime(row.waterCountdown)}${dryCross ? ' <span class="cross-day-badge">跨</span>' : ''}`;
-                }
-
-                // Mature time cell (index 5)
-                const matureTimeTd = tr.querySelectorAll('td')[5];
-                if (matureTimeTd && !isEditing) {
-                    const matureCross = isCrossingDay(row.matureCountdown);
-                    matureTimeTd.innerHTML = `${formatAbsoluteTime(row.matureCountdown)}${matureCross ? ' <span class="cross-day-badge">跨</span>' : ''}`;
+            document.querySelectorAll('tbody tr[data-id]').forEach(tr=>{
+                const id=Number(tr.dataset.id), row=rows.find(r=>r.id===id);
+                if(!row || editingRowId===id) return;
+                const c=CROP_CONFIG[row.cropType];
+                const matureCell = document.getElementById(`mature-cell-${id}`);
+                if(matureCell && !matureCell.querySelector('input')) {
+                    const timeSpan = matureCell.querySelector('.mature-time');
+                    if(timeSpan) timeSpan.innerHTML = formatTime(row.matureCountdown)+(row.matureCountdown<=0?' <span class="mature-ripe-badge">熟</span>':'');
+                    const oldProgress = matureCell.querySelector('.mature-progress');
+                    if(oldProgress) oldProgress.remove();
                     if (row.matureCountdown <= 0) {
-                        matureTimeTd.style.color = 'var(--success)';
-                        matureTimeTd.style.fontWeight = '600';
+                        const emptyBar = document.createElement('div'); emptyBar.className='mature-progress';
+                        const stack = document.createElement('div'); stack.className='boss-hp-stack';
+                        emptyBar.appendChild(stack);
+                        matureCell.appendChild(emptyBar);
                     } else {
-                        matureTimeTd.style.color = '';
-                        matureTimeTd.style.fontWeight = '';
+                        matureCell.appendChild(renderBossHpBar(row.matureCountdown));
                     }
                 }
-
-                // Update water button state
-                if (!isEditing) {
-                    const waterBtn = tr.querySelector(`#waterBtn-${row.id}`);
-                    if (waterBtn) {
-                        const waterResult = canWater(row);
-                        if (waterResult.can) {
-                            waterBtn.disabled = false;
-                            const wrapper = waterBtn.closest('.tooltip-wrapper');
-                            if (wrapper) {
-                                const tip = wrapper.querySelector('.tooltip-text');
-                                if (tip) tip.remove();
-                            }
-                        } else {
-                            waterBtn.disabled = true;
-                            let wrapper = waterBtn.closest('.tooltip-wrapper');
-                            if (!wrapper) {
-                                wrapper = document.createElement('span');
-                                wrapper.className = 'tooltip-wrapper';
-                                waterBtn.parentNode.insertBefore(wrapper, waterBtn);
-                                wrapper.appendChild(waterBtn);
-                            }
-                            let tip = wrapper.querySelector('.tooltip-text');
-                            if (!tip) {
-                                tip = document.createElement('span');
-                                tip.className = 'tooltip-text';
-                                wrapper.appendChild(tip);
-                            }
-                            tip.textContent = waterResult.reason;
-                        }
+                const waterDiv = tr.querySelector('.water-vertical');
+                if(waterDiv) {
+                    const span = waterDiv.querySelector('span');
+                    if(span) span.innerHTML = formatTime(row.waterCountdown)+(row.waterCountdown<=0?' <span class="dry-badge">干枯</span>':'');
+                    const percent = c.waterMax ? Math.min(100,(row.waterCountdown/c.waterMax)*100) : 0;
+                    const fill = waterDiv.querySelector('.progress-bar-fill');
+                    if(fill) { fill.style.width=percent+'%'; fill.className='progress-bar-fill '+(percent>50?'green':percent>=20?'orange':'red'); }
+                }
+                const dryTd = tr.children[4]; if(dryTd) dryTd.innerHTML = `${formatAbsoluteTime(row.waterCountdown)}${isCrossingDay(row.waterCountdown)?' <span class="cross-day-badge">跨</span>':''}`;
+                tr.children[5].textContent = formatTimeHM(calcWaterReduction(row));
+                const waterBtn = tr.querySelector('.water-btn');
+                if(waterBtn) {
+                    const status = canWater(row); waterBtn.disabled = !status.can;
+                    const wrapper = waterBtn.closest('.tooltip-wrapper'); if(wrapper) {
+                        let tip = wrapper.querySelector('.tooltip-text');
+                        if(!status.can) { if(!tip){ tip=document.createElement('span'); tip.className='tooltip-text'; wrapper.appendChild(tip); } tip.textContent=status.reason; }
+                        else if(tip) tip.remove();
                     }
                 }
+                tr.className = row.matureCountdown<=0?'row-success':(row.matureCountdown<=3600?'row-warning':'');
             });
         }
 
-        function smartTick() {
-            tick();
-            if (Math.floor(Date.now() / 30000) !== Math.floor((Date.now() - 1000) / 30000)) {
-                saveToStorage();
-            }
-        }
-
-        // ============ Sorting ============
-        function toggleSort() {
-            sortState = (sortState === SORT_DEFAULT) ? SORT_MATURE_DESC : SORT_DEFAULT;
-            updateSortHeaderUI();
-            renderTable();
-        }
-
-        function resetSort() {
-            sortState = SORT_DEFAULT;
-            updateSortHeaderUI();
-            renderTable();
-        }
-
-        // ============ Import / Export ============
-        function exportData() {
-            const exportObj = {
-                version: dataVersion,
-                exportTime: Date.now(),
-                rows: rows.map(r => ({
-                    id: r.id,
-                    user: r.user,
-                    cropType: r.cropType,
-                    matureCountdown: r.matureCountdown,
-                    waterCountdown: r.waterCountdown,
-                    createOrder: r.createOrder,
-                    createdAt: r.createdAt,
-                })),
-                nextId: nextId,
-                nextCreateOrder: nextCreateOrder,
-            };
-            const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const now = new Date();
-            const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}`;
-            a.download = `crop-data-${dateStr}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('📥 数据已导出');
-        }
-
-        function importData(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (!data || !Array.isArray(data.rows)) throw new Error('数据格式无效');
-                    const exportTime = data.exportTime || Date.now();
-                    const elapsed = Math.floor((Date.now() - exportTime) / 1000);
-
-                    editingRowId = null;
-                    editSnapshot = null;
-                    undoData = {};
-
-                    rows = data.rows.map(r => ({
-                        id: r.id,
-                        user: r.user || '',
-                        cropType: r.cropType || '16h',
-                        matureCountdown: clampZero((r.matureCountdown || 0) - elapsed),
-                        waterCountdown: clampZero((r.waterCountdown || 0) - elapsed),
-                        createOrder: r.createOrder || 0,
-                        createdAt: r.createdAt || Date.now(),
-                    }));
-                    nextId = data.nextId || (Math.max(0, ...rows.map(r => r.id)) + 1);
-                    nextCreateOrder = data.nextCreateOrder || (Math.max(0, ...rows.map(r => r.createOrder)) + 1);
-                    dataVersion = data.version || 1;
-                    sortState = SORT_DEFAULT;
-                    lastSaveTime = Date.now();
-                    saveToStorage();
-                    renderTable();
-                    showToast(`📤 成功导入 ${rows.length} 条记录`);
-                } catch (err) {
-                    showToast('❌ 导入失败：' + err.message, null, 5000);
+        if(!loadFromStorage()) { rows=[]; nextId=1; nextCreateOrder=1; saveToStorage(); }
+        renderTable();
+        window.addEventListener('beforeunload', saveToStorage);
+        document.addEventListener('visibilitychange', ()=>{
+            if(document.visibilityState==='visible') {
+                const elapsed = Math.floor((Date.now()-lastSaveTime)/1000);
+                if(elapsed>5) {
+                    rows.forEach(r=>{ if(editingRowId===r.id) return; r.matureCountdown=Math.max(0,r.matureCountdown-elapsed); r.waterCountdown=Math.max(0,r.waterCountdown-elapsed); });
+                    lastSaveTime=Date.now(); saveToStorage(); renderTable();
                 }
-            };
-            reader.readAsText(file);
-        }
-
-        // ============ Init ============
-        function init() {
-            const loaded = loadFromStorage();
-            if (!loaded) {
-                rows = [];
-                nextId = 1;
-                nextCreateOrder = 1;
-                saveToStorage();
-            }
-            checkMultiTab();
-            renderTable();
-            updateSortHeaderUI();
-
-            tickInterval = setInterval(smartTick, 1000);
-
-            window.addEventListener('beforeunload', () => saveToStorage());
-            setInterval(() => saveToStorage(), 30000);
-
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible') {
-                    const elapsed = Math.floor((Date.now() - lastSaveTime) / 1000);
-                    if (elapsed > 5) {
-                        for (const row of rows) {
-                            if (editingRowId === row.id) continue;
-                            row.matureCountdown = clampZero(row.matureCountdown - elapsed);
-                            row.waterCountdown = clampZero(row.waterCountdown - elapsed);
-                        }
-                        lastSaveTime = Date.now();
-                        saveToStorage();
-                        renderTable();
-                    }
-                } else {
-                    saveToStorage();
-                }
-            });
-        }
-
-        // ============ Event Listeners ============
-        thMatureTime.addEventListener('click', (e) => {
-            if (e.target === resetSortBtn || resetSortBtn.contains(e.target)) return;
-            toggleSort();
-        });
-        resetSortBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            resetSort();
-        });
-        btnAddRow.addEventListener('click', () => {
-            if (editingRowId !== null) cancelEdit();
-            const newRow = addRow();
-            renderTable();
-            setTimeout(() => enterEdit(newRow.id), 50);
-            showToast('➕ 已添加新行');
-        });
-        btnExport.addEventListener('click', exportData);
-        btnImport.addEventListener('click', () => importFileInput.click());
-        importFileInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) {
-                importData(e.target.files[0]);
-                importFileInput.value = '';
             }
         });
-
-        init();
-        console.log('🌾 作物倒计时管理系统已就绪');
     })();
 </script>
 </body>
