@@ -21,10 +21,23 @@
             --success-light: #d1fae5;
             --warning-light: #fef3c7;
             --danger-light: #fee2e2;
+            --crop-16h-bg: #3b82f6;
+            --crop-16h-text: #ffffff;
+            --crop-16h-border: #2563eb;
+            --crop-32h-bg: #ef4444;
+            --crop-32h-text: #ffffff;
+            --crop-32h-border: #dc2626;
             --blessed-color: #f59e0b;
             --blessed-bg: #fffbeb;
             --unblessed-color: #9ca3af;
             --unblessed-bg: #f9fafb;
+            --yesterday-bless-yes: #10b981;
+            --yesterday-bless-yes-bg: #ecfdf5;
+            --yesterday-bless-no: #ef4444;
+            --yesterday-bless-no-bg: #fef2f2;
+            --yesterday-bless-na: #9ca3af;
+            --yesterday-bless-na-bg: #f9fafb;
+            --group-border-color: #94a3b8;
             --radius: 10px;
             --radius-sm: 6px;
             --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
@@ -41,7 +54,7 @@
             line-height: 1.5;
             min-height: 100vh;
         }
-        .app-container { max-width: 1700px; margin:0 auto; padding:20px 24px 40px; }
+        .app-container { max-width: 1800px; margin:0 auto; padding:20px 24px 40px; }
         .app-header {
             display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
             gap:12px; margin-bottom:24px; padding:20px 24px;
@@ -80,7 +93,7 @@
             box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden;
         }
         .table-scroll { overflow-x:auto; max-height:75vh; overflow-y:auto; }
-        table { width:100%; border-collapse:collapse; min-width:1700px; font-size:0.875rem; }
+        table { width:100%; border-collapse:collapse; min-width:1800px; font-size:0.875rem; }
         thead th {
             background:#f8fafc; padding:13px 14px; text-align:left; font-weight:600;
             font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em;
@@ -102,6 +115,19 @@
         tbody tr.row-success { background:var(--success-light); }
         tbody tr.row-editing { background:#f0f4ff; box-shadow:inset 3px 0 0 var(--primary); }
 
+        /* 分组虚线框样式 */
+        tbody.group-tbody { border: 2px dashed var(--group-border-color); }
+        tbody.group-tbody tr:last-child td { border-bottom: none; }
+        tbody.spacer-tbody td { padding: 4px 14px; border-bottom: none; background: transparent; }
+
+        .crop-badge {
+            display:inline-flex; align-items:center; gap:4px;
+            padding:5px 12px; border-radius:20px; font-size:0.8rem;
+            font-weight:700; white-space:nowrap;
+        }
+        .crop-badge.crop-16h { background: var(--crop-16h-bg); color: var(--crop-16h-text); border: 2px solid var(--crop-16h-border); }
+        .crop-badge.crop-32h { background: var(--crop-32h-bg); color: var(--crop-32h-text); border: 2px solid var(--crop-32h-border); }
+
         .mature-cell { display:flex; flex-direction:column; gap:4px; }
         .mature-time { font-weight:700; font-family:'SF Mono', 'Consolas', monospace; white-space:nowrap; }
         .mature-ripe-badge { display:inline-block; background:#ef4444; color:white; font-size:0.7rem; padding:2px 6px; border-radius:4px; margin-left:6px; font-weight:600; }
@@ -114,16 +140,16 @@
         .boss-hp-layer { position:absolute; left:0; top:0; bottom:0; transition:width 0.5s ease; }
         .layer-label { font-size:0.7rem; font-weight:600; color:var(--text-secondary); white-space:nowrap; min-width:20px; text-align:center; }
 
-        .water-vertical { display:flex; flex-direction:column; gap:4px; min-width:120px; }
+        .water-vertical { display:flex; flex-direction:column; gap:4px; min-width:140px; }
         .progress-bar-wrap { height:8px; background:#e5e7eb; border-radius:10px; overflow:hidden; }
         .progress-bar-fill { height:100%; border-radius:10px; transition:width 0.5s ease; }
         .progress-bar-fill.green { background:#10b981; }
         .progress-bar-fill.orange { background:#f59e0b; }
         .progress-bar-fill.red { background:#ef4444; }
         .dry-badge { display:inline-block; background:#fef2f2; color:#dc2626; font-size:0.68rem; padding:2px 7px; border-radius:10px; margin-left:4px; }
-        .cross-day-badge { display:inline-block; background:#e0e7ff; color:#4338ca; font-size:0.68rem; padding:2px 7px; border-radius:10px; margin-left:4px; }
         .water-low-icon { display:inline-block; color:#3b82f6; font-size:0.9rem; margin-left:4px; animation: dropletPulse 1.5s ease-in-out infinite; }
         @keyframes dropletPulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.2); opacity:0.7; } }
+        .water-reduction-inline { font-size:0.7rem; color: var(--text-muted); white-space:nowrap; }
 
         .blessed-badge {
             display:inline-flex; align-items:center; gap:4px;
@@ -149,6 +175,21 @@
         .task-badge.done:hover { background: #047857; transform: scale(1.04); }
         .task-icon { font-size:0.9rem; }
 
+        .yesterday-bless-badge {
+            display:inline-flex; align-items:center; gap:4px;
+            padding:5px 12px; border-radius:20px; font-size:0.78rem;
+            font-weight:600; cursor:default; transition:all var(--transition);
+            user-select:none; white-space:nowrap;
+        }
+        .yesterday-bless-badge.yes { background: var(--yesterday-bless-yes-bg); color: var(--yesterday-bless-yes); border: 2px solid var(--yesterday-bless-yes); }
+        .yesterday-bless-badge.no { background: var(--yesterday-bless-no-bg); color: var(--yesterday-bless-no); border: 2px solid var(--yesterday-bless-no); }
+        .yesterday-bless-badge.na { background: var(--yesterday-bless-na-bg); color: var(--yesterday-bless-na); border: 2px solid #d1d5db; }
+
+        .remark-cell { min-width:100px; }
+        .remark-text { font-size:0.8rem; color:var(--text); cursor:pointer; min-height:20px; padding:4px 6px; border-radius:4px; transition:all var(--transition); }
+        .remark-text:hover { background:#f3f4f6; }
+        .remark-input { width:100%; font-size:0.8rem; padding:4px 6px; border:1.5px solid var(--primary); border-radius:4px; font-family:var(--font); outline:none; }
+
         .edit-input { width:90px; padding:6px 8px; border:1.5px solid #d1d5db; border-radius:var(--radius-sm); font-size:0.85rem; font-family:'SF Mono','Consolas',monospace; text-align:center; }
         .edit-input:focus { border-color:var(--primary); outline:none; box-shadow:0 0 0 3px rgba(79,110,247,0.1); }
         .edit-user-input { width:110px; padding:6px 8px; border:1.5px solid #d1d5db; border-radius:var(--radius-sm); font-size:0.85rem; }
@@ -170,7 +211,31 @@
         .log-table td { padding:8px 12px; border-bottom:1px solid #f1f3f4; vertical-align:top; white-space:pre-wrap; font-size:0.78rem; max-width:200px; word-break:break-all; }
         .log-empty { text-align:center; padding:32px 16px; color:var(--text-muted); }
         .predicted-time { font-size:0.72rem; color: var(--text-muted); margin-left:4px; white-space:nowrap; }
-        @media (max-width:768px) { .app-container { padding:10px 8px; } table { min-width:1400px; } .log-modal { max-width:95vw; } }
+
+        .config-panel {
+            position: fixed; bottom: 20px; right: 20px; z-index: 7000;
+            background: var(--surface); border-radius: var(--radius);
+            box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+            width: 340px; transition: all 0.3s ease;
+        }
+        .config-panel.collapsed .config-body { display: none; }
+        .config-panel.collapsed { width: auto; }
+        .config-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; cursor: pointer; font-weight: 600;
+            font-size: 0.85rem; color: var(--text);
+        }
+        .config-body { padding: 0 16px 16px; }
+        .config-body textarea {
+            width: 100%; height: 120px; font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 0.8rem; padding: 8px; border: 1.5px solid #d1d5db;
+            border-radius: var(--radius-sm); resize: vertical;
+        }
+        .config-body textarea:focus { outline: none; border-color: var(--primary); }
+        .config-body .btn { margin-top: 8px; width: 100%; justify-content: center; }
+        .config-toggle { font-size: 1rem; transition: transform 0.3s; }
+        .config-panel.collapsed .config-toggle { transform: rotate(180deg); }
+        @media (max-width:768px) { .app-container { padding:10px 8px; } table { min-width:1500px; } .log-modal { max-width:95vw; } .config-panel { width: 90vw; right: 5vw; } }
     </style>
 </head>
 <body>
@@ -186,29 +251,42 @@
     </div>
     <div class="table-wrapper">
         <div class="table-scroll" id="tableScroll">
-            <table>
+            <table id="mainTable">
                 <thead><tr>
+                    <th style="width:50px;">Id</th>
                     <th>用户</th><th>作物类型</th>
                     <th class="sortable" id="thMature">成熟倒计时<span class="sort-icon">↕</span><span class="reset-sort" id="resetSort">↺</span></th>
-                    <th>浇水湿润倒计时</th><th>水分干枯时间</th><th>浇水减少时间</th><th>浇水成熟剩余时间</th><th>祝福</th><th>每日任务</th><th>操作</th>
+                    <th>浇水湿润倒计时</th><th>浇水成熟剩余时间</th><th>祝福</th><th>每日任务</th><th>连续祝福</th><th>备注</th><th>操作</th>
                 </tr></thead>
-                <tbody id="tableBody"></tbody>
             </table>
         </div>
         <div id="emptyState" style="display:none; padding:48px; text-align:center; color:var(--text-muted);">📋<p>暂无数据</p></div>
     </div>
 </div>
+
+<div class="config-panel collapsed" id="configPanel">
+    <div class="config-header" id="configHeader">
+        <span>⚙️ 分组配置</span>
+        <span class="config-toggle">▼</span>
+    </div>
+    <div class="config-body">
+        <textarea id="configTextarea" placeholder="格式：&#10;1, 2&#10;3, 4, 5&#10;表示 id1、id2 为一组，id3、id4、id5 为一组"></textarea>
+        <button class="btn btn-primary btn-sm" id="btnApplyConfig">✅ 应用配置</button>
+    </div>
+</div>
+
 <div class="toast-container" id="toastContainer"></div>
 <div id="modalContainer"></div>
 
 <script>
     (function() {
         const CROP_CONFIG = {
-            '16h': { matureTotal:57600, waterMax:19200, waterThreshold:18000, label:'16h作物' },
-            '32h': { matureTotal:115200, waterMax:38400, waterThreshold:36000, label:'32h作物' }
+            '16h': { matureTotal:57600, waterMax:19200, waterThreshold:18000, label:'16h作物', cssClass:'crop-16h' },
+            '32h': { matureTotal:115200, waterMax:38400, waterThreshold:36000, label:'32h作物', cssClass:'crop-32h' }
         };
         const LAYER_COLORS = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6'];
         const STORAGE_KEY = 'crop-management-data';
+        const CONFIG_STORAGE_KEY = 'crop-management-config';
         const LOG_STORAGE_KEY = 'crop-management-logs';
         const SORT_DEFAULT = 'default';
         const SORT_MATURE_ASC = 'matureAsc';
@@ -222,404 +300,296 @@
         let lastBlessResetDate = '';
         let tickBaseTime = Date.now();
         let logs = [], nextLogId = 1;
+        let groupConfig = '';
 
         const $ = s => document.querySelector(s);
-        const tableBody = $('#tableBody'), emptyState = $('#emptyState');
+        const mainTable = $('#mainTable');
+        const emptyState = $('#emptyState');
         const toastContainer = $('#toastContainer'), modalContainer = $('#modalContainer');
         const thMature = $('#thMature'), resetSortBtn = $('#resetSort'), tableScroll = $('#tableScroll');
+        const configPanel = $('#configPanel'), configHeader = $('#configHeader');
+        const configTextarea = $('#configTextarea'), btnApplyConfig = $('#btnApplyConfig');
 
-        function formatTime(s) {
-            if (s<=0) return '00:00:00';
-            const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = Math.floor(s%60);
-            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-        }
-        function formatTimeHM(s) { if(s<=0) return '0h 0m'; return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m`; }
-
-
-        function getFutureTime(seconds) {
-            // 获取当前时间戳（秒），加上 n 秒
-            const futureTimestamp = Math.floor(Date.now() / 1000) + seconds;
-            const date = new Date(futureTimestamp * 1000);
-
-            const h = String(date.getHours()).padStart(2, '0');
-            const m = String(date.getMinutes()).padStart(2, '0');
-
-            return `${h}:${m}`;
+        function parseGroupConfig(configStr) {
+            const groups = [];
+            if (!configStr.trim()) return groups;
+            const lines = configStr.split('\n');
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (!trimmed) return;
+                const ids = trimmed.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+                if (ids.length > 0) groups.push(ids);
+            });
+            return groups;
         }
 
-        function formatAbsoluteTime(secondsFromNow) {
-            const d = new Date(Date.now() + Math.max(0,secondsFromNow)*1000);
-            return `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-        }
-        function formatDateTime(ts) {
-            const d = new Date(ts);
-            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-        }
-        function isCrossingDay(s) {
-            if(s<=0) return false;
-            const now = new Date(), target = new Date(now.getTime()+s*1000);
-            return now.getDate()!==target.getDate() || now.getMonth()!==target.getMonth() || now.getFullYear()!==target.getFullYear();
-        }
-        function calcWaterReduction(row) { const c=CROP_CONFIG[row.cropType]; return Math.floor((c.waterMax - row.waterCountdown)/4); }
+        function getGroupSortedRows() {
+            if (sortState !== SORT_DEFAULT) {
+                const sorted = [...rows];
+                if (sortState === SORT_MATURE_ASC) sorted.sort((a,b) => a.matureCountdown - b.matureCountdown);
+                return { sorted, groups: [] };
+            }
+            const groups = parseGroupConfig(groupConfig);
+            if (groups.length === 0) return { sorted: [...rows].sort((a,b) => a.createOrder - b.createOrder), groups: [] };
 
-        function calcWaterMatureRemainingSeconds(row) {
-            if (row.matureCountdown <= 0) return null;
-            const reduction = calcWaterReduction(row);
-            if (reduction >= row.matureCountdown) return 0;
-            const remainingAfterWater = row.matureCountdown - reduction;
-            const targetWater = Math.floor(remainingAfterWater / 5 * 4);
-            if (row.waterCountdown > targetWater) return targetWater;
-            return null;
+            const groupedRows = [];
+            const groupedIds = new Set();
+            groups.forEach(groupIds => {
+                const groupRows = [];
+                groupIds.forEach(id => {
+                    const row = rows.find(r => r.id === id);
+                    if (row) { groupRows.push(row); groupedIds.add(id); }
+                });
+                if (groupRows.length > 0) groupedRows.push(groupRows);
+            });
+            const ungrouped = rows.filter(r => !groupedIds.has(r.id)).sort((a,b) => a.createOrder - b.createOrder);
+            return { grouped: groupedRows, ungrouped, groups };
         }
 
-        function calcWaterMatureRemaining(row) {
-            const seconds = calcWaterMatureRemainingSeconds(row);
-            if (seconds === null) return { text: '-', cls: '', predicted: '' };
-            if (seconds === 0) return { text: '浇水立即成熟', cls: 'immediate-mature', predicted: '' };
-            const waitMinutes = Math.ceil(seconds / 60);
-            let text;
-            if (waitMinutes >= 60) { const h = Math.floor(waitMinutes / 60); const m = waitMinutes % 60; text = `约${h}小时${m}分钟后成熟`; }
-            else { text = `约${waitMinutes}分钟后成熟`; }
-            const predictedTime = getFutureTime(seconds);
-            return { text, cls: 'approx-mature', predicted: `(预计 ${predictedTime})` };
-        }
-
-        function canWater(row) {
-            if(row.matureCountdown<=0) return {can:false,reason:'已成熟'};
-            const c=CROP_CONFIG[row.cropType];
-            if(row.waterCountdown >= c.waterThreshold) return {can:false,reason:`需低于${formatTimeHM(c.waterThreshold)}`};
-            return {can:true,reason:''};
-        }
-
-        function getTodayResetTime() {
-            const now = new Date();
-            return new Date(now.getFullYear(), now.getMonth(), now.getDate(), BLESS_RESET_HOUR, 0, 0, 0).getTime();
-        }
-        function getTodayDateStr() {
-            const now = new Date();
-            return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-        }
-
-        function formatRowState(row) {
-            const c = CROP_CONFIG[row.cropType];
-            return `作物类型：${c.label}\n成熟倒计时：${formatTime(row.matureCountdown)}\n浇水湿润倒计时：${formatTime(row.waterCountdown)}`;
-        }
-        function formatBlessState(blessed) { return blessed ? '有祝福' : '无祝福'; }
-        function formatTaskState(done) { return done ? '已完成' : '未完成'; }
-
-        function addLog(rowId, type, before, after) {
-            const log = { id: nextLogId++, rowId, type, time: formatDateTime(Date.now()), before, after };
-            logs.push(log); saveLogs();
-        }
-        function saveLogs() { try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify({ nextLogId, logs })); } catch(e) {} }
-        function loadLogs() { try { const raw = localStorage.getItem(LOG_STORAGE_KEY); if (!raw) return; const data = JSON.parse(raw); logs = data.logs || []; nextLogId = data.nextLogId || 1; } catch(e) { logs = []; nextLogId = 1; } }
-        function cleanOldLogs() {
-            const cutoffDate = new Date(); cutoffDate.setDate(cutoffDate.getDate() - LOG_RETENTION_DAYS); cutoffDate.setHours(0,0,0,0);
-            const before = logs.length;
-            logs = logs.filter(log => new Date(log.time.replace(/-/g, '/')).getTime() >= cutoffDate.getTime());
-            if (logs.length < before) saveLogs();
-        }
-        function getRowLogs(rowId) { return logs.filter(log => log.rowId === rowId).sort((a,b) => new Date(b.time.replace(/-/g, '/')).getTime() - new Date(a.time.replace(/-/g, '/')).getTime()); }
-        function deleteRowLogs(rowId) { logs = logs.filter(log => log.rowId !== rowId); saveLogs(); }
-
-        function showLogModal(rowId) {
-            const row = rows.find(r => r.id === rowId);
-            const rowLogs = getRowLogs(rowId);
-            const overlay = document.createElement('div'); overlay.className = 'modal-overlay';
-            let tableRows = rowLogs.length === 0 ? '<tr><td colspan="4" class="log-empty">暂无操作日志</td></tr>' : rowLogs.map(log => `<tr><td>${escapeHtml(log.type)}</td><td style="white-space:nowrap;">${log.time}</td><td>${escapeHtml(log.before)}</td><td>${escapeHtml(log.after)}</td></tr>`).join('');
-            overlay.innerHTML = `<div class="modal log-modal"><div style="display:flex;justify-content:space-between;align-items:center;"><h3>📋 操作日志 - ${escapeHtml(row?.user || '未命名')}</h3><button class="toast-close" style="font-size:1.2rem;cursor:pointer;" id="logClose">✕</button></div><div class="log-table-wrap"><table class="log-table"><thead><tr><th style="width:12%;">操作类型</th><th style="width:20%;">操作时间</th><th style="width:34%;">操作前</th><th style="width:34%;">操作后</th></tr></thead><tbody>${tableRows}</tbody></table></div></div>`;
-            modalContainer.appendChild(overlay);
-            overlay.querySelector('#logClose').onclick = () => overlay.remove();
-            overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-        }
-
-        function saveToStorage() {
-            lastSaveTime = Date.now();
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                version:18, nextId, nextCreateOrder, lastSaveTime, lastBlessResetDate,
-                rows: rows.map(r=>({id:r.id,user:r.user,cropType:r.cropType,matureCountdown:r.matureCountdown,waterCountdown:r.waterCountdown,blessed:r.blessed,dailyTaskDone:r.dailyTaskDone,createOrder:r.createOrder,createdAt:r.createdAt}))
-            }));
-        }
-        function loadFromStorage() {
-            const raw = localStorage.getItem(STORAGE_KEY); if(!raw) return false;
-            try {
-                const data = JSON.parse(raw); if(!data.rows) return false;
-                nextId = data.nextId||1; nextCreateOrder = data.nextCreateOrder||1;
-                lastBlessResetDate = data.lastBlessResetDate || '';
-                const elapsed = Math.floor((Date.now() - (data.lastSaveTime||Date.now()))/1000);
-                rows = data.rows.map(r=>({id:r.id, user:r.user||'', cropType:r.cropType||'16h', matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed), waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed), blessed: r.blessed !== undefined ? r.blessed : true, dailyTaskDone: r.dailyTaskDone !== undefined ? r.dailyTaskDone : false, createOrder:r.createOrder||0, createdAt:r.createdAt||Date.now()}));
-                if(rows.length) { nextId = Math.max(nextId, Math.max(...rows.map(r=>r.id))+1); nextCreateOrder = Math.max(nextCreateOrder, Math.max(...rows.map(r=>r.createOrder))+1); }
-                lastSaveTime = Date.now(); tickBaseTime = Date.now(); return true;
-            } catch(e) { return false; }
-        }
-        function checkAndResetDaily() {
-            const today = getTodayDateStr(); const resetTime = getTodayResetTime(); const now = Date.now();
-            if (now >= resetTime && lastBlessResetDate !== today) {
-                rows.forEach(r => { const ob=r.blessed, ot=r.dailyTaskDone; r.blessed=true; r.dailyTaskDone=false; if(!ob) addLog(r.id,'修改祝福状态',formatBlessState(ob),formatBlessState(true)); if(ot) addLog(r.id,'修改每日任务状态',formatTaskState(ot),formatTaskState(false)); });
-                saveToStorage(); lastBlessResetDate = today;
+        function clearTableBody() {
+            // 移除 <thead> 之后的所有元素（即所有 <tbody>）
+            while (mainTable.children.length > 1) {
+                mainTable.removeChild(mainTable.lastChild);
             }
         }
-        function renderBossHpBar(remaining) {
-            const segSize = 36000, currentLayers = Math.ceil(remaining / segSize), ci = currentLayers - 1;
-            const ri = remaining % segSize, tp = ri === 0 ? 100 : Math.min(100, (ri / segSize) * 100);
-            const container = document.createElement('div'); container.className = 'mature-progress';
-            const stack = document.createElement('div'); stack.className = 'boss-hp-stack';
-            for (let i = 0; i < currentLayers; i++) { const ld = document.createElement('div'); ld.className = 'boss-hp-layer'; ld.style.backgroundColor = LAYER_COLORS[i % LAYER_COLORS.length]; ld.style.width = (i < ci ? '100%' : (i === ci ? tp + '%' : '0%')); stack.appendChild(ld); }
-            container.appendChild(stack); const lbl = document.createElement('span'); lbl.className = 'layer-label'; lbl.textContent = `x${currentLayers}`; container.appendChild(lbl); return container;
-        }
 
-        function showToast(msg, undoCallback, duration=3500) {
-            const toast = document.createElement('div'); toast.className='toast';
-            toast.innerHTML = `<span>${msg}</span>${undoCallback?'<button class="toast-undo">撤销</button>':''}<button class="toast-close">✕</button>`;
-            toastContainer.appendChild(toast);
-            const remove = () => { if(toast.parentNode) { toast.style.opacity='0'; toast.style.transform='translateX(60px)'; toast.style.transition='0.3s'; setTimeout(()=>toast.remove(),300); } };
-            if(undoCallback) toast.querySelector('.toast-undo').onclick = ()=>{ undoCallback(); remove(); };
-            toast.querySelector('.toast-close').onclick = remove; setTimeout(remove, duration);
-        }
-        function showConfirm(title,msg,onConfirm) {
-            const overlay = document.createElement('div'); overlay.className='modal-overlay';
-            overlay.innerHTML = `<div class="modal"><h3>${title}</h3><p>${msg}</p><div class="modal-actions"><button class="btn btn-outline btn-sm" id="modalCancel">取消</button><button class="btn btn-danger btn-sm" id="modalConfirm">确认</button></div></div>`;
-            modalContainer.appendChild(overlay);
-            overlay.querySelector('#modalCancel').onclick = ()=>overlay.remove();
-            overlay.querySelector('#modalConfirm').onclick = ()=>{ overlay.remove(); onConfirm(); };
-            overlay.onclick = e => { if(e.target===overlay) overlay.remove(); };
-        }
-        function getSortedRows() {
-            const sorted = [...rows];
-            if(sortState === SORT_MATURE_ASC) sorted.sort((a,b) => a.matureCountdown - b.matureCountdown);
-            else sorted.sort((a,b) => a.createOrder - b.createOrder);
-            return sorted;
-        }
-        function addRow(user='', cropType='16h') {
-            const c=CROP_CONFIG[cropType];
-            const nr = { id:nextId++, user, cropType, matureCountdown:c.matureTotal, waterCountdown:c.waterMax, blessed:true, dailyTaskDone:false, createOrder:nextCreateOrder++, createdAt:Date.now() };
-            rows.push(nr); addLog(nr.id,'新增','-',formatRowState(nr)); saveToStorage(); return nr;
-        }
-        function deleteRow(id) { if(editingRowId===id) cancelEdit(); rows = rows.filter(r=>r.id!==id); deleteRowLogs(id); saveToStorage(); }
-        function doWater(row) {
-            const bs = formatRowState(row); const c=CROP_CONFIG[row.cropType], reduction = Math.floor((c.waterMax - row.waterCountdown)/4);
-            row.waterCountdown = c.waterMax; row.matureCountdown = Math.max(0, row.matureCountdown - reduction);
-            addLog(row.id,'浇水',bs,formatRowState(row)); saveToStorage(); showWaterHint(row.id, reduction);
-        }
-        function showWaterHint(rowId, reduction) {
-            const cell = document.getElementById(`mature-cell-${rowId}`); if(!cell) return;
-            const old = document.getElementById(`hint-${rowId}`); if(old) old.remove();
-            const hint = document.createElement('span'); hint.className='water-reduction-hint'; hint.id=`hint-${rowId}`;
-            hint.textContent = `- ${formatTimeHM(reduction)}`; cell.appendChild(hint); setTimeout(()=>hint.remove(), WATER_HINT_DURATION);
-        }
-        function toggleBless(rowId) {
-            const row = rows.find(r=>r.id===rowId); if(!row || editingRowId===rowId) return;
-            const ob = row.blessed; row.blessed = !row.blessed;
-            addLog(row.id,'修改祝福状态',formatBlessState(ob),formatBlessState(row.blessed)); saveToStorage(); updateBlessCell(row);
-            if (!row.blessed) showToast('🙏 祝福已使用，明天凌晨3点恢复');
-        }
-        function toggleDailyTask(rowId) {
-            const row = rows.find(r=>r.id===rowId); if(!row || editingRowId===rowId) return;
-            const ot = row.dailyTaskDone; row.dailyTaskDone = !row.dailyTaskDone;
-            addLog(row.id,'修改每日任务状态',formatTaskState(ot),formatTaskState(row.dailyTaskDone)); saveToStorage(); updateTaskCell(row);
-            if (row.dailyTaskDone) showToast('✅ 每日任务已完成');
-        }
-        function updateBlessCell(row) { const tr = document.querySelector(`tbody tr[data-id="${row.id}"]`); if(!tr) return; const td = tr.children[7]; if(td) { td.innerHTML = renderBlessBadge(row); bindBlessClick(row.id, td); } }
-        function updateTaskCell(row) { const tr = document.querySelector(`tbody tr[data-id="${row.id}"]`); if(!tr) return; const td = tr.children[8]; if(td) { td.innerHTML = renderTaskBadge(row); bindTaskClick(row.id, td); } }
-        function renderBlessBadge(row) { return row.blessed ? `<span class="blessed-badge has-bless" data-bless-id="${row.id}"><span class="bless-icon">✨</span> 有</span>` : `<span class="blessed-badge no-bless" data-bless-id="${row.id}"><span class="bless-icon">💤</span> 无</span>`; }
-        function renderTaskBadge(row) { return row.dailyTaskDone ? `<span class="task-badge done" data-task-id="${row.id}"><span class="task-icon">✅</span> 已完成</span>` : `<span class="task-badge undone" data-task-id="${row.id}"><span class="task-icon">⏳</span> 未完成</span>`; }
-        function bindBlessClick(rowId, td) { const b = td.querySelector('.blessed-badge'); if(b) b.addEventListener('click', () => toggleBless(rowId)); }
-        function bindTaskClick(rowId, td) { const b = td.querySelector('.task-badge'); if(b) b.addEventListener('click', () => toggleDailyTask(rowId)); }
-        function enterEdit(rowId) {
-            if(editingRowId && editingRowId!==rowId) cancelEdit();
-            const row = rows.find(r=>r.id===rowId); if(!row) return;
-            editingRowId = rowId;
-            editSnapshot = { mature:row.matureCountdown, water:row.waterCountdown, time:Date.now(), crop:row.cropType, user:row.user, matureDirty:false, waterDirty:false, cropChanged:false, beforeState:formatRowState(row) };
-            renderTable();
-        }
-        function cancelEdit() {
-            if(!editingRowId) return; const row = rows.find(r=>r.id===editingRowId);
-            if(row && editSnapshot) { row.matureCountdown=editSnapshot.mature; row.waterCountdown=editSnapshot.water; row.cropType=editSnapshot.crop; row.user=editSnapshot.user; }
-            editingRowId=null; editSnapshot=null; saveToStorage(); renderTable();
-        }
-        function saveEdit(rowId) {
-            if(editingRowId!==rowId) return; const row = rows.find(r=>r.id===rowId); if(!row) return;
-            const bs = editSnapshot.beforeState; const elapsed = Math.floor((Date.now() - editSnapshot.time)/1000);
-            if(editSnapshot.cropChanged) { const c = CROP_CONFIG[row.cropType]; row.matureCountdown = editSnapshot.matureDirty ? row.matureCountdown : c.matureTotal; row.waterCountdown = editSnapshot.waterDirty ? row.waterCountdown : c.waterMax; }
-            else { if(!editSnapshot.matureDirty) row.matureCountdown = Math.max(0, editSnapshot.mature - elapsed); if(!editSnapshot.waterDirty) row.waterCountdown = Math.max(0, editSnapshot.water - elapsed); }
-            addLog(row.id,'修改',bs,formatRowState(row)); editingRowId=null; editSnapshot=null; saveToStorage(); renderTable();
-        }
-        function parseTimeInput(val) { const d = val.replace(/\D/g,'').slice(0,4); if(d.length<4) return null; return parseInt(d.substring(0,2),10)*3600 + Math.min(59, parseInt(d.substring(2,4),10))*60; }
-        function renderTable() {
-            const sorted = getSortedRows(); tableBody.innerHTML = '';
-            if(sorted.length===0) { emptyState.style.display='block'; tableScroll.style.display='none'; }
-            else { emptyState.style.display='none'; tableScroll.style.display='block'; }
-            sorted.forEach(row => {
-                const isEdit = editingRowId===row.id, c=CROP_CONFIG[row.cropType];
-                const waterPercent = c.waterMax ? Math.min(100,(row.waterCountdown/c.waterMax)*100) : 0;
-                const waterColor = waterPercent>50?'green':(waterPercent>=20?'orange':'red');
-                const isMature = row.matureCountdown<=0, isWarn = !isMature && row.matureCountdown<=3600;
-                const reduction = calcWaterReduction(row), matureWait = calcWaterMatureRemaining(row);
-                const waterStatus = canWater(row);
-                const waterLow = row.waterCountdown > 0 && row.waterCountdown <= WATER_LOW_THRESHOLD;
-                let cls = ''; if(isEdit) cls='row-editing'; else if(isMature) cls='row-success'; else if(isWarn) cls='row-warning';
-                const tr = document.createElement('tr'); tr.className=cls; tr.setAttribute('data-id', row.id);
+        function renderGroupedTable() {
+            clearTableBody();
+            const { grouped, ungrouped, sorted } = getGroupSortedRows();
 
-                const tdUser = document.createElement('td');
-                if(isEdit) tdUser.innerHTML = `<input class="edit-user-input" id="eu-${row.id}" value="${escapeHtml(row.user)}" placeholder="用户名">`;
-                else tdUser.textContent = row.user||'—';
-                tr.appendChild(tdUser);
+            if (sortState !== SORT_DEFAULT || (!grouped && groups.length === 0)) {
+                const allSorted = sorted || [...rows].sort((a,b) => sortState === SORT_MATURE_ASC ? a.matureCountdown - b.matureCountdown : a.createOrder - b.createOrder);
+                if (allSorted.length === 0) { emptyState.style.display='block'; tableScroll.style.display='none'; return; }
+                emptyState.style.display='none'; tableScroll.style.display='block';
+                const tbody = document.createElement('tbody');
+                allSorted.forEach(row => tbody.appendChild(createRowElement(row)));
+                mainTable.appendChild(tbody);
+                bindAllEvents();
+                return;
+            }
 
-                const tdCrop = document.createElement('td');
-                if(isEdit) tdCrop.innerHTML = `<select class="edit-select" id="ec-${row.id}"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select>`;
-                else tdCrop.textContent = c.label;
-                tr.appendChild(tdCrop);
+            const allGrouped = grouped || [];
+            const allUngrouped = ungrouped || [];
+            const totalRows = allGrouped.reduce((sum, g) => sum + g.length, 0) + allUngrouped.length;
+            if (totalRows === 0) { emptyState.style.display='block'; tableScroll.style.display='none'; return; }
+            emptyState.style.display='none'; tableScroll.style.display='block';
 
-                const tdMature = document.createElement('td'); tdMature.id=`mature-cell-${row.id}`; tdMature.className='mature-cell';
-                if(isEdit) { const h=Math.floor(row.matureCountdown/3600), m=Math.floor((row.matureCountdown%3600)/60); tdMature.innerHTML = `<input class="edit-input" id="em-${row.id}" value="${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}" maxlength="4" placeholder="HHMM">`; }
-                else { const ts = document.createElement('span'); ts.className='mature-time'; ts.innerHTML = formatTime(row.matureCountdown)+(isMature?' <span class="mature-ripe-badge">熟</span>':''); tdMature.appendChild(ts); if(isMature){ const eb=document.createElement('div'); eb.className='mature-progress'; const s=document.createElement('div'); s.className='boss-hp-stack'; eb.appendChild(s); tdMature.appendChild(eb); } else tdMature.appendChild(renderBossHpBar(row.matureCountdown)); }
-                tr.appendChild(tdMature);
+            // 渲染分组
+            allGrouped.forEach((groupRows, groupIndex) => {
+                const tbody = document.createElement('tbody');
+                tbody.className = 'group-tbody';
+                groupRows.forEach(row => tbody.appendChild(createRowElement(row)));
+                mainTable.appendChild(tbody);
 
-                const tdWater = document.createElement('td');
-                if(isEdit) { const h=Math.floor(row.waterCountdown/3600), m=Math.floor((row.waterCountdown%3600)/60); tdWater.innerHTML = `<input class="edit-input" id="ew-${row.id}" value="${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}" maxlength="4" placeholder="HHMM">`; }
-                else {
-                    const waterIcon = waterLow ? ' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>' : '';
-                    tdWater.innerHTML = `<div class="water-vertical"><span style="font-weight:600;font-family:monospace;">${formatTime(row.waterCountdown)}${row.waterCountdown<=0?' <span class="dry-badge">干枯</span>':waterIcon}</span><div class="progress-bar-wrap"><div class="progress-bar-fill ${waterColor}" style="width:${waterPercent}%"></div></div></div>`;
+                // 组间间距
+                if (groupIndex < allGrouped.length - 1 || allUngrouped.length > 0) {
+                    const spacer = document.createElement('tbody');
+                    spacer.className = 'spacer-tbody';
+                    const tr = document.createElement('tr');
+                    const td = document.createElement('td');
+                    td.colSpan = 11;
+                    td.innerHTML = '&nbsp;';
+                    tr.appendChild(td);
+                    spacer.appendChild(tr);
+                    mainTable.appendChild(spacer);
                 }
-                tr.appendChild(tdWater);
-
-                const tdDry = document.createElement('td'); tdDry.style.fontSize='0.8rem'; tdDry.innerHTML = `${formatAbsoluteTime(row.waterCountdown)}${isCrossingDay(row.waterCountdown)?' <span class="cross-day-badge">跨</span>':''}`; tr.appendChild(tdDry);
-                const tdRed = document.createElement('td'); tdRed.textContent = formatTimeHM(reduction); tr.appendChild(tdRed);
-
-                const tdWait = document.createElement('td'); tdWait.style.fontSize='0.8rem';
-                const predictedHtml = matureWait.predicted ? ` <span class="predicted-time">${matureWait.predicted}</span>` : '';
-                tdWait.innerHTML = `<span class="${matureWait.cls}">${matureWait.text}</span>${predictedHtml}`;
-                tr.appendChild(tdWait);
-
-                const tdBless = document.createElement('td'); tdBless.innerHTML = renderBlessBadge(row); tr.appendChild(tdBless);
-                const tdTask = document.createElement('td'); tdTask.innerHTML = renderTaskBadge(row); tr.appendChild(tdTask);
-
-                const tdAct = document.createElement('td'); tdAct.style.whiteSpace='nowrap';
-                if(isEdit) tdAct.innerHTML = `<button class="btn btn-success btn-sm" id="save-${row.id}">💾 保存</button> <button class="btn btn-outline btn-sm" id="cancel-${row.id}">✕ 取消</button>`;
-                else tdAct.innerHTML = `<button class="btn btn-outline btn-sm edit-btn" data-id="${row.id}">✎ 修改</button> <span class="tooltip-wrapper"><button class="btn btn-primary btn-sm water-btn" data-id="${row.id}" ${!waterStatus.can?'disabled':''}>💧 浇水</button>${!waterStatus.can?`<span class="tooltip-text">${waterStatus.reason}</span>`:''}</span> <span class="plant-area" data-id="${row.id}"><button class="btn btn-success btn-sm plant-trigger">🌱 播种</button></span> <button class="btn btn-info btn-sm log-btn" data-id="${row.id}">📋 日志</button> <button class="btn btn-danger btn-sm delete-btn" data-id="${row.id}">🗑 删除</button>`;
-                tr.appendChild(tdAct);
-                tableBody.appendChild(tr);
             });
 
-            document.querySelectorAll('.edit-btn').forEach(b=>b.onclick=function(){ enterEdit(Number(this.dataset.id)); });
-            document.querySelectorAll('.water-btn').forEach(b=>b.onclick=function(){ const row=rows.find(r=>r.id===Number(this.dataset.id)); if(row && canWater(row).can){ doWater(row); renderTable(); } });
-            document.querySelectorAll('.delete-btn').forEach(b=>b.onclick=function(){ const id=Number(this.dataset.id), row=rows.find(r=>r.id===id); showConfirm('确认删除',`删除用户"${row?.user||'未命名'}"的记录？`,()=>{ deleteRow(id); renderTable(); showToast('已删除'); }); });
-            document.querySelectorAll('.log-btn').forEach(b=>b.onclick=function(){ showLogModal(Number(this.dataset.id)); });
-            document.querySelectorAll('.plant-trigger').forEach(btn=>{ btn.onclick=function(){
-                const area=this.closest('.plant-area'), rowId=Number(area.dataset.id), row=rows.find(r=>r.id===rowId); if(!row) return;
-                if(editingRowId && editingRowId!==rowId) cancelEdit();
-                area.innerHTML = `<select class="edit-select plant-select" style="width:100px;"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select> <button class="btn btn-success btn-sm plant-confirm">✅</button> <button class="btn btn-outline btn-sm plant-cancel">✕</button>`;
-                area.querySelector('.plant-confirm').onclick=function(){
-                    const sel=area.querySelector('.plant-select').value;
-                    const prev={user:row.user,cropType:row.cropType,mature:row.matureCountdown,water:row.waterCountdown}, bs=formatRowState(row);
-                    undoData[row.id]=prev; row.cropType=sel; const c=CROP_CONFIG[sel]; row.matureCountdown=c.matureTotal; row.waterCountdown=c.waterMax;
-                    const reduction=Math.floor(c.waterMax/4); row.matureCountdown=Math.max(0,row.matureCountdown-reduction);
-                    addLog(row.id,'播种',bs,formatRowState(row)); saveToStorage(); showWaterHint(row.id,reduction);
-                    showToast(`✅ 已播种 ${c.label}，-${formatTimeHM(reduction)}`,()=>{ if(undoData[row.id]){ const p=undoData[row.id]; row.user=p.user; row.cropType=p.cropType; row.matureCountdown=p.mature; row.waterCountdown=p.water; delete undoData[row.id]; saveToStorage(); renderTable(); } },UNDO_TIMEOUT);
-                    renderTable();
-                };
-                area.querySelector('.plant-cancel').onclick = ()=>renderTable();
-            }});
-            document.querySelectorAll('.blessed-badge').forEach(b=>{ const rid=Number(b.getAttribute('data-bless-id')); b.addEventListener('click',()=>toggleBless(rid)); });
-            document.querySelectorAll('.task-badge').forEach(b=>{ const rid=Number(b.getAttribute('data-task-id')); b.addEventListener('click',()=>toggleDailyTask(rid)); });
-
-            if(editingRowId) {
-                const row = rows.find(r=>r.id===editingRowId);
-                if(row) {
-                    const saveBtn = document.getElementById(`save-${row.id}`);
-                    if(saveBtn) saveBtn.onclick = ()=>{
-                        const ui=document.getElementById(`eu-${row.id}`), cs=document.getElementById(`ec-${row.id}`), mi=document.getElementById(`em-${row.id}`), wi=document.getElementById(`ew-${row.id}`);
-                        if(ui) row.user=ui.value;
-                        if(cs && cs.value !== editSnapshot.crop) { row.cropType=cs.value; editSnapshot.cropChanged=true; if(!editSnapshot.matureDirty){ const cfg=CROP_CONFIG[row.cropType]; row.matureCountdown=cfg.matureTotal; if(mi){ const h=Math.floor(cfg.matureTotal/3600),m=Math.floor((cfg.matureTotal%3600)/60); mi.value=String(h).padStart(2,'0')+String(m).padStart(2,'0'); } } if(!editSnapshot.waterDirty){ const cfg=CROP_CONFIG[row.cropType]; row.waterCountdown=cfg.waterMax; if(wi){ const h=Math.floor(cfg.waterMax/3600),m=Math.floor((cfg.waterMax%3600)/60); wi.value=String(h).padStart(2,'0')+String(m).padStart(2,'0'); } } }
-                        if(mi){ const sec=parseTimeInput(mi.value); if(sec!==null){ row.matureCountdown=sec; editSnapshot.matureDirty=true; } }
-                        if(wi){ const sec=parseTimeInput(wi.value); if(sec!==null){ row.waterCountdown=sec; editSnapshot.waterDirty=true; } }
-                        saveEdit(row.id);
-                    };
-                    document.getElementById(`cancel-${row.id}`).onclick = ()=>cancelEdit();
-                    const eh = e => { if(e.key==='Enter') saveBtn?.click(); };
-                    ['eu','em','ew','ec'].forEach(p=>{ const el=document.getElementById(`${p}-${row.id}`); if(el) el.addEventListener('keydown', eh); });
-                }
+            // 渲染未分组
+            if (allUngrouped.length > 0) {
+                const tbody = document.createElement('tbody');
+                allUngrouped.forEach(row => tbody.appendChild(createRowElement(row)));
+                mainTable.appendChild(tbody);
             }
+            bindAllEvents();
+        }
+
+        function createRowElement(row) {
+            const isEdit = editingRowId === row.id;
+            const c = CROP_CONFIG[row.cropType];
+            const waterPercent = c.waterMax ? Math.min(100, (row.waterCountdown / c.waterMax) * 100) : 0;
+            const waterColor = waterPercent > 50 ? 'green' : (waterPercent >= 20 ? 'orange' : 'red');
+            const isMature = row.matureCountdown <= 0;
+            const isWarn = !isMature && row.matureCountdown <= 3600;
+            const reduction = calcWaterReduction(row);
+            const matureWait = calcWaterMatureRemaining(row);
+            const waterStatus = canWater(row);
+            const waterLow = row.waterCountdown > 0 && row.waterCountdown <= WATER_LOW_THRESHOLD;
+            const reductionText = formatReductionText(reduction);
+
+            let cls = '';
+            if (isEdit) cls = 'row-editing';
+            else if (isMature) cls = 'row-success';
+            else if (isWarn) cls = 'row-warning';
+
+            const tr = document.createElement('tr');
+            tr.className = cls;
+            tr.setAttribute('data-id', row.id);
+
+            const tdId = document.createElement('td');
+            tdId.textContent = row.id;
+            tdId.style.fontWeight = '600';
+            tdId.style.color = 'var(--text-secondary)';
+            tr.appendChild(tdId);
+
+            const tdUser = document.createElement('td');
+            if (isEdit) tdUser.innerHTML = `<input class="edit-user-input" id="eu-${row.id}" value="${escapeHtml(row.user)}" placeholder="用户名">`;
+            else tdUser.textContent = row.user || '—';
+            tr.appendChild(tdUser);
+
+            const tdCrop = document.createElement('td');
+            if (isEdit) tdCrop.innerHTML = `<select class="edit-select" id="ec-${row.id}"><option value="16h" ${row.cropType === '16h' ? 'selected' : ''}>16h作物</option><option value="32h" ${row.cropType === '32h' ? 'selected' : ''}>32h作物</option></select>`;
+            else tdCrop.innerHTML = renderCropBadge(row);
+            tr.appendChild(tdCrop);
+
+            const tdMature = document.createElement('td');
+            tdMature.id = `mature-cell-${row.id}`;
+            tdMature.className = 'mature-cell';
+            if (isEdit) {
+                const h = Math.floor(row.matureCountdown / 3600);
+                const m = Math.floor((row.matureCountdown % 3600) / 60);
+                tdMature.innerHTML = `<input class="edit-input" id="em-${row.id}" value="${String(h).padStart(2, '0')}${String(m).padStart(2, '0')}" maxlength="4" placeholder="HHMM">`;
+            } else {
+                const ts = document.createElement('span');
+                ts.className = 'mature-time';
+                ts.innerHTML = formatTime(row.matureCountdown) + (isMature ? ' <span class="mature-ripe-badge">熟</span>' : '');
+                tdMature.appendChild(ts);
+                if (isMature) { const eb = document.createElement('div'); eb.className = 'mature-progress'; const s = document.createElement('div'); s.className = 'boss-hp-stack'; eb.appendChild(s); tdMature.appendChild(eb); }
+                else tdMature.appendChild(renderBossHpBar(row.matureCountdown));
+            }
+            tr.appendChild(tdMature);
+
+            const tdWater = document.createElement('td');
+            if (isEdit) {
+                const h = Math.floor(row.waterCountdown / 3600);
+                const m = Math.floor((row.waterCountdown % 3600) / 60);
+                tdWater.innerHTML = `<input class="edit-input" id="ew-${row.id}" value="${String(h).padStart(2, '0')}${String(m).padStart(2, '0')}" maxlength="4" placeholder="HHMM">`;
+            } else {
+                const waterIcon = waterLow ? ' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>' : '';
+                const reductionHtml = reductionText ? ` <span class="water-reduction-inline">(${reductionText})</span>` : '';
+                tdWater.innerHTML = `<div class="water-vertical"><span style="font-weight:600;font-family:monospace;">${formatTime(row.waterCountdown)}${row.waterCountdown <= 0 ? ' <span class="dry-badge">干枯</span>' : waterIcon}${reductionHtml}</span><div class="progress-bar-wrap"><div class="progress-bar-fill ${waterColor}" style="width:${waterPercent}%"></div></div></div>`;
+            }
+            tr.appendChild(tdWater);
+
+            const tdWait = document.createElement('td');
+            tdWait.style.fontSize = '0.8rem';
+            const predictedHtml = matureWait.predicted ? ` <span class="predicted-time">${matureWait.predicted}</span>` : '';
+            const textHtml = matureWait.boldPart ? matureWait.text.replace(matureWait.boldPart, `<b>${matureWait.boldPart}</b>`) : matureWait.text;
+            tdWait.innerHTML = `<span class="${matureWait.cls}">${textHtml}</span>${predictedHtml}`;
+            tr.appendChild(tdWait);
+
+            const tdBless = document.createElement('td');
+            tdBless.innerHTML = renderBlessBadge(row);
+            tr.appendChild(tdBless);
+            const tdTask = document.createElement('td');
+            tdTask.innerHTML = renderTaskBadge(row);
+            tr.appendChild(tdTask);
+
+            const tdCb = document.createElement('td');
+            if (isEdit) tdCb.innerHTML = `<select class="edit-select" id="ecb-${row.id}"><option value="-" ${row.consecutiveBless === '-' ? 'selected' : ''}>-</option><option value="是" ${row.consecutiveBless === '是' ? 'selected' : ''}>是</option><option value="否" ${row.consecutiveBless === '否' ? 'selected' : ''}>否</option></select>`;
+            else tdCb.innerHTML = renderConsecutiveBlessBadge(row);
+            tr.appendChild(tdCb);
+
+            const tdRemark = document.createElement('td');
+            tdRemark.className = 'remark-cell';
+            if (isEdit) tdRemark.innerHTML = `<input class="edit-input" id="erm-${row.id}" value="${escapeHtml(row.remark || '')}" style="width:120px;">`;
+            else tdRemark.innerHTML = `<div class="remark-text" id="remark-${row.id}" title="点击编辑备注">${escapeHtml(row.remark || '') || '<span style="color:var(--text-muted);">-</span>'}</div>`;
+            tr.appendChild(tdRemark);
+
+            const tdAct = document.createElement('td');
+            tdAct.style.whiteSpace = 'nowrap';
+            if (isEdit) tdAct.innerHTML = `<button class="btn btn-success btn-sm" id="save-${row.id}">💾 保存</button> <button class="btn btn-outline btn-sm" id="cancel-${row.id}">✕ 取消</button>`;
+            else tdAct.innerHTML = `<button class="btn btn-outline btn-sm edit-btn" data-id="${row.id}">✎ 修改</button> <span class="tooltip-wrapper"><button class="btn btn-primary btn-sm water-btn" data-id="${row.id}" ${!waterStatus.can ? 'disabled' : ''}>💧 浇水</button>${!waterStatus.can ? `<span class="tooltip-text">${waterStatus.reason}</span>` : ''}</span> <span class="plant-area" data-id="${row.id}"><button class="btn btn-success btn-sm plant-trigger">🌱 播种</button></span> <button class="btn btn-info btn-sm log-btn" data-id="${row.id}">📋 日志</button> <button class="btn btn-danger btn-sm delete-btn" data-id="${row.id}">🗑 删除</button>`;
+            tr.appendChild(tdAct);
+
+            return tr;
+        }
+
+        function bindAllEvents() {
+            document.querySelectorAll('.edit-btn').forEach(b => b.onclick = function() { enterEdit(Number(this.dataset.id)); });
+            document.querySelectorAll('.water-btn').forEach(b => b.onclick = function() { const row = rows.find(r => r.id === Number(this.dataset.id)); if (row && canWater(row).can) { doWater(row); renderGroupedTable(); } });
+            document.querySelectorAll('.delete-btn').forEach(b => b.onclick = function() { const id = Number(this.dataset.id), row = rows.find(r => r.id === id); showConfirm('确认删除', `删除用户"${row?.user||'未命名'}"的记录？`, () => { deleteRow(id); renderGroupedTable(); showToast('已删除'); }); });
+            document.querySelectorAll('.log-btn').forEach(b => b.onclick = function() { showLogModal(Number(this.dataset.id)); });
+            document.querySelectorAll('.plant-trigger').forEach(btn => { btn.onclick = function() { const area = this.closest('.plant-area'), rowId = Number(area.dataset.id), row = rows.find(r => r.id === rowId); if (!row) return; if (editingRowId && editingRowId !== rowId) cancelEdit(); area.innerHTML = `<select class="edit-select plant-select" style="width:100px;"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select> <button class="btn btn-success btn-sm plant-confirm">✅</button> <button class="btn btn-outline btn-sm plant-cancel">✕</button>`; area.querySelector('.plant-confirm').onclick = function() { const sel = area.querySelector('.plant-select').value; const prev = { user: row.user, cropType: row.cropType, mature: row.matureCountdown, water: row.waterCountdown }, bs = formatRowState(row); undoData[row.id] = prev; row.cropType = sel; const c = CROP_CONFIG[sel]; row.matureCountdown = c.matureTotal; row.waterCountdown = c.waterMax; const reduction = Math.floor(c.waterMax / 4); row.matureCountdown = Math.max(0, row.matureCountdown - reduction); addLog(row.id, '播种', bs, formatRowState(row)); saveToStorage(); showWaterHint(row.id, reduction); showToast(`✅ 已播种 ${c.label}，-${formatTimeHM(reduction)}`, () => { if (undoData[row.id]) { const p = undoData[row.id]; row.user = p.user; row.cropType = p.cropType; row.matureCountdown = p.mature; row.waterCountdown = p.water; delete undoData[row.id]; saveToStorage(); renderGroupedTable(); } }, UNDO_TIMEOUT); renderGroupedTable(); }; area.querySelector('.plant-cancel').onclick = () => renderGroupedTable(); } });
+            document.querySelectorAll('.blessed-badge').forEach(b => { const rid = Number(b.getAttribute('data-bless-id')); b.addEventListener('click', () => toggleBless(rid)); });
+            document.querySelectorAll('.task-badge').forEach(b => { const rid = Number(b.getAttribute('data-task-id')); b.addEventListener('click', () => toggleDailyTask(rid)); });
+            document.querySelectorAll('.remark-text').forEach(div => { const rowId = Number(div.id.replace('remark-', '')); div.addEventListener('click', () => { if (editingRowId === rowId) return; const row = rows.find(r => r.id === rowId); if (!row) return; const input = document.createElement('input'); input.className = 'remark-input'; input.value = row.remark || ''; input.addEventListener('blur', () => { saveRemark(rowId, input.value); renderGroupedTable(); }); input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { input.blur(); } if (e.key === 'Escape') { renderGroupedTable(); } }); div.replaceWith(input); input.focus(); }); });
+
+            if (editingRowId) { const row = rows.find(r => r.id === editingRowId); if (row) { const saveBtn = document.getElementById(`save-${row.id}`); if (saveBtn) saveBtn.onclick = () => { const ui = document.getElementById(`eu-${row.id}`), cs = document.getElementById(`ec-${row.id}`), mi = document.getElementById(`em-${row.id}`), wi = document.getElementById(`ew-${row.id}`), cbs = document.getElementById(`ecb-${row.id}`), rmi = document.getElementById(`erm-${row.id}`); if (ui) row.user = ui.value; if (cs && cs.value !== editSnapshot.crop) { row.cropType = cs.value; editSnapshot.cropChanged = true; if (!editSnapshot.matureDirty) { const cfg = CROP_CONFIG[row.cropType]; row.matureCountdown = cfg.matureTotal; if (mi) { const h = Math.floor(cfg.matureTotal / 3600), m = Math.floor((cfg.matureTotal % 3600) / 60); mi.value = String(h).padStart(2, '0') + String(m).padStart(2, '0'); } } if (!editSnapshot.waterDirty) { const cfg = CROP_CONFIG[row.cropType]; row.waterCountdown = cfg.waterMax; if (wi) { const h = Math.floor(cfg.waterMax / 3600), m = Math.floor((cfg.waterMax % 3600) / 60); wi.value = String(h).padStart(2, '0') + String(m).padStart(2, '0'); } } } if (mi) { const sec = parseTimeInput(mi.value); if (sec !== null) { row.matureCountdown = sec; editSnapshot.matureDirty = true; } } if (wi) { const sec = parseTimeInput(wi.value); if (sec !== null) { row.waterCountdown = sec; editSnapshot.waterDirty = true; } } if (cbs) row.consecutiveBless = cbs.value; if (rmi) row.remark = rmi.value; saveEdit(row.id); }; document.getElementById(`cancel-${row.id}`).onclick = () => cancelEdit(); const eh = e => { if (e.key === 'Enter') saveBtn?.click(); }; ['eu', 'em', 'ew', 'ec', 'ecb', 'erm'].forEach(p => { const el = document.getElementById(`${p}-${row.id}`); if (el) el.addEventListener('keydown', eh); }); } }
             updateSortUI();
         }
-        function updateSortUI() {
-            if(sortState === SORT_MATURE_ASC) { thMature.classList.add('sort-active'); thMature.querySelector('.sort-icon').textContent = '↑'; }
-            else { thMature.classList.remove('sort-active'); thMature.querySelector('.sort-icon').textContent = '↕'; }
-        }
+
+        function loadGroupConfig() { try { const raw = localStorage.getItem(CONFIG_STORAGE_KEY); groupConfig = raw || ''; configTextarea.value = groupConfig; } catch (e) { groupConfig = ''; } }
+        function saveGroupConfig() { groupConfig = configTextarea.value; try { localStorage.setItem(CONFIG_STORAGE_KEY, groupConfig); } catch (e) {} }
+
+        function formatTime(s) { if (s <= 0) return '00:00:00'; const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60); return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
+        function formatTimeHM(s) { if (s <= 0) return '0h 0m'; return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m`; }
+        function formatReductionText(seconds) { if (seconds <= 0) return ''; const h = Math.floor(seconds / 3600); const m = Math.floor((seconds % 3600) / 60); let text = '浇水减少'; if (h > 0) text += `${h}小时`; if (m > 0) text += `${m}分钟`; return text; }
+        function getFutureTime(seconds) { const futureTimestamp = Math.floor(Date.now() / 1000) + seconds; const date = new Date(futureTimestamp * 1000); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); return `${h}:${m}`; }
+        function formatDateTime(ts) { const d = new Date(ts); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`; }
+        function calcWaterReduction(row) { const c = CROP_CONFIG[row.cropType]; return Math.floor((c.waterMax - row.waterCountdown) / 4); }
+        function calcWaterMatureRemainingSeconds(row) { if (row.matureCountdown <= 0) return null; const reduction = calcWaterReduction(row); if (reduction >= row.matureCountdown) return 0; const remainingAfterWater = row.matureCountdown - reduction; const targetWater = Math.floor(remainingAfterWater / 5 * 4); if (row.waterCountdown > targetWater) return targetWater; return null; }
+        function calcWaterMatureRemaining(row) { const seconds = calcWaterMatureRemainingSeconds(row); if (seconds === null) return { text: '-', cls: '', predicted: '' }; if (seconds === 0) return { text: '浇水立即成熟', cls: 'immediate-mature', predicted: '' }; const waitMinutes = Math.ceil(seconds / 60); let text, boldPart; if (waitMinutes >= 60) { const h = Math.floor(waitMinutes / 60); const m = waitMinutes % 60; boldPart = `${h}小时${m}分钟`; text = `约${boldPart}后成熟`; } else { boldPart = `${waitMinutes}分钟`; text = `约${boldPart}后成熟`; } const predictedTime = getFutureTime(seconds); return { text, cls: 'approx-mature', predicted: `(预计 <b>${predictedTime}</b>)`, boldPart }; }
+        function canWater(row) { if (row.matureCountdown <= 0) return { can: false, reason: '已成熟' }; const c = CROP_CONFIG[row.cropType]; if (row.waterCountdown >= c.waterThreshold) return { can: false, reason: `需低于${formatTimeHM(c.waterThreshold)}` }; return { can: true, reason: '' }; }
+        function getTodayResetTime() { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), now.getDate(), BLESS_RESET_HOUR, 0, 0, 0).getTime(); }
+        function getTodayDateStr() { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`; }
+        function formatRowState(row) { const c = CROP_CONFIG[row.cropType]; return `作物类型：${c.label}\n成熟倒计时：${formatTime(row.matureCountdown)}\n浇水湿润倒计时：${formatTime(row.waterCountdown)}`; }
+        function formatBlessState(blessed) { return blessed ? '有祝福' : '无祝福'; }
+        function formatTaskState(done) { return done ? '已完成' : '未完成'; }
+        function addLog(rowId, type, before, after) { const log = { id: nextLogId++, rowId, type, time: formatDateTime(Date.now()), before, after }; logs.push(log); saveLogs(); }
+        function saveLogs() { try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify({ nextLogId, logs })); } catch (e) {} }
+        function loadLogs() { try { const raw = localStorage.getItem(LOG_STORAGE_KEY); if (!raw) return; const data = JSON.parse(raw); logs = data.logs || []; nextLogId = data.nextLogId || 1; } catch (e) { logs = []; nextLogId = 1; } }
+        function cleanOldLogs() { const cutoffDate = new Date(); cutoffDate.setDate(cutoffDate.getDate() - LOG_RETENTION_DAYS); cutoffDate.setHours(0,0,0,0); const before = logs.length; logs = logs.filter(log => new Date(log.time.replace(/-/g, '/')).getTime() >= cutoffDate.getTime()); if (logs.length < before) saveLogs(); }
+        function getRowLogs(rowId) { return logs.filter(log => log.rowId === rowId).sort((a,b) => new Date(b.time.replace(/-/g, '/')).getTime() - new Date(a.time.replace(/-/g, '/')).getTime()); }
+        function deleteRowLogs(rowId) { logs = logs.filter(log => log.rowId !== rowId); saveLogs(); }
+        function showLogModal(rowId) { const row = rows.find(r => r.id === rowId); const rowLogs = getRowLogs(rowId); const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; let tableRows = rowLogs.length === 0 ? '<tr><td colspan="4" class="log-empty">暂无操作日志</td></tr>' : rowLogs.map(log => `<tr><td>${escapeHtml(log.type)}</td><td style="white-space:nowrap;">${log.time}</td><td>${escapeHtml(log.before)}</td><td>${escapeHtml(log.after)}</td></tr>`).join(''); overlay.innerHTML = `<div class="modal log-modal"><div style="display:flex;justify-content:space-between;align-items:center;"><h3>📋 操作日志 - ${escapeHtml(row?.user || '未命名')}</h3><button class="toast-close" style="font-size:1.2rem;cursor:pointer;" id="logClose">✕</button></div><div class="log-table-wrap"><table class="log-table"><thead><tr><th style="width:12%;">操作类型</th><th style="width:20%;">操作时间</th><th style="width:34%;">操作前</th><th style="width:34%;">操作后</th></tr></thead><tbody>${tableRows}</tbody></table></div></div>`; modalContainer.appendChild(overlay); overlay.querySelector('#logClose').onclick = () => overlay.remove(); overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); }); }
+        function saveToStorage() { lastSaveTime = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:25, nextId, nextCreateOrder, lastSaveTime, lastBlessResetDate, rows: rows.map(r=>({id:r.id,user:r.user,cropType:r.cropType,matureCountdown:r.matureCountdown,waterCountdown:r.waterCountdown,blessed:r.blessed,dailyTaskDone:r.dailyTaskDone,consecutiveBless:r.consecutiveBless,remark:r.remark,createOrder:r.createOrder,createdAt:r.createdAt})) })); }
+        function loadFromStorage() { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return false; try { const data = JSON.parse(raw); if (!data.rows) return false; nextId = data.nextId||1; nextCreateOrder = data.nextCreateOrder||1; lastBlessResetDate = data.lastBlessResetDate || ''; const elapsed = Math.floor((Date.now() - (data.lastSaveTime||Date.now()))/1000); rows = data.rows.map(r=>({id:r.id, user:r.user||'', cropType:r.cropType||'16h', matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed), waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed), blessed: r.blessed !== undefined ? r.blessed : true, dailyTaskDone: r.dailyTaskDone !== undefined ? r.dailyTaskDone : false, consecutiveBless: r.consecutiveBless || '-', remark: r.remark || '', createOrder:r.createOrder||0, createdAt:r.createdAt||Date.now()})); if (rows.length) { nextId = Math.max(nextId, Math.max(...rows.map(r=>r.id))+1); nextCreateOrder = Math.max(nextCreateOrder, Math.max(...rows.map(r=>r.createOrder))+1); } lastSaveTime = Date.now(); tickBaseTime = Date.now(); return true; } catch (e) { return false; } }
+        function checkAndResetDaily() { const today = getTodayDateStr(); const resetTime = getTodayResetTime(); const now = Date.now(); if (now >= resetTime && lastBlessResetDate !== today) { rows.forEach(r => { const ob=r.blessed, ot=r.dailyTaskDone; r.blessed=true; r.dailyTaskDone=false; if (!ob) addLog(r.id,'修改祝福状态',formatBlessState(ob),formatBlessState(true)); if (ot) addLog(r.id,'修改每日任务状态',formatTaskState(ot),formatTaskState(false)); }); saveToStorage(); lastBlessResetDate = today; } }
+        function renderBossHpBar(remaining) { const segSize = 36000, currentLayers = Math.ceil(remaining / segSize), ci = currentLayers - 1; const ri = remaining % segSize, tp = ri === 0 ? 100 : Math.min(100, (ri / segSize) * 100); const container = document.createElement('div'); container.className = 'mature-progress'; const stack = document.createElement('div'); stack.className = 'boss-hp-stack'; for (let i = 0; i < currentLayers; i++) { const ld = document.createElement('div'); ld.className = 'boss-hp-layer'; ld.style.backgroundColor = LAYER_COLORS[i % LAYER_COLORS.length]; ld.style.width = (i < ci ? '100%' : (i === ci ? tp + '%' : '0%')); stack.appendChild(ld); } container.appendChild(stack); const lbl = document.createElement('span'); lbl.className = 'layer-label'; lbl.textContent = `x${currentLayers}`; container.appendChild(lbl); return container; }
+        function showToast(msg, undoCallback, duration=3500) { const toast = document.createElement('div'); toast.className='toast'; toast.innerHTML = `<span>${msg}</span>${undoCallback?'<button class="toast-undo">撤销</button>':''}<button class="toast-close">✕</button>`; toastContainer.appendChild(toast); const remove = () => { if (toast.parentNode) { toast.style.opacity='0'; toast.style.transform='translateX(60px)'; toast.style.transition='0.3s'; setTimeout(()=>toast.remove(),300); } }; if (undoCallback) toast.querySelector('.toast-undo').onclick = ()=>{ undoCallback(); remove(); }; toast.querySelector('.toast-close').onclick = remove; setTimeout(remove, duration); }
+        function showConfirm(title,msg,onConfirm) { const overlay = document.createElement('div'); overlay.className='modal-overlay'; overlay.innerHTML = `<div class="modal"><h3>${title}</h3><p>${msg}</p><div class="modal-actions"><button class="btn btn-outline btn-sm" id="modalCancel">取消</button><button class="btn btn-danger btn-sm" id="modalConfirm">确认</button></div></div>`; modalContainer.appendChild(overlay); overlay.querySelector('#modalCancel').onclick = ()=>overlay.remove(); overlay.querySelector('#modalConfirm').onclick = ()=>{ overlay.remove(); onConfirm(); }; overlay.onclick = e => { if (e.target===overlay) overlay.remove(); }; }
+        function addRow(user='', cropType='16h') { const c=CROP_CONFIG[cropType]; const nr = { id:nextId++, user, cropType, matureCountdown:c.matureTotal, waterCountdown:c.waterMax, blessed:true, dailyTaskDone:false, consecutiveBless:'-', remark:'', createOrder:nextCreateOrder++, createdAt:Date.now() }; rows.push(nr); addLog(nr.id,'新增','-',formatRowState(nr)); saveToStorage(); return nr; }
+        function deleteRow(id) { if (editingRowId===id) cancelEdit(); rows = rows.filter(r=>r.id!==id); deleteRowLogs(id); saveToStorage(); }
+        function doWater(row) { const bs = formatRowState(row); const c=CROP_CONFIG[row.cropType], reduction = Math.floor((c.waterMax - row.waterCountdown)/4); row.waterCountdown = c.waterMax; row.matureCountdown = Math.max(0, row.matureCountdown - reduction); addLog(row.id,'浇水',bs,formatRowState(row)); saveToStorage(); showWaterHint(row.id, reduction); }
+        function showWaterHint(rowId, reduction) { const cell = document.getElementById(`mature-cell-${rowId}`); if (!cell) return; const old = document.getElementById(`hint-${rowId}`); if (old) old.remove(); const hint = document.createElement('span'); hint.className='water-reduction-hint'; hint.id=`hint-${rowId}`; hint.textContent = `- ${formatTimeHM(reduction)}`; cell.appendChild(hint); setTimeout(()=>hint.remove(), WATER_HINT_DURATION); }
+        function toggleBless(rowId) { const row = rows.find(r=>r.id===rowId); if (!row || editingRowId===rowId) return; const ob = row.blessed; row.blessed = !row.blessed; addLog(row.id,'修改祝福状态',formatBlessState(ob),formatBlessState(row.blessed)); saveToStorage(); updateBlessCell(row); if (!row.blessed) showToast('🙏 祝福已使用，明天凌晨3点恢复'); }
+        function toggleDailyTask(rowId) { const row = rows.find(r=>r.id===rowId); if (!row || editingRowId===rowId) return; const ot = row.dailyTaskDone; row.dailyTaskDone = !row.dailyTaskDone; addLog(row.id,'修改每日任务状态',formatTaskState(ot),formatTaskState(row.dailyTaskDone)); saveToStorage(); updateTaskCell(row); if (row.dailyTaskDone) showToast('✅ 每日任务已完成'); }
+        function updateBlessCell(row) { const tr = document.querySelector(`tbody tr[data-id="${row.id}"]`); if (!tr) return; const td = tr.children[6]; if (td) { td.innerHTML = renderBlessBadge(row); bindBlessClick(row.id, td); } }
+        function updateTaskCell(row) { const tr = document.querySelector(`tbody tr[data-id="${row.id}"]`); if (!tr) return; const td = tr.children[7]; if (td) { td.innerHTML = renderTaskBadge(row); bindTaskClick(row.id, td); } }
+        function renderBlessBadge(row) { return row.blessed ? `<span class="blessed-badge has-bless" data-bless-id="${row.id}"><span class="bless-icon">✨</span> 有</span>` : `<span class="blessed-badge no-bless" data-bless-id="${row.id}"><span class="bless-icon">💤</span> 无</span>`; }
+        function renderTaskBadge(row) { return row.dailyTaskDone ? `<span class="task-badge done" data-task-id="${row.id}"><span class="task-icon">✅</span> 已完成</span>` : `<span class="task-badge undone" data-task-id="${row.id}"><span class="task-icon">⏳</span> 未完成</span>`; }
+        function renderConsecutiveBlessBadge(row) { const val = row.consecutiveBless || '-'; const cls = val === '是' ? 'yes' : (val === '否' ? 'no' : 'na'); const icon = val === '是' ? '✅' : (val === '否' ? '❌' : '➖'); return `<span class="yesterday-bless-badge ${cls}"><span>${icon}</span> ${val}</span>`; }
+        function renderCropBadge(row) { const c = CROP_CONFIG[row.cropType]; return `<span class="crop-badge ${c.cssClass}">🌱 ${c.label}</span>`; }
+        function bindBlessClick(rowId, td) { const b = td.querySelector('.blessed-badge'); if (b) b.addEventListener('click', () => toggleBless(rowId)); }
+        function bindTaskClick(rowId, td) { const b = td.querySelector('.task-badge'); if (b) b.addEventListener('click', () => toggleDailyTask(rowId)); }
+        function enterEdit(rowId) { if (editingRowId && editingRowId!==rowId) cancelEdit(); const row = rows.find(r=>r.id===rowId); if (!row) return; editingRowId = rowId; editSnapshot = { mature:row.matureCountdown, water:row.waterCountdown, time:Date.now(), crop:row.cropType, user:row.user, matureDirty:false, waterDirty:false, cropChanged:false, beforeState:formatRowState(row) }; renderGroupedTable(); }
+        function cancelEdit() { if (!editingRowId) return; const row = rows.find(r=>r.id===editingRowId); if (row && editSnapshot) { row.matureCountdown=editSnapshot.mature; row.waterCountdown=editSnapshot.water; row.cropType=editSnapshot.crop; row.user=editSnapshot.user; } editingRowId=null; editSnapshot=null; saveToStorage(); renderGroupedTable(); }
+        function saveEdit(rowId) { if (editingRowId!==rowId) return; const row = rows.find(r=>r.id===rowId); if (!row) return; const bs = editSnapshot.beforeState; const elapsed = Math.floor((Date.now() - editSnapshot.time)/1000); if (editSnapshot.cropChanged) { const c = CROP_CONFIG[row.cropType]; row.matureCountdown = editSnapshot.matureDirty ? row.matureCountdown : c.matureTotal; row.waterCountdown = editSnapshot.waterDirty ? row.waterCountdown : c.waterMax; } else { if (!editSnapshot.matureDirty) row.matureCountdown = Math.max(0, editSnapshot.mature - elapsed); if (!editSnapshot.waterDirty) row.waterCountdown = Math.max(0, editSnapshot.water - elapsed); } addLog(row.id,'修改',bs,formatRowState(row)); editingRowId=null; editSnapshot=null; saveToStorage(); renderGroupedTable(); }
+        function saveRemark(rowId, newValue) { const row = rows.find(r=>r.id===rowId); if (!row) return; const oldRemark = row.remark; row.remark = newValue; addLog(row.id, '修改备注', `备注：${oldRemark || '(空)'}`, `备注：${newValue || '(空)'}`); saveToStorage(); }
+        function parseTimeInput(val) { const d = val.replace(/\D/g,'').slice(0,4); if (d.length<4) return null; return parseInt(d.substring(0,2),10)*3600 + Math.min(59, parseInt(d.substring(2,4),10))*60; }
+        function updateSortUI() { if (sortState === SORT_MATURE_ASC) { thMature.classList.add('sort-active'); thMature.querySelector('.sort-icon').textContent = '↑'; } else { thMature.classList.remove('sort-active'); thMature.querySelector('.sort-icon').textContent = '↕'; } }
         function escapeHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-        thMature.onclick = e => { if(e.target === resetSortBtn || resetSortBtn.contains(e.target)) return; sortState = sortState === SORT_DEFAULT ? SORT_MATURE_ASC : SORT_DEFAULT; renderTable(); };
-        resetSortBtn.onclick = e => { e.stopPropagation(); sortState = SORT_DEFAULT; renderTable(); };
-        document.getElementById('btnAddRow').onclick = ()=>{ if(editingRowId) cancelEdit(); const row=addRow(); renderTable(); enterEdit(row.id); };
+        thMature.onclick = e => { if (e.target === resetSortBtn || resetSortBtn.contains(e.target)) return; sortState = sortState === SORT_DEFAULT ? SORT_MATURE_ASC : SORT_DEFAULT; renderGroupedTable(); };
+        resetSortBtn.onclick = e => { e.stopPropagation(); sortState = SORT_DEFAULT; renderGroupedTable(); };
+        document.getElementById('btnAddRow').onclick = ()=>{ if (editingRowId) cancelEdit(); const row=addRow(); renderGroupedTable(); enterEdit(row.id); };
         document.getElementById('btnExport').onclick = ()=>{ const data={exportTime:Date.now(),rows:rows.map(r=>({...r})),nextId,nextCreateOrder}; const blob=new Blob([JSON.stringify(data)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`crop-data-${new Date().toISOString().slice(0,10)}.json`; a.click(); showToast('已导出'); };
         document.getElementById('btnImport').onclick = ()=>document.getElementById('importFileInput').click();
-        document.getElementById('importFileInput').onchange = e => {
-            const file = e.target.files[0]; if(!file) return; const reader = new FileReader();
-            reader.onload = ev => {
-                try { const data=JSON.parse(ev.target.result); if(!data.rows) throw new Error('格式错误'); const elapsed=Math.floor((Date.now()-(data.exportTime||Date.now()))/1000); rows=data.rows.map(r=>({id:r.id,user:r.user||'',cropType:r.cropType||'16h',matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed),waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed),blessed:r.blessed!==undefined?r.blessed:true,dailyTaskDone:r.dailyTaskDone!==undefined?r.dailyTaskDone:false,createOrder:r.createOrder||0,createdAt:r.createdAt||Date.now()})); nextId=data.nextId||1; nextCreateOrder=data.nextCreateOrder||1; lastBlessResetDate=data.lastBlessResetDate||''; sortState=SORT_DEFAULT; editingRowId=null; editSnapshot=null; tickBaseTime=Date.now(); checkAndResetDaily(); saveToStorage(); renderTable(); showToast(`导入成功 (${rows.length}条)`); } catch(ex) { showToast('导入失败: '+ex.message); }
-            };
-            reader.readAsText(file); e.target.value='';
-        };
+        document.getElementById('importFileInput').onchange = e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = ev => { try { const data=JSON.parse(ev.target.result); if (!data.rows) throw new Error('格式错误'); const elapsed=Math.floor((Date.now()-(data.exportTime||Date.now()))/1000); rows=data.rows.map(r=>({id:r.id,user:r.user||'',cropType:r.cropType||'16h',matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed),waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed),blessed:r.blessed!==undefined?r.blessed:true,dailyTaskDone:r.dailyTaskDone!==undefined?r.dailyTaskDone:false,consecutiveBless:r.consecutiveBless||'-',remark:r.remark||'',createOrder:r.createOrder||0,createdAt:r.createdAt||Date.now()})); nextId=data.nextId||1; nextCreateOrder=data.nextCreateOrder||1; lastBlessResetDate=data.lastBlessResetDate||''; sortState=SORT_DEFAULT; editingRowId=null; editSnapshot=null; tickBaseTime=Date.now(); checkAndResetDaily(); saveToStorage(); renderGroupedTable(); showToast(`导入成功 (${rows.length}条)`); } catch(ex) { showToast('导入失败: '+ex.message); } }; reader.readAsText(file); e.target.value=''; };
 
-        setInterval(() => {
-            const now = Date.now(), elapsed = Math.floor((now - tickBaseTime) / 1000);
-            if (elapsed <= 0) return;
-            tickBaseTime += elapsed * 1000;
-            let changed = false;
-            rows.forEach(r => { if(editingRowId===r.id) return; if(r.matureCountdown>0){ r.matureCountdown=Math.max(0,r.matureCountdown-elapsed); changed=true; } if(r.waterCountdown>0){ r.waterCountdown=Math.max(0,r.waterCountdown-elapsed); changed=true; } });
-            if(changed) { updateDynamicDisplay(); saveToStorage(); }
-            if(Math.floor(Date.now()/60000)!==Math.floor((Date.now()-1000)/60000)) updateWaterMatureRemainingColumn();
-            if(Math.floor(Date.now()/30000)!==Math.floor((Date.now()-1000)/30000)) checkAndResetDaily();
-        }, 1000);
+        configHeader.addEventListener('click', () => { configPanel.classList.toggle('collapsed'); });
+        btnApplyConfig.addEventListener('click', () => { saveGroupConfig(); renderGroupedTable(); showToast('✅ 分组配置已应用'); });
 
-        function updateWaterMatureRemainingColumn() {
-            document.querySelectorAll('tbody tr[data-id]').forEach(tr=>{
-                const id=Number(tr.getAttribute('data-id')), row=rows.find(r=>r.id===id);
-                if(!row||editingRowId===id) return;
-                const mw=calcWaterMatureRemaining(row);
-                const tdWait=tr.children[6];
-                if(tdWait) {
-                    const predictedHtml = mw.predicted ? ` <span class="predicted-time">${mw.predicted}</span>` : '';
-                    tdWait.innerHTML = `<span class="${mw.cls}">${mw.text}</span>${predictedHtml}`;
-                }
-            });
-        }
-        function updateDynamicDisplay() {
-            document.querySelectorAll('tbody tr[data-id]').forEach(tr=>{
-                const id=Number(tr.getAttribute('data-id')), row=rows.find(r=>r.id===id); if(!row||editingRowId===id) return;
-                const c=CROP_CONFIG[row.cropType];
-                const matureCell = document.getElementById(`mature-cell-${id}`);
-                if(matureCell && !matureCell.querySelector('input')) {
-                    const ts=matureCell.querySelector('.mature-time'); if(ts) ts.innerHTML = formatTime(row.matureCountdown)+(row.matureCountdown<=0?' <span class="mature-ripe-badge">熟</span>':'');
-                    const op=matureCell.querySelector('.mature-progress'); if(op) op.remove();
-                    if(row.matureCountdown<=0){ const eb=document.createElement('div'); eb.className='mature-progress'; const s=document.createElement('div'); s.className='boss-hp-stack'; eb.appendChild(s); matureCell.appendChild(eb); }
-                    else matureCell.appendChild(renderBossHpBar(row.matureCountdown));
-                }
-                const waterDiv = tr.querySelector('.water-vertical');
-                if(waterDiv) {
-                    const span = waterDiv.querySelector('span');
-                    if(span) {
-                        const waterLow = row.waterCountdown > 0 && row.waterCountdown <= WATER_LOW_THRESHOLD;
-                        const waterIcon = waterLow ? ' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>' : '';
-                        span.innerHTML = formatTime(row.waterCountdown)+(row.waterCountdown<=0?' <span class="dry-badge">干枯</span>':waterIcon);
-                    }
-                    const percent = c.waterMax ? Math.min(100,(row.waterCountdown/c.waterMax)*100) : 0;
-                    const fill = waterDiv.querySelector('.progress-bar-fill'); if(fill){ fill.style.width=percent+'%'; fill.className='progress-bar-fill '+(percent>50?'green':percent>=20?'orange':'red'); }
-                }
-                const dryTd = tr.children[4]; if(dryTd) dryTd.innerHTML = `${formatAbsoluteTime(row.waterCountdown)}${isCrossingDay(row.waterCountdown)?' <span class="cross-day-badge">跨</span>':''}`;
-                tr.children[5].textContent = formatTimeHM(calcWaterReduction(row));
-                const waterBtn = tr.querySelector('.water-btn'); if(waterBtn){ const st=canWater(row); waterBtn.disabled=!st.can; const wr=waterBtn.closest('.tooltip-wrapper'); if(wr){ let tip=wr.querySelector('.tooltip-text'); if(!st.can){ if(!tip){ tip=document.createElement('span'); tip.className='tooltip-text'; wr.appendChild(tip); } tip.textContent=st.reason; } else if(tip) tip.remove(); } }
-                tr.className = row.matureCountdown<=0?'row-success':(row.matureCountdown<=3600?'row-warning':'');
-            });
-        }
+        setInterval(() => { const now = Date.now(), elapsed = Math.floor((now - tickBaseTime) / 1000); if (elapsed <= 0) return; tickBaseTime += elapsed * 1000; let changed = false; rows.forEach(r => { if (editingRowId===r.id) return; if (r.matureCountdown>0){ r.matureCountdown=Math.max(0,r.matureCountdown-elapsed); changed=true; } if (r.waterCountdown>0){ r.waterCountdown=Math.max(0,r.waterCountdown-elapsed); changed=true; } }); if (changed) { updateDynamicDisplay(); saveToStorage(); } if (Math.floor(Date.now()/60000)!==Math.floor((Date.now()-1000)/60000)) updateWaterMatureRemainingColumn(); if (Math.floor(Date.now()/30000)!==Math.floor((Date.now()-1000)/30000)) checkAndResetDaily(); }, 1000);
 
-        loadLogs(); cleanOldLogs();
-        if(!loadFromStorage()) { rows=[]; nextId=1; nextCreateOrder=1; lastBlessResetDate=''; saveToStorage(); }
-        checkAndResetDaily(); renderTable();
+        function updateWaterMatureRemainingColumn() { document.querySelectorAll('tbody tr[data-id]').forEach(tr=>{ const id=Number(tr.getAttribute('data-id')), row=rows.find(r=>r.id===id); if (!row||editingRowId===id) return; const mw=calcWaterMatureRemaining(row); const tdWait=tr.children[5]; if (tdWait) { const predictedHtml = mw.predicted ? ` <span class="predicted-time">${mw.predicted}</span>` : ''; const textHtml = mw.boldPart ? mw.text.replace(mw.boldPart, `<b>${mw.boldPart}</b>`) : mw.text; tdWait.innerHTML = `<span class="${mw.cls}">${textHtml}</span>${predictedHtml}`; } }); }
+        function updateDynamicDisplay() { document.querySelectorAll('tbody tr[data-id]').forEach(tr=>{ const id=Number(tr.getAttribute('data-id')), row=rows.find(r=>r.id===id); if (!row||editingRowId===id) return; const c=CROP_CONFIG[row.cropType]; const matureCell = document.getElementById(`mature-cell-${id}`); if (matureCell && !matureCell.querySelector('input')) { const ts=matureCell.querySelector('.mature-time'); if (ts) ts.innerHTML = formatTime(row.matureCountdown)+(row.matureCountdown<=0?' <span class="mature-ripe-badge">熟</span>':''); const op=matureCell.querySelector('.mature-progress'); if (op) op.remove(); if (row.matureCountdown<=0){ const eb=document.createElement('div'); eb.className='mature-progress'; const s=document.createElement('div'); s.className='boss-hp-stack'; eb.appendChild(s); matureCell.appendChild(eb); } else matureCell.appendChild(renderBossHpBar(row.matureCountdown)); } const waterDiv = tr.querySelector('.water-vertical'); if (waterDiv) { const span = waterDiv.querySelector('span'); if (span) { const waterLow = row.waterCountdown > 0 && row.waterCountdown <= WATER_LOW_THRESHOLD; const waterIcon = waterLow ? ' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>' : ''; const reduction = calcWaterReduction(row); const reductionText = formatReductionText(reduction); const reductionHtml = reductionText ? ` <span class="water-reduction-inline">(${reductionText})</span>` : ''; span.innerHTML = formatTime(row.waterCountdown)+(row.waterCountdown<=0?' <span class="dry-badge">干枯</span>':waterIcon)+reductionHtml; } const percent = c.waterMax ? Math.min(100,(row.waterCountdown/c.waterMax)*100) : 0; const fill = waterDiv.querySelector('.progress-bar-fill'); if (fill){ fill.style.width=percent+'%'; fill.className='progress-bar-fill '+(percent>50?'green':percent>=20?'orange':'red'); } } const waterBtn = tr.querySelector('.water-btn'); if (waterBtn){ const st=canWater(row); waterBtn.disabled=!st.can; const wr=waterBtn.closest('.tooltip-wrapper'); if (wr){ let tip=wr.querySelector('.tooltip-text'); if (!st.can){ if (!tip){ tip=document.createElement('span'); tip.className='tooltip-text'; wr.appendChild(tip); } tip.textContent=st.reason; } else if (tip) tip.remove(); } } tr.className = row.matureCountdown<=0?'row-success':(row.matureCountdown<=3600?'row-warning':''); }); }
+
+        loadLogs(); cleanOldLogs(); loadGroupConfig();
+        if (!loadFromStorage()) { rows=[]; nextId=1; nextCreateOrder=1; lastBlessResetDate=''; saveToStorage(); }
+        checkAndResetDaily(); renderGroupedTable();
         window.addEventListener('beforeunload', saveToStorage);
-        document.addEventListener('visibilitychange', () => {
-            if(document.visibilityState==='visible'){ const now=Date.now(), elapsed=Math.floor((now-tickBaseTime)/1000); if(elapsed>1){ rows.forEach(r=>{ if(editingRowId===r.id) return; r.matureCountdown=Math.max(0,r.matureCountdown-elapsed); r.waterCountdown=Math.max(0,r.waterCountdown-elapsed); }); tickBaseTime=now; saveToStorage(); renderTable(); checkAndResetDaily(); } }
-            else { saveToStorage(); }
-        });
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState==='visible'){ const now=Date.now(), elapsed=Math.floor((now-tickBaseTime)/1000); if (elapsed>1){ rows.forEach(r=>{ if (editingRowId===r.id) return; r.matureCountdown=Math.max(0,r.matureCountdown-elapsed); r.waterCountdown=Math.max(0,r.waterCountdown-elapsed); }); tickBaseTime=now; saveToStorage(); renderGroupedTable(); checkAndResetDaily(); } } else { saveToStorage(); } });
     })();
 </script>
 </body>
