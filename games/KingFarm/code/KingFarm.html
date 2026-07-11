@@ -115,7 +115,6 @@
         tbody tr.row-success { background:var(--success-light); }
         tbody tr.row-editing { background:#f0f4ff; box-shadow:inset 3px 0 0 var(--primary); }
 
-        /* 分组虚线框样式 */
         tbody.group-tbody { border: 2px dashed var(--group-border-color); }
         tbody.group-tbody tr:last-child td { border-bottom: none; }
         tbody.spacer-tbody td { padding: 4px 14px; border-bottom: none; background: transparent; }
@@ -146,10 +145,16 @@
         .progress-bar-fill.green { background:#10b981; }
         .progress-bar-fill.orange { background:#f59e0b; }
         .progress-bar-fill.red { background:#ef4444; }
-        .dry-badge { display:inline-block; background:#fef2f2; color:#dc2626; font-size:0.68rem; padding:2px 7px; border-radius:10px; margin-left:4px; }
+        .dry-badge-large {
+            display:inline-flex; align-items:center; gap:4px;
+            background:#dc2626; color:#ffffff; font-size:0.85rem;
+            font-weight:700; padding:5px 12px; border-radius:20px;
+            margin-left:4px;
+        }
         .water-low-icon { display:inline-block; color:#3b82f6; font-size:0.9rem; margin-left:4px; animation: dropletPulse 1.5s ease-in-out infinite; }
         @keyframes dropletPulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.2); opacity:0.7; } }
         .water-reduction-inline { font-size:0.7rem; color: var(--text-muted); white-space:nowrap; }
+        .water-reduction-inline b { color: var(--text); }
 
         .blessed-badge {
             display:inline-flex; align-items:center; gap:4px;
@@ -202,15 +207,27 @@
         .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:8000; display:flex; align-items:center; justify-content:center; }
         .modal { background:white; border-radius:var(--radius); padding:24px; box-shadow:var(--shadow-lg); max-width:400px; width:90%; }
         .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
-        .immediate-mature { color:#10b981; font-weight:600; }
+        .immediate-mature-badge {
+            display:inline-block; background:#dc2626; color:#ffffff;
+            font-size:0.75rem; font-weight:700; padding:3px 8px;
+            border-radius:4px; white-space:nowrap; float:right;
+        }
         .approx-mature { color:#f59e0b; }
+        .rank-badge {
+            display:inline-block; font-size:0.7rem; font-weight:700;
+            padding:2px 7px; border-radius:10px; margin-left:6px;
+            white-space:nowrap; color:#ffffff; float:right;
+        }
+        .rank-badge.r1 { background:#dc2626; }
+        .rank-badge.r2 { background:#f59e0b; }
+        .rank-badge.r3 { background:#3b82f6; }
+        .water-wait-cell { text-align:left; }
         .log-modal { max-width:700px; max-height:80vh; width:95%; }
         .log-table-wrap { max-height:50vh; overflow-y:auto; margin-top:12px; border:1px solid var(--border); border-radius:var(--radius-sm); }
         .log-table { width:100%; border-collapse:collapse; font-size:0.8rem; min-width:600px; }
         .log-table th { background:#f8fafc; padding:10px 12px; text-align:left; font-weight:600; font-size:0.75rem; color:var(--text-secondary); border-bottom:1px solid #e5e7eb; position:sticky; top:0; z-index:1; }
         .log-table td { padding:8px 12px; border-bottom:1px solid #f1f3f4; vertical-align:top; white-space:pre-wrap; font-size:0.78rem; max-width:200px; word-break:break-all; }
         .log-empty { text-align:center; padding:32px 16px; color:var(--text-muted); }
-        .predicted-time { font-size:0.72rem; color: var(--text-muted); margin-left:4px; white-space:nowrap; }
 
         .config-panel {
             position: fixed; bottom: 20px; right: 20px; z-index: 7000;
@@ -294,6 +311,7 @@
         const BLESS_RESET_HOUR = 3;
         const LOG_RETENTION_DAYS = 3;
         const WATER_LOW_THRESHOLD = 7200;
+        const COL_COUNT = 11;
 
         let rows = [], nextId = 1, nextCreateOrder = 1, sortState = SORT_DEFAULT;
         let editingRowId = null, editSnapshot = null, lastSaveTime = Date.now(), undoData = {};
@@ -347,22 +365,46 @@
         }
 
         function clearTableBody() {
-            // 移除 <thead> 之后的所有元素（即所有 <tbody>）
             while (mainTable.children.length > 1) {
                 mainTable.removeChild(mainTable.lastChild);
             }
         }
 
+        function computeRanks() {
+            const waitList = [];
+            rows.forEach(row => {
+                const seconds = calcWaterMatureRemainingSeconds(row);
+                if (seconds !== null && seconds > 0) {
+                    waitList.push({ id: row.id, seconds });
+                }
+            });
+            waitList.sort((a, b) => a.seconds - b.seconds);
+            const rankMap = new Map();
+            let currentRank = 1;
+            let prevSeconds = -1;
+            let rankIndex = 0;
+            waitList.forEach((item, idx) => {
+                if (item.seconds !== prevSeconds) {
+                    currentRank = rankIndex + 1;
+                }
+                rankMap.set(item.id, currentRank);
+                prevSeconds = item.seconds;
+                rankIndex++;
+            });
+            return rankMap;
+        }
+
         function renderGroupedTable() {
             clearTableBody();
             const { grouped, ungrouped, sorted } = getGroupSortedRows();
+            const rankMap = computeRanks();
 
             if (sortState !== SORT_DEFAULT || (!grouped && groups.length === 0)) {
                 const allSorted = sorted || [...rows].sort((a,b) => sortState === SORT_MATURE_ASC ? a.matureCountdown - b.matureCountdown : a.createOrder - b.createOrder);
                 if (allSorted.length === 0) { emptyState.style.display='block'; tableScroll.style.display='none'; return; }
                 emptyState.style.display='none'; tableScroll.style.display='block';
                 const tbody = document.createElement('tbody');
-                allSorted.forEach(row => tbody.appendChild(createRowElement(row)));
+                allSorted.forEach(row => tbody.appendChild(createRowElement(row, rankMap)));
                 mainTable.appendChild(tbody);
                 bindAllEvents();
                 return;
@@ -374,20 +416,18 @@
             if (totalRows === 0) { emptyState.style.display='block'; tableScroll.style.display='none'; return; }
             emptyState.style.display='none'; tableScroll.style.display='block';
 
-            // 渲染分组
             allGrouped.forEach((groupRows, groupIndex) => {
                 const tbody = document.createElement('tbody');
                 tbody.className = 'group-tbody';
-                groupRows.forEach(row => tbody.appendChild(createRowElement(row)));
+                groupRows.forEach(row => tbody.appendChild(createRowElement(row, rankMap)));
                 mainTable.appendChild(tbody);
 
-                // 组间间距
                 if (groupIndex < allGrouped.length - 1 || allUngrouped.length > 0) {
                     const spacer = document.createElement('tbody');
                     spacer.className = 'spacer-tbody';
                     const tr = document.createElement('tr');
                     const td = document.createElement('td');
-                    td.colSpan = 11;
+                    td.colSpan = COL_COUNT;
                     td.innerHTML = '&nbsp;';
                     tr.appendChild(td);
                     spacer.appendChild(tr);
@@ -395,16 +435,15 @@
                 }
             });
 
-            // 渲染未分组
             if (allUngrouped.length > 0) {
                 const tbody = document.createElement('tbody');
-                allUngrouped.forEach(row => tbody.appendChild(createRowElement(row)));
+                allUngrouped.forEach(row => tbody.appendChild(createRowElement(row, rankMap)));
                 mainTable.appendChild(tbody);
             }
             bindAllEvents();
         }
 
-        function createRowElement(row) {
+        function createRowElement(row, rankMap) {
             const isEdit = editingRowId === row.id;
             const c = CROP_CONFIG[row.cropType];
             const waterPercent = c.waterMax ? Math.min(100, (row.waterCountdown / c.waterMax) * 100) : 0;
@@ -415,7 +454,8 @@
             const matureWait = calcWaterMatureRemaining(row);
             const waterStatus = canWater(row);
             const waterLow = row.waterCountdown > 0 && row.waterCountdown <= WATER_LOW_THRESHOLD;
-            const reductionText = formatReductionText(reduction);
+            const isDry = row.waterCountdown <= 0;
+            const rank = rankMap.get(row.id) || 0;
 
             let cls = '';
             if (isEdit) cls = 'row-editing';
@@ -465,44 +505,60 @@
                 const m = Math.floor((row.waterCountdown % 3600) / 60);
                 tdWater.innerHTML = `<input class="edit-input" id="ew-${row.id}" value="${String(h).padStart(2, '0')}${String(m).padStart(2, '0')}" maxlength="4" placeholder="HHMM">`;
             } else {
-                const waterIcon = waterLow ? ' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>' : '';
-                const reductionHtml = reductionText ? ` <span class="water-reduction-inline">(${reductionText})</span>` : '';
-                tdWater.innerHTML = `<div class="water-vertical"><span style="font-weight:600;font-family:monospace;">${formatTime(row.waterCountdown)}${row.waterCountdown <= 0 ? ' <span class="dry-badge">干枯</span>' : waterIcon}${reductionHtml}</span><div class="progress-bar-wrap"><div class="progress-bar-fill ${waterColor}" style="width:${waterPercent}%"></div></div></div>`;
+                const waterIcon = waterLow && !isDry ? ' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>' : '';
+                const dryBadge = isDry ? ' <span class="dry-badge-large">干枯</span>' : '';
+                const reductionHtml = reduction > 0 ? ` <span class="water-reduction-inline">(${formatReductionBold(reduction)})</span>` : '';
+                const timeDisplay = isDry ? '' : formatTime(row.waterCountdown);
+                tdWater.innerHTML = `<div class="water-vertical"><span style="font-weight:600;font-family:monospace;">${timeDisplay}${dryBadge}${waterIcon}${reductionHtml}</span><div class="progress-bar-wrap"><div class="progress-bar-fill ${waterColor}" style="width:${waterPercent}%"></div></div></div>`;
             }
             tr.appendChild(tdWater);
 
             const tdWait = document.createElement('td');
+            tdWait.className = 'water-wait-cell';
             tdWait.style.fontSize = '0.8rem';
-            const predictedHtml = matureWait.predicted ? ` <span class="predicted-time">${matureWait.predicted}</span>` : '';
-            const textHtml = matureWait.boldPart ? matureWait.text.replace(matureWait.boldPart, `<b>${matureWait.boldPart}</b>`) : matureWait.text;
-            tdWait.innerHTML = `<span class="${matureWait.cls}">${textHtml}</span>${predictedHtml}`;
+            if (matureWait.seconds === 0) {
+                tdWait.innerHTML = '<span class="immediate-mature-badge">🔥 浇水立即成熟</span>';
+            } else if (matureWait.seconds !== null && matureWait.seconds > 0) {
+                const predictedTime = getFutureTime(matureWait.seconds);
+                let rankHtml = '';
+                if (rank > 0 && rank <= 3) {
+                    rankHtml = ` <span class="rank-badge r${rank}">#${rank}</span>`;
+                }
+                tdWait.innerHTML = `<span class="approx-mature"><b>${matureWait.boldPart}</b>后浇水成熟（预计 ${predictedTime}）</span>${rankHtml}`;
+            } else {
+                tdWait.textContent = '-';
+            }
             tr.appendChild(tdWait);
 
-            const tdBless = document.createElement('td');
-            tdBless.innerHTML = renderBlessBadge(row);
-            tr.appendChild(tdBless);
-            const tdTask = document.createElement('td');
-            tdTask.innerHTML = renderTaskBadge(row);
-            tr.appendChild(tdTask);
+            const tdBless = document.createElement('td'); tdBless.innerHTML = renderBlessBadge(row); tr.appendChild(tdBless);
+            const tdTask = document.createElement('td'); tdTask.innerHTML = renderTaskBadge(row); tr.appendChild(tdTask);
 
             const tdCb = document.createElement('td');
             if (isEdit) tdCb.innerHTML = `<select class="edit-select" id="ecb-${row.id}"><option value="-" ${row.consecutiveBless === '-' ? 'selected' : ''}>-</option><option value="是" ${row.consecutiveBless === '是' ? 'selected' : ''}>是</option><option value="否" ${row.consecutiveBless === '否' ? 'selected' : ''}>否</option></select>`;
             else tdCb.innerHTML = renderConsecutiveBlessBadge(row);
             tr.appendChild(tdCb);
 
-            const tdRemark = document.createElement('td');
-            tdRemark.className = 'remark-cell';
+            const tdRemark = document.createElement('td'); tdRemark.className = 'remark-cell';
             if (isEdit) tdRemark.innerHTML = `<input class="edit-input" id="erm-${row.id}" value="${escapeHtml(row.remark || '')}" style="width:120px;">`;
             else tdRemark.innerHTML = `<div class="remark-text" id="remark-${row.id}" title="点击编辑备注">${escapeHtml(row.remark || '') || '<span style="color:var(--text-muted);">-</span>'}</div>`;
             tr.appendChild(tdRemark);
 
-            const tdAct = document.createElement('td');
-            tdAct.style.whiteSpace = 'nowrap';
+            const tdAct = document.createElement('td'); tdAct.style.whiteSpace = 'nowrap';
             if (isEdit) tdAct.innerHTML = `<button class="btn btn-success btn-sm" id="save-${row.id}">💾 保存</button> <button class="btn btn-outline btn-sm" id="cancel-${row.id}">✕ 取消</button>`;
             else tdAct.innerHTML = `<button class="btn btn-outline btn-sm edit-btn" data-id="${row.id}">✎ 修改</button> <span class="tooltip-wrapper"><button class="btn btn-primary btn-sm water-btn" data-id="${row.id}" ${!waterStatus.can ? 'disabled' : ''}>💧 浇水</button>${!waterStatus.can ? `<span class="tooltip-text">${waterStatus.reason}</span>` : ''}</span> <span class="plant-area" data-id="${row.id}"><button class="btn btn-success btn-sm plant-trigger">🌱 播种</button></span> <button class="btn btn-info btn-sm log-btn" data-id="${row.id}">📋 日志</button> <button class="btn btn-danger btn-sm delete-btn" data-id="${row.id}">🗑 删除</button>`;
             tr.appendChild(tdAct);
 
             return tr;
+        }
+
+        function formatReductionBold(seconds) {
+            if (seconds <= 0) return '';
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            let text = '浇水减少';
+            if (h > 0) text += `<b>${h}小时</b>`;
+            if (m > 0) text += `<b>${m}分钟</b>`;
+            return text;
         }
 
         function bindAllEvents() {
@@ -524,12 +580,11 @@
 
         function formatTime(s) { if (s <= 0) return '00:00:00'; const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60); return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
         function formatTimeHM(s) { if (s <= 0) return '0h 0m'; return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m`; }
-        function formatReductionText(seconds) { if (seconds <= 0) return ''; const h = Math.floor(seconds / 3600); const m = Math.floor((seconds % 3600) / 60); let text = '浇水减少'; if (h > 0) text += `${h}小时`; if (m > 0) text += `${m}分钟`; return text; }
         function getFutureTime(seconds) { const futureTimestamp = Math.floor(Date.now() / 1000) + seconds; const date = new Date(futureTimestamp * 1000); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); return `${h}:${m}`; }
         function formatDateTime(ts) { const d = new Date(ts); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`; }
         function calcWaterReduction(row) { const c = CROP_CONFIG[row.cropType]; return Math.floor((c.waterMax - row.waterCountdown) / 4); }
         function calcWaterMatureRemainingSeconds(row) { if (row.matureCountdown <= 0) return null; const reduction = calcWaterReduction(row); if (reduction >= row.matureCountdown) return 0; const remainingAfterWater = row.matureCountdown - reduction; const targetWater = Math.floor(remainingAfterWater / 5 * 4); if (row.waterCountdown > targetWater) return targetWater; return null; }
-        function calcWaterMatureRemaining(row) { const seconds = calcWaterMatureRemainingSeconds(row); if (seconds === null) return { text: '-', cls: '', predicted: '' }; if (seconds === 0) return { text: '浇水立即成熟', cls: 'immediate-mature', predicted: '' }; const waitMinutes = Math.ceil(seconds / 60); let text, boldPart; if (waitMinutes >= 60) { const h = Math.floor(waitMinutes / 60); const m = waitMinutes % 60; boldPart = `${h}小时${m}分钟`; text = `约${boldPart}后成熟`; } else { boldPart = `${waitMinutes}分钟`; text = `约${boldPart}后成熟`; } const predictedTime = getFutureTime(seconds); return { text, cls: 'approx-mature', predicted: `(预计 <b>${predictedTime}</b>)`, boldPart }; }
+        function calcWaterMatureRemaining(row) { const seconds = calcWaterMatureRemainingSeconds(row); if (seconds === null) return { seconds: null, text: '-', cls: '', boldPart: '' }; if (seconds === 0) return { seconds: 0, text: '浇水立即成熟', cls: 'immediate-mature', boldPart: '' }; const waitMinutes = Math.ceil(seconds / 60); let boldPart; if (waitMinutes >= 60) { const h = Math.floor(waitMinutes / 60); const m = waitMinutes % 60; boldPart = `${h}小时${m}分钟`; } else { boldPart = `${waitMinutes}分钟`; } return { seconds, text: `${boldPart}后浇水成熟`, cls: 'approx-mature', boldPart }; }
         function canWater(row) { if (row.matureCountdown <= 0) return { can: false, reason: '已成熟' }; const c = CROP_CONFIG[row.cropType]; if (row.waterCountdown >= c.waterThreshold) return { can: false, reason: `需低于${formatTimeHM(c.waterThreshold)}` }; return { can: true, reason: '' }; }
         function getTodayResetTime() { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), now.getDate(), BLESS_RESET_HOUR, 0, 0, 0).getTime(); }
         function getTodayDateStr() { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`; }
@@ -543,7 +598,7 @@
         function getRowLogs(rowId) { return logs.filter(log => log.rowId === rowId).sort((a,b) => new Date(b.time.replace(/-/g, '/')).getTime() - new Date(a.time.replace(/-/g, '/')).getTime()); }
         function deleteRowLogs(rowId) { logs = logs.filter(log => log.rowId !== rowId); saveLogs(); }
         function showLogModal(rowId) { const row = rows.find(r => r.id === rowId); const rowLogs = getRowLogs(rowId); const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; let tableRows = rowLogs.length === 0 ? '<tr><td colspan="4" class="log-empty">暂无操作日志</td></tr>' : rowLogs.map(log => `<tr><td>${escapeHtml(log.type)}</td><td style="white-space:nowrap;">${log.time}</td><td>${escapeHtml(log.before)}</td><td>${escapeHtml(log.after)}</td></tr>`).join(''); overlay.innerHTML = `<div class="modal log-modal"><div style="display:flex;justify-content:space-between;align-items:center;"><h3>📋 操作日志 - ${escapeHtml(row?.user || '未命名')}</h3><button class="toast-close" style="font-size:1.2rem;cursor:pointer;" id="logClose">✕</button></div><div class="log-table-wrap"><table class="log-table"><thead><tr><th style="width:12%;">操作类型</th><th style="width:20%;">操作时间</th><th style="width:34%;">操作前</th><th style="width:34%;">操作后</th></tr></thead><tbody>${tableRows}</tbody></table></div></div>`; modalContainer.appendChild(overlay); overlay.querySelector('#logClose').onclick = () => overlay.remove(); overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); }); }
-        function saveToStorage() { lastSaveTime = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:25, nextId, nextCreateOrder, lastSaveTime, lastBlessResetDate, rows: rows.map(r=>({id:r.id,user:r.user,cropType:r.cropType,matureCountdown:r.matureCountdown,waterCountdown:r.waterCountdown,blessed:r.blessed,dailyTaskDone:r.dailyTaskDone,consecutiveBless:r.consecutiveBless,remark:r.remark,createOrder:r.createOrder,createdAt:r.createdAt})) })); }
+        function saveToStorage() { lastSaveTime = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:27, nextId, nextCreateOrder, lastSaveTime, lastBlessResetDate, rows: rows.map(r=>({id:r.id,user:r.user,cropType:r.cropType,matureCountdown:r.matureCountdown,waterCountdown:r.waterCountdown,blessed:r.blessed,dailyTaskDone:r.dailyTaskDone,consecutiveBless:r.consecutiveBless,remark:r.remark,createOrder:r.createOrder,createdAt:r.createdAt})) })); }
         function loadFromStorage() { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return false; try { const data = JSON.parse(raw); if (!data.rows) return false; nextId = data.nextId||1; nextCreateOrder = data.nextCreateOrder||1; lastBlessResetDate = data.lastBlessResetDate || ''; const elapsed = Math.floor((Date.now() - (data.lastSaveTime||Date.now()))/1000); rows = data.rows.map(r=>({id:r.id, user:r.user||'', cropType:r.cropType||'16h', matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed), waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed), blessed: r.blessed !== undefined ? r.blessed : true, dailyTaskDone: r.dailyTaskDone !== undefined ? r.dailyTaskDone : false, consecutiveBless: r.consecutiveBless || '-', remark: r.remark || '', createOrder:r.createOrder||0, createdAt:r.createdAt||Date.now()})); if (rows.length) { nextId = Math.max(nextId, Math.max(...rows.map(r=>r.id))+1); nextCreateOrder = Math.max(nextCreateOrder, Math.max(...rows.map(r=>r.createOrder))+1); } lastSaveTime = Date.now(); tickBaseTime = Date.now(); return true; } catch (e) { return false; } }
         function checkAndResetDaily() { const today = getTodayDateStr(); const resetTime = getTodayResetTime(); const now = Date.now(); if (now >= resetTime && lastBlessResetDate !== today) { rows.forEach(r => { const ob=r.blessed, ot=r.dailyTaskDone; r.blessed=true; r.dailyTaskDone=false; if (!ob) addLog(r.id,'修改祝福状态',formatBlessState(ob),formatBlessState(true)); if (ot) addLog(r.id,'修改每日任务状态',formatTaskState(ot),formatTaskState(false)); }); saveToStorage(); lastBlessResetDate = today; } }
         function renderBossHpBar(remaining) { const segSize = 36000, currentLayers = Math.ceil(remaining / segSize), ci = currentLayers - 1; const ri = remaining % segSize, tp = ri === 0 ? 100 : Math.min(100, (ri / segSize) * 100); const container = document.createElement('div'); container.className = 'mature-progress'; const stack = document.createElement('div'); stack.className = 'boss-hp-stack'; for (let i = 0; i < currentLayers; i++) { const ld = document.createElement('div'); ld.className = 'boss-hp-layer'; ld.style.backgroundColor = LAYER_COLORS[i % LAYER_COLORS.length]; ld.style.width = (i < ci ? '100%' : (i === ci ? tp + '%' : '0%')); stack.appendChild(ld); } container.appendChild(stack); const lbl = document.createElement('span'); lbl.className = 'layer-label'; lbl.textContent = `x${currentLayers}`; container.appendChild(lbl); return container; }
@@ -580,10 +635,9 @@
         configHeader.addEventListener('click', () => { configPanel.classList.toggle('collapsed'); });
         btnApplyConfig.addEventListener('click', () => { saveGroupConfig(); renderGroupedTable(); showToast('✅ 分组配置已应用'); });
 
-        setInterval(() => { const now = Date.now(), elapsed = Math.floor((now - tickBaseTime) / 1000); if (elapsed <= 0) return; tickBaseTime += elapsed * 1000; let changed = false; rows.forEach(r => { if (editingRowId===r.id) return; if (r.matureCountdown>0){ r.matureCountdown=Math.max(0,r.matureCountdown-elapsed); changed=true; } if (r.waterCountdown>0){ r.waterCountdown=Math.max(0,r.waterCountdown-elapsed); changed=true; } }); if (changed) { updateDynamicDisplay(); saveToStorage(); } if (Math.floor(Date.now()/60000)!==Math.floor((Date.now()-1000)/60000)) updateWaterMatureRemainingColumn(); if (Math.floor(Date.now()/30000)!==Math.floor((Date.now()-1000)/30000)) checkAndResetDaily(); }, 1000);
+        setInterval(() => { const now = Date.now(), elapsed = Math.floor((now - tickBaseTime) / 1000); if (elapsed <= 0) return; tickBaseTime += elapsed * 1000; let changed = false; rows.forEach(r => { if (editingRowId===r.id) return; if (r.matureCountdown>0){ r.matureCountdown=Math.max(0,r.matureCountdown-elapsed); changed=true; } if (r.waterCountdown>0){ r.waterCountdown=Math.max(0,r.waterCountdown-elapsed); changed=true; } }); if (changed) { updateDynamicDisplay(); saveToStorage(); } if (Math.floor(Date.now()/60000)!==Math.floor((Date.now()-1000)/60000)) { renderGroupedTable(); } if (Math.floor(Date.now()/30000)!==Math.floor((Date.now()-1000)/30000)) checkAndResetDaily(); }, 1000);
 
-        function updateWaterMatureRemainingColumn() { document.querySelectorAll('tbody tr[data-id]').forEach(tr=>{ const id=Number(tr.getAttribute('data-id')), row=rows.find(r=>r.id===id); if (!row||editingRowId===id) return; const mw=calcWaterMatureRemaining(row); const tdWait=tr.children[5]; if (tdWait) { const predictedHtml = mw.predicted ? ` <span class="predicted-time">${mw.predicted}</span>` : ''; const textHtml = mw.boldPart ? mw.text.replace(mw.boldPart, `<b>${mw.boldPart}</b>`) : mw.text; tdWait.innerHTML = `<span class="${mw.cls}">${textHtml}</span>${predictedHtml}`; } }); }
-        function updateDynamicDisplay() { document.querySelectorAll('tbody tr[data-id]').forEach(tr=>{ const id=Number(tr.getAttribute('data-id')), row=rows.find(r=>r.id===id); if (!row||editingRowId===id) return; const c=CROP_CONFIG[row.cropType]; const matureCell = document.getElementById(`mature-cell-${id}`); if (matureCell && !matureCell.querySelector('input')) { const ts=matureCell.querySelector('.mature-time'); if (ts) ts.innerHTML = formatTime(row.matureCountdown)+(row.matureCountdown<=0?' <span class="mature-ripe-badge">熟</span>':''); const op=matureCell.querySelector('.mature-progress'); if (op) op.remove(); if (row.matureCountdown<=0){ const eb=document.createElement('div'); eb.className='mature-progress'; const s=document.createElement('div'); s.className='boss-hp-stack'; eb.appendChild(s); matureCell.appendChild(eb); } else matureCell.appendChild(renderBossHpBar(row.matureCountdown)); } const waterDiv = tr.querySelector('.water-vertical'); if (waterDiv) { const span = waterDiv.querySelector('span'); if (span) { const waterLow = row.waterCountdown > 0 && row.waterCountdown <= WATER_LOW_THRESHOLD; const waterIcon = waterLow ? ' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>' : ''; const reduction = calcWaterReduction(row); const reductionText = formatReductionText(reduction); const reductionHtml = reductionText ? ` <span class="water-reduction-inline">(${reductionText})</span>` : ''; span.innerHTML = formatTime(row.waterCountdown)+(row.waterCountdown<=0?' <span class="dry-badge">干枯</span>':waterIcon)+reductionHtml; } const percent = c.waterMax ? Math.min(100,(row.waterCountdown/c.waterMax)*100) : 0; const fill = waterDiv.querySelector('.progress-bar-fill'); if (fill){ fill.style.width=percent+'%'; fill.className='progress-bar-fill '+(percent>50?'green':percent>=20?'orange':'red'); } } const waterBtn = tr.querySelector('.water-btn'); if (waterBtn){ const st=canWater(row); waterBtn.disabled=!st.can; const wr=waterBtn.closest('.tooltip-wrapper'); if (wr){ let tip=wr.querySelector('.tooltip-text'); if (!st.can){ if (!tip){ tip=document.createElement('span'); tip.className='tooltip-text'; wr.appendChild(tip); } tip.textContent=st.reason; } else if (tip) tip.remove(); } } tr.className = row.matureCountdown<=0?'row-success':(row.matureCountdown<=3600?'row-warning':''); }); }
+        function updateDynamicDisplay() { document.querySelectorAll('tbody tr[data-id]').forEach(tr=>{ const id=Number(tr.getAttribute('data-id')), row=rows.find(r=>r.id===id); if (!row||editingRowId===id) return; const c=CROP_CONFIG[row.cropType]; const matureCell = document.getElementById(`mature-cell-${id}`); if (matureCell && !matureCell.querySelector('input')) { const ts=matureCell.querySelector('.mature-time'); if (ts) ts.innerHTML = formatTime(row.matureCountdown)+(row.matureCountdown<=0?' <span class="mature-ripe-badge">熟</span>':''); const op=matureCell.querySelector('.mature-progress'); if (op) op.remove(); if (row.matureCountdown<=0){ const eb=document.createElement('div'); eb.className='mature-progress'; const s=document.createElement('div'); s.className='boss-hp-stack'; eb.appendChild(s); matureCell.appendChild(eb); } else matureCell.appendChild(renderBossHpBar(row.matureCountdown)); } const waterDiv = tr.querySelector('.water-vertical'); if (waterDiv) { const span = waterDiv.querySelector('span'); if (span) { const waterLow = row.waterCountdown > 0 && row.waterCountdown <= WATER_LOW_THRESHOLD; const isDry = row.waterCountdown <= 0; const waterIcon = waterLow && !isDry ? ' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>' : ''; const dryBadge = isDry ? ' <span class="dry-badge-large">干枯</span>' : ''; const reduction = calcWaterReduction(row); const reductionHtml = reduction > 0 ? ` <span class="water-reduction-inline">(${formatReductionBold(reduction)})</span>` : ''; const timeDisplay = isDry ? '' : formatTime(row.waterCountdown); span.innerHTML = timeDisplay + dryBadge + waterIcon + reductionHtml; } const percent = c.waterMax ? Math.min(100,(row.waterCountdown/c.waterMax)*100) : 0; const fill = waterDiv.querySelector('.progress-bar-fill'); if (fill){ fill.style.width=percent+'%'; fill.className='progress-bar-fill '+(percent>50?'green':percent>=20?'orange':'red'); } } const waterBtn = tr.querySelector('.water-btn'); if (waterBtn){ const st=canWater(row); waterBtn.disabled=!st.can; const wr=waterBtn.closest('.tooltip-wrapper'); if (wr){ let tip=wr.querySelector('.tooltip-text'); if (!st.can){ if (!tip){ tip=document.createElement('span'); tip.className='tooltip-text'; wr.appendChild(tip); } tip.textContent=st.reason; } else if (tip) tip.remove(); } } tr.className = row.matureCountdown<=0?'row-success':(row.matureCountdown<=3600?'row-warning':''); }); }
 
         loadLogs(); cleanOldLogs(); loadGroupConfig();
         if (!loadFromStorage()) { rows=[]; nextId=1; nextCreateOrder=1; lastBlessResetDate=''; saveToStorage(); }
