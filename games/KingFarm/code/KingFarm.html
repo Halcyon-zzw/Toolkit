@@ -516,7 +516,9 @@
             const tdWait = document.createElement('td');
             tdWait.className = 'water-wait-cell';
             tdWait.style.fontSize = '0.8rem';
-            if (matureWait.seconds === 0) {
+            if (isMature) {
+                tdWait.innerHTML = '<span class="immediate-mature-badge" style="background:#10b981;">✅ 已成熟</span>';
+            } else if (matureWait.seconds === 0) {
                 tdWait.innerHTML = '<span class="immediate-mature-badge">🔥 浇水立即成熟</span>';
             } else if (matureWait.seconds !== null && matureWait.seconds > 0) {
                 const predictedTime = getFutureTime(matureWait.seconds);
