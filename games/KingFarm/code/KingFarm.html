@@ -92,10 +92,10 @@
             background:var(--surface); border-radius:var(--radius);
             box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden;
         }
-        .table-scroll { overflow-x:auto; max-height:75vh; overflow-y:auto; }
+        .table-scroll { overflow-x:auto; max-height:85vh; overflow-y:auto; }
         table { width:100%; border-collapse:collapse; min-width:1800px; font-size:0.875rem; }
         thead th {
-            background:#f8fafc; padding:13px 14px; text-align:left; font-weight:600;
+            background:#f8fafc; padding:10px 14px; text-align:left; font-weight:600;
             font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em;
             color:var(--text-secondary); border-bottom:2px solid #e5e7eb;
             white-space:nowrap; user-select:none;
@@ -110,14 +110,14 @@
         }
         .sort-active .reset-sort { opacity:0.7; }
         .reset-sort:hover { opacity:1; color:var(--danger); }
-        tbody td { padding:12px 14px; border-bottom:1px solid #f1f3f4; vertical-align:middle; }
+        tbody td { padding:10px 14px; border-bottom:1px solid #f1f3f4; vertical-align:middle; }
         tbody tr.row-warning { background:var(--warning-light); }
         tbody tr.row-success { background:var(--success-light); }
         tbody tr.row-editing { background:#f0f4ff; box-shadow:inset 3px 0 0 var(--primary); }
 
         tbody.group-tbody { border: 2px dashed var(--group-border-color); }
         tbody.group-tbody tr:last-child td { border-bottom: none; }
-        tbody.spacer-tbody td { padding: 4px 14px; border-bottom: none; background: transparent; }
+        tbody.spacer-tbody td { padding: 1px 14px; border-bottom: none; background: transparent; }
 
         .crop-badge {
             display:inline-flex; align-items:center; gap:4px;
@@ -394,6 +394,82 @@
             return rankMap;
         }
 
+        function showPlantModal(rowId) {
+            const row = rows.find(r => r.id === rowId);
+            if (!row) return;
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal" style="max-width:360px;">
+                    <h3 style="margin-bottom:16px;">🌱 选择播种类型</h3>
+                    <p style="color:var(--text-secondary);margin-bottom:16px;">用户：${escapeHtml(row.user || '未命名')}（ID: ${row.id}）</p>
+                    <select class="edit-select" id="plantSelect" style="width:100%;margin-bottom:16px;">
+                        <option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option>
+                        <option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option>
+                    </select>
+                    <div class="modal-actions">
+                        <button class="btn btn-outline btn-sm" id="plantCancel">取消</button>
+                        <button class="btn btn-success btn-sm" id="plantConfirm">✅ 确认播种</button>
+                    </div>
+                </div>`;
+            modalContainer.appendChild(overlay);
+
+            const confirmBtn = overlay.querySelector('#plantConfirm');
+            const selectEl = overlay.querySelector('#plantSelect');
+
+            overlay.querySelector('#plantCancel').onclick = () => overlay.remove();
+            overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+            // 键盘交互
+            overlay.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectEl.value = '32h';
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectEl.value = '16h';
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmBtn.click();
+                } else if (e.key === 'Escape') {
+                    overlay.remove();
+                }
+            });
+
+            // 自动聚焦确认按钮
+            setTimeout(() => confirmBtn.focus(), 100);
+
+            confirmBtn.onclick = () => {
+                const sel = selectEl.value;
+                overlay.remove();
+                const prev = { user: row.user, cropType: row.cropType, mature: row.matureCountdown, water: row.waterCountdown };
+                const bs = formatRowState(row);
+                undoData[row.id] = prev;
+                row.cropType = sel;
+                const c = CROP_CONFIG[sel];
+                row.matureCountdown = c.matureTotal;
+                row.waterCountdown = c.waterMax;
+                const reduction = Math.floor(c.waterMax / 4);
+                row.matureCountdown = Math.max(0, row.matureCountdown - reduction);
+                addLog(row.id, '播种', bs, formatRowState(row));
+                saveToStorage();
+                showWaterHint(row.id, reduction);
+                showToast(`✅ 已播种 ${c.label}，-${formatTimeHM(reduction)}`, () => {
+                    if (undoData[row.id]) {
+                        const p = undoData[row.id];
+                        row.user = p.user;
+                        row.cropType = p.cropType;
+                        row.matureCountdown = p.mature;
+                        row.waterCountdown = p.water;
+                        delete undoData[row.id];
+                        saveToStorage();
+                        renderGroupedTable();
+                    }
+                }, UNDO_TIMEOUT);
+                renderGroupedTable();
+            };
+        }
+
         function renderGroupedTable() {
             clearTableBody();
             const { grouped, ungrouped, sorted } = getGroupSortedRows();
@@ -478,7 +554,7 @@
             tr.appendChild(tdUser);
 
             const tdCrop = document.createElement('td');
-            if (isEdit) tdCrop.innerHTML = `<select class="edit-select" id="ec-${row.id}"><option value="16h" ${row.cropType === '16h' ? 'selected' : ''}>16h作物</option><option value="32h" ${row.cropType === '32h' ? 'selected' : ''}>32h作物</option></select>`;
+            if (isEdit) tdCrop.innerHTML = `<select class="edit-select" id="ec-${row.id}" onchange="cropTypeChange(${row.id})"><option value="16h" ${row.cropType === '16h' ? 'selected' : ''}>16h作物</option><option value="32h" ${row.cropType === '32h' ? 'selected' : ''}>32h作物</option></select>`;
             else tdCrop.innerHTML = renderCropBadge(row);
             tr.appendChild(tdCrop);
 
@@ -547,11 +623,36 @@
 
             const tdAct = document.createElement('td'); tdAct.style.whiteSpace = 'nowrap';
             if (isEdit) tdAct.innerHTML = `<button class="btn btn-success btn-sm" id="save-${row.id}">💾 保存</button> <button class="btn btn-outline btn-sm" id="cancel-${row.id}">✕ 取消</button>`;
-            else tdAct.innerHTML = `<button class="btn btn-outline btn-sm edit-btn" data-id="${row.id}">✎ 修改</button> <span class="tooltip-wrapper"><button class="btn btn-primary btn-sm water-btn" data-id="${row.id}" ${!waterStatus.can ? 'disabled' : ''}>💧 浇水</button>${!waterStatus.can ? `<span class="tooltip-text">${waterStatus.reason}</span>` : ''}</span> <span class="plant-area" data-id="${row.id}"><button class="btn btn-success btn-sm plant-trigger">🌱 播种</button></span> <button class="btn btn-info btn-sm log-btn" data-id="${row.id}">📋 日志</button> <button class="btn btn-danger btn-sm delete-btn" data-id="${row.id}">🗑 删除</button>`;
+            else tdAct.innerHTML = `<button class="btn btn-outline btn-sm edit-btn" data-id="${row.id}">✎ 修改</button> <span class="tooltip-wrapper"><button class="btn btn-primary btn-sm water-btn" data-id="${row.id}" ${!waterStatus.can ? 'disabled' : ''}>💧 浇水</button>${!waterStatus.can ? `<span class="tooltip-text">${waterStatus.reason}</span>` : ''}</span> <button class="btn btn-success btn-sm plant-trigger" data-id="${row.id}">🌱 播种</button> <button class="btn btn-info btn-sm log-btn" data-id="${row.id}">📋 日志</button> <button class="btn btn-danger btn-sm delete-btn" data-id="${row.id}">🗑 删除</button>`;
             tr.appendChild(tdAct);
 
             return tr;
         }
+
+        // 全局函数：编辑时切换作物类型自动更新倒计时
+        window.cropTypeChange = function(rowId) {
+            const row = rows.find(r => r.id === rowId);
+            if (!row || editingRowId !== rowId) return;
+            const cs = document.getElementById(`ec-${rowId}`);
+            const mi = document.getElementById(`em-${rowId}`);
+            const wi = document.getElementById(`ew-${rowId}`);
+            if (!cs || !mi || !wi) return;
+            const newCrop = cs.value;
+            const cfg = CROP_CONFIG[newCrop];
+            const h = Math.floor(cfg.matureTotal / 3600);
+            const m = Math.floor((cfg.matureTotal % 3600) / 60);
+            mi.value = String(h).padStart(2, '0') + String(m).padStart(2, '0');
+            const wh = Math.floor(cfg.waterMax / 3600);
+            const wm = Math.floor((cfg.waterMax % 3600) / 60);
+            wi.value = String(wh).padStart(2, '0') + String(wm).padStart(2, '0');
+            row.matureCountdown = cfg.matureTotal;
+            row.waterCountdown = cfg.waterMax;
+            if (editSnapshot) {
+                editSnapshot.matureDirty = true;
+                editSnapshot.waterDirty = true;
+                editSnapshot.cropChanged = true;
+            }
+        };
 
         function formatReductionBold(seconds) {
             if (seconds <= 0) return '';
@@ -568,7 +669,7 @@
             document.querySelectorAll('.water-btn').forEach(b => b.onclick = function() { const row = rows.find(r => r.id === Number(this.dataset.id)); if (row && canWater(row).can) { doWater(row); renderGroupedTable(); } });
             document.querySelectorAll('.delete-btn').forEach(b => b.onclick = function() { const id = Number(this.dataset.id), row = rows.find(r => r.id === id); showConfirm('确认删除', `删除用户"${row?.user||'未命名'}"的记录？`, () => { deleteRow(id); renderGroupedTable(); showToast('已删除'); }); });
             document.querySelectorAll('.log-btn').forEach(b => b.onclick = function() { showLogModal(Number(this.dataset.id)); });
-            document.querySelectorAll('.plant-trigger').forEach(btn => { btn.onclick = function() { const area = this.closest('.plant-area'), rowId = Number(area.dataset.id), row = rows.find(r => r.id === rowId); if (!row) return; if (editingRowId && editingRowId !== rowId) cancelEdit(); area.innerHTML = `<select class="edit-select plant-select" style="width:100px;"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select> <button class="btn btn-success btn-sm plant-confirm">✅</button> <button class="btn btn-outline btn-sm plant-cancel">✕</button>`; area.querySelector('.plant-confirm').onclick = function() { const sel = area.querySelector('.plant-select').value; const prev = { user: row.user, cropType: row.cropType, mature: row.matureCountdown, water: row.waterCountdown }, bs = formatRowState(row); undoData[row.id] = prev; row.cropType = sel; const c = CROP_CONFIG[sel]; row.matureCountdown = c.matureTotal; row.waterCountdown = c.waterMax; const reduction = Math.floor(c.waterMax / 4); row.matureCountdown = Math.max(0, row.matureCountdown - reduction); addLog(row.id, '播种', bs, formatRowState(row)); saveToStorage(); showWaterHint(row.id, reduction); showToast(`✅ 已播种 ${c.label}，-${formatTimeHM(reduction)}`, () => { if (undoData[row.id]) { const p = undoData[row.id]; row.user = p.user; row.cropType = p.cropType; row.matureCountdown = p.mature; row.waterCountdown = p.water; delete undoData[row.id]; saveToStorage(); renderGroupedTable(); } }, UNDO_TIMEOUT); renderGroupedTable(); }; area.querySelector('.plant-cancel').onclick = () => renderGroupedTable(); } });
+            document.querySelectorAll('.plant-trigger').forEach(btn => { btn.onclick = function() { showPlantModal(Number(this.dataset.id)); }; });
             document.querySelectorAll('.blessed-badge').forEach(b => { const rid = Number(b.getAttribute('data-bless-id')); b.addEventListener('click', () => toggleBless(rid)); });
             document.querySelectorAll('.task-badge').forEach(b => { const rid = Number(b.getAttribute('data-task-id')); b.addEventListener('click', () => toggleDailyTask(rid)); });
             document.querySelectorAll('.remark-text').forEach(div => { const rowId = Number(div.id.replace('remark-', '')); div.addEventListener('click', () => { if (editingRowId === rowId) return; const row = rows.find(r => r.id === rowId); if (!row) return; const input = document.createElement('input'); input.className = 'remark-input'; input.value = row.remark || ''; input.addEventListener('blur', () => { saveRemark(rowId, input.value); renderGroupedTable(); }); input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { input.blur(); } if (e.key === 'Escape') { renderGroupedTable(); } }); div.replaceWith(input); input.focus(); }); });
@@ -600,7 +701,7 @@
         function getRowLogs(rowId) { return logs.filter(log => log.rowId === rowId).sort((a,b) => new Date(b.time.replace(/-/g, '/')).getTime() - new Date(a.time.replace(/-/g, '/')).getTime()); }
         function deleteRowLogs(rowId) { logs = logs.filter(log => log.rowId !== rowId); saveLogs(); }
         function showLogModal(rowId) { const row = rows.find(r => r.id === rowId); const rowLogs = getRowLogs(rowId); const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; let tableRows = rowLogs.length === 0 ? '<tr><td colspan="4" class="log-empty">暂无操作日志</td></tr>' : rowLogs.map(log => `<tr><td>${escapeHtml(log.type)}</td><td style="white-space:nowrap;">${log.time}</td><td>${escapeHtml(log.before)}</td><td>${escapeHtml(log.after)}</td></tr>`).join(''); overlay.innerHTML = `<div class="modal log-modal"><div style="display:flex;justify-content:space-between;align-items:center;"><h3>📋 操作日志 - ${escapeHtml(row?.user || '未命名')}</h3><button class="toast-close" style="font-size:1.2rem;cursor:pointer;" id="logClose">✕</button></div><div class="log-table-wrap"><table class="log-table"><thead><tr><th style="width:12%;">操作类型</th><th style="width:20%;">操作时间</th><th style="width:34%;">操作前</th><th style="width:34%;">操作后</th></tr></thead><tbody>${tableRows}</tbody></table></div></div>`; modalContainer.appendChild(overlay); overlay.querySelector('#logClose').onclick = () => overlay.remove(); overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); }); }
-        function saveToStorage() { lastSaveTime = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:27, nextId, nextCreateOrder, lastSaveTime, lastBlessResetDate, rows: rows.map(r=>({id:r.id,user:r.user,cropType:r.cropType,matureCountdown:r.matureCountdown,waterCountdown:r.waterCountdown,blessed:r.blessed,dailyTaskDone:r.dailyTaskDone,consecutiveBless:r.consecutiveBless,remark:r.remark,createOrder:r.createOrder,createdAt:r.createdAt})) })); }
+        function saveToStorage() { lastSaveTime = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:29, nextId, nextCreateOrder, lastSaveTime, lastBlessResetDate, rows: rows.map(r=>({id:r.id,user:r.user,cropType:r.cropType,matureCountdown:r.matureCountdown,waterCountdown:r.waterCountdown,blessed:r.blessed,dailyTaskDone:r.dailyTaskDone,consecutiveBless:r.consecutiveBless,remark:r.remark,createOrder:r.createOrder,createdAt:r.createdAt})) })); }
         function loadFromStorage() { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return false; try { const data = JSON.parse(raw); if (!data.rows) return false; nextId = data.nextId||1; nextCreateOrder = data.nextCreateOrder||1; lastBlessResetDate = data.lastBlessResetDate || ''; const elapsed = Math.floor((Date.now() - (data.lastSaveTime||Date.now()))/1000); rows = data.rows.map(r=>({id:r.id, user:r.user||'', cropType:r.cropType||'16h', matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed), waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed), blessed: r.blessed !== undefined ? r.blessed : true, dailyTaskDone: r.dailyTaskDone !== undefined ? r.dailyTaskDone : false, consecutiveBless: r.consecutiveBless || '-', remark: r.remark || '', createOrder:r.createOrder||0, createdAt:r.createdAt||Date.now()})); if (rows.length) { nextId = Math.max(nextId, Math.max(...rows.map(r=>r.id))+1); nextCreateOrder = Math.max(nextCreateOrder, Math.max(...rows.map(r=>r.createOrder))+1); } lastSaveTime = Date.now(); tickBaseTime = Date.now(); return true; } catch (e) { return false; } }
         function checkAndResetDaily() { const today = getTodayDateStr(); const resetTime = getTodayResetTime(); const now = Date.now(); if (now >= resetTime && lastBlessResetDate !== today) { rows.forEach(r => { const ob=r.blessed, ot=r.dailyTaskDone; r.blessed=true; r.dailyTaskDone=false; if (!ob) addLog(r.id,'修改祝福状态',formatBlessState(ob),formatBlessState(true)); if (ot) addLog(r.id,'修改每日任务状态',formatTaskState(ot),formatTaskState(false)); }); saveToStorage(); lastBlessResetDate = today; } }
         function renderBossHpBar(remaining) { const segSize = 36000, currentLayers = Math.ceil(remaining / segSize), ci = currentLayers - 1; const ri = remaining % segSize, tp = ri === 0 ? 100 : Math.min(100, (ri / segSize) * 100); const container = document.createElement('div'); container.className = 'mature-progress'; const stack = document.createElement('div'); stack.className = 'boss-hp-stack'; for (let i = 0; i < currentLayers; i++) { const ld = document.createElement('div'); ld.className = 'boss-hp-layer'; ld.style.backgroundColor = LAYER_COLORS[i % LAYER_COLORS.length]; ld.style.width = (i < ci ? '100%' : (i === ci ? tp + '%' : '0%')); stack.appendChild(ld); } container.appendChild(stack); const lbl = document.createElement('span'); lbl.className = 'layer-label'; lbl.textContent = `x${currentLayers}`; container.appendChild(lbl); return container; }
