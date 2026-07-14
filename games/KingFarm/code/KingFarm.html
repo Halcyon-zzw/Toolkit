@@ -47,28 +47,11 @@
             --transition: 0.2s ease;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-            min-height: 100vh;
-        }
+        body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; }
         .app-container { max-width: 1800px; margin:0 auto; padding:20px 24px 40px; }
-        .app-header {
-            display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
-            gap:12px; margin-bottom:24px; padding:20px 24px;
-            background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow);
-            border:1px solid var(--border);
-        }
+        .app-header { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:24px; padding:20px 24px; background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); }
         .header-actions { display:flex; gap:8px; align-items:center; }
-        .btn {
-            display:inline-flex; align-items:center; gap:6px; padding:9px 16px;
-            border-radius:var(--radius-sm); font-size:0.875rem; font-weight:500;
-            cursor:pointer; border:1px solid transparent; transition:all var(--transition);
-            white-space:nowrap; font-family:var(--font); outline:none;
-            background:var(--surface); color:var(--text); border-color:var(--border);
-        }
+        .btn { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:var(--radius-sm); font-size:0.875rem; font-weight:500; cursor:pointer; border:1px solid transparent; transition:all var(--transition); white-space:nowrap; font-family:var(--font); outline:none; background:var(--surface); color:var(--text); border-color:var(--border); }
         .btn-primary { background:var(--primary); color:#fff; border-color:var(--primary); }
         .btn-primary:hover { background:var(--primary-hover); }
         .btn-outline:hover { background:#f9fafb; }
@@ -79,123 +62,61 @@
         .btn-info { background:#0ea5e9; color:#fff; border-color:#0ea5e9; }
         .btn-info:hover { background:#0284c7; border-color:#0284c7; }
         .btn-sm { padding:6px 11px; font-size:0.8rem; }
+        .btn-xs { padding:2px 6px; font-size:0.65rem; }
         .btn:disabled { opacity:0.45; cursor:not-allowed; }
         .tooltip-wrapper { position:relative; display:inline-flex; }
-        .tooltip-text {
-            visibility:hidden; opacity:0; position:absolute; bottom:calc(100% + 8px);
-            left:50%; transform:translateX(-50%); background:#1e293b; color:#fff;
-            padding:6px 12px; border-radius:6px; font-size:0.75rem; white-space:nowrap;
-            pointer-events:none; transition:opacity 0.2s; z-index:100;
-        }
+        .tooltip-text { visibility:hidden; opacity:0; position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#1e293b; color:#fff; padding:6px 12px; border-radius:6px; font-size:0.75rem; white-space:nowrap; pointer-events:none; transition:opacity 0.2s; z-index:100; }
         .tooltip-wrapper:hover .tooltip-text { visibility:visible; opacity:1; }
-        .table-wrapper {
-            background:var(--surface); border-radius:var(--radius);
-            box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden;
-            margin-bottom: 16px;
-        }
+        .table-wrapper { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden; margin-bottom: 16px; }
         .table-scroll { overflow-x:auto; max-height:85vh; overflow-y:auto; }
-        table { width:100%; border-collapse:collapse; min-width:1800px; font-size:0.875rem; }
-        thead th {
-            background:#f8fafc; padding:10px 14px; text-align:left; font-weight:600;
-            font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em;
-            color:var(--text-secondary); border-bottom:2px solid #e5e7eb;
-            white-space:nowrap; user-select:none;
-        }
+        table { width:100%; border-collapse:collapse; min-width:1600px; font-size:0.875rem; }
+        thead th { background:#f8fafc; padding:10px 14px; text-align:left; font-weight:600; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-secondary); border-bottom:2px solid #e5e7eb; white-space:nowrap; user-select:none; }
         thead th.sortable { cursor:pointer; position:relative; padding-right:28px; }
         thead th.sortable:hover { color:var(--primary); }
         .sort-icon { position:absolute; right:8px; font-size:0.7rem; opacity:0.5; }
         .sort-active .sort-icon { opacity:1; color:var(--primary); }
-        .reset-sort {
-            position:absolute; right:24px; font-size:0.65rem; cursor:pointer;
-            opacity:0; transition:opacity 0.2s; color:var(--text-muted);
-        }
+        .reset-sort { position:absolute; right:24px; font-size:0.65rem; cursor:pointer; opacity:0; transition:opacity 0.2s; color:var(--text-muted); }
         .sort-active .reset-sort { opacity:0.7; }
         .reset-sort:hover { opacity:1; color:var(--danger); }
         tbody td { padding:10px 14px; border-bottom:1px solid #f1f3f4; vertical-align:middle; }
         tbody tr.row-warning { background:var(--warning-light); }
         tbody tr.row-success { background:var(--success-light); }
         tbody tr.row-editing { background:#f0f4ff; box-shadow:inset 3px 0 0 var(--primary); }
-
         tbody.group-tbody { border: 2px dashed var(--group-border-color); }
         tbody.group-tbody tr:last-child td { border-bottom: none; }
         tbody.spacer-tbody td { padding: 1px 14px; border-bottom: none; background: transparent; }
-
-        .crop-badge {
-            display:inline-flex; align-items:center; gap:4px;
-            padding:5px 12px; border-radius:20px; font-size:0.8rem;
-            font-weight:700; white-space:nowrap;
-        }
+        .crop-badge { display:inline-flex; align-items:center; gap:4px; padding:5px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; white-space:nowrap; }
         .crop-badge.crop-16h { background: var(--crop-16h-bg); color: var(--crop-16h-text); border: 2px solid var(--crop-16h-border); }
         .crop-badge.crop-32h { background: var(--crop-32h-bg); color: var(--crop-32h-text); border: 2px solid var(--crop-32h-border); }
-
         .mature-cell { display:flex; flex-direction:column; gap:4px; }
         .mature-time { font-weight:700; font-family:'SF Mono', 'Consolas', monospace; white-space:nowrap; }
         .mature-ripe-badge { display:inline-block; background:#ef4444; color:white; font-size:0.7rem; padding:2px 6px; border-radius:4px; margin-left:6px; font-weight:600; }
         .water-reduction-hint { display:block; font-size:0.7rem; color:#ef4444; animation: hintFadeIn 0.3s ease, hintFadeOut 0.6s ease 2.4s forwards; margin-top:2px; }
         @keyframes hintFadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; } }
         @keyframes hintFadeOut { to { opacity:0; } }
-
         .mature-progress { display:flex; align-items:center; gap:6px; }
         .boss-hp-stack { flex:1; min-width:80px; height:8px; background:#e5e7eb; border-radius:10px; overflow:hidden; position:relative; }
         .boss-hp-layer { position:absolute; left:0; top:0; bottom:0; transition:width 0.5s ease; }
         .layer-label { font-size:0.7rem; font-weight:600; color:var(--text-secondary); white-space:nowrap; min-width:20px; text-align:center; }
-
         .water-vertical { display:flex; flex-direction:column; gap:4px; min-width:140px; }
         .progress-bar-wrap { height:8px; background:#e5e7eb; border-radius:10px; overflow:hidden; }
         .progress-bar-fill { height:100%; border-radius:10px; transition:width 0.5s ease; }
         .progress-bar-fill.green { background:#10b981; }
         .progress-bar-fill.orange { background:#f59e0b; }
         .progress-bar-fill.red { background:#ef4444; }
-        .dry-badge-large {
-            display:inline-flex; align-items:center; gap:4px;
-            background:#dc2626; color:#ffffff; font-size:0.85rem;
-            font-weight:700; padding:5px 12px; border-radius:20px;
-            margin-left:4px;
-        }
+        .dry-badge-large { display:inline-flex; align-items:center; gap:4px; background:#dc2626; color:#ffffff; font-size:0.85rem; font-weight:700; padding:5px 12px; border-radius:20px; margin-left:4px; }
         .water-low-icon { display:inline-block; color:#3b82f6; font-size:0.9rem; margin-left:4px; animation: dropletPulse 1.5s ease-in-out infinite; }
         @keyframes dropletPulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.2); opacity:0.7; } }
         .water-reduction-inline { font-size:0.7rem; color: var(--text-muted); white-space:nowrap; }
         .water-reduction-inline b { color: var(--text); }
-
-        .blessed-badge {
-            display:inline-flex; align-items:center; gap:4px;
-            padding:4px 10px; border-radius:20px; font-size:0.78rem;
-            font-weight:600; cursor:pointer; transition:all var(--transition);
-            user-select:none; white-space:nowrap;
-        }
-        .blessed-badge.has-bless { background: var(--blessed-bg); color: var(--blessed-color); border: 1.5px solid var(--blessed-color); }
-        .blessed-badge.has-bless:hover { background: #fef3c7; transform: scale(1.03); }
-        .blessed-badge.no-bless { background: var(--unblessed-bg); color: var(--unblessed-color); border: 1.5px solid #d1d5db; }
-        .blessed-badge.no-bless:hover { background: #f3f4f6; }
-        .bless-icon { font-size:0.9rem; }
-
-        .task-badge {
-            display:inline-flex; align-items:center; gap:4px;
-            padding:5px 12px; border-radius:20px; font-size:0.78rem;
-            font-weight:600; cursor:pointer; transition:all var(--transition);
-            user-select:none; white-space:nowrap;
-        }
-        .task-badge.undone { background: #fef2f2; color: #dc2626; border: 2px solid #ef4444; }
-        .task-badge.undone:hover { background: #fee2e2; transform: scale(1.04); }
-        .task-badge.done { background: #065f46; color: #ffffff; border: 2px solid #047857; }
-        .task-badge.done:hover { background: #047857; transform: scale(1.04); }
-        .task-icon { font-size:0.9rem; }
-
-        .yesterday-bless-badge {
-            display:inline-flex; align-items:center; gap:4px;
-            padding:5px 12px; border-radius:20px; font-size:0.78rem;
-            font-weight:600; cursor:default; transition:all var(--transition);
-            user-select:none; white-space:nowrap;
-        }
+        .yesterday-bless-badge { display:inline-flex; align-items:center; gap:4px; padding:5px 12px; border-radius:20px; font-size:0.78rem; font-weight:600; cursor:default; transition:all var(--transition); user-select:none; white-space:nowrap; }
         .yesterday-bless-badge.yes { background: var(--yesterday-bless-yes-bg); color: var(--yesterday-bless-yes); border: 2px solid var(--yesterday-bless-yes); }
         .yesterday-bless-badge.no { background: var(--yesterday-bless-no-bg); color: var(--yesterday-bless-no); border: 2px solid var(--yesterday-bless-no); }
         .yesterday-bless-badge.na { background: var(--yesterday-bless-na-bg); color: var(--yesterday-bless-na); border: 2px solid #d1d5db; }
-
         .remark-cell { min-width:100px; }
         .remark-text { font-size:0.8rem; color:var(--text); cursor:pointer; min-height:20px; padding:4px 6px; border-radius:4px; transition:all var(--transition); }
         .remark-text:hover { background:#f3f4f6; }
         .remark-input { width:100%; font-size:0.8rem; padding:4px 6px; border:1.5px solid var(--primary); border-radius:4px; font-family:var(--font); outline:none; }
-
         .edit-input { width:90px; padding:6px 8px; border:1.5px solid #d1d5db; border-radius:var(--radius-sm); font-size:0.85rem; font-family:'SF Mono','Consolas',monospace; text-align:center; }
         .edit-input:focus { border-color:var(--primary); outline:none; box-shadow:0 0 0 3px rgba(79,110,247,0.1); }
         .edit-user-input { width:110px; padding:6px 8px; border:1.5px solid #d1d5db; border-radius:var(--radius-sm); font-size:0.85rem; }
@@ -208,17 +129,9 @@
         .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:8000; display:flex; align-items:center; justify-content:center; }
         .modal { background:white; border-radius:var(--radius); padding:24px; box-shadow:var(--shadow-lg); max-width:400px; width:90%; }
         .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
-        .immediate-mature-badge {
-            display:inline-block; background:#dc2626; color:#ffffff;
-            font-size:0.75rem; font-weight:700; padding:3px 8px;
-            border-radius:4px; white-space:nowrap; float:right;
-        }
+        .immediate-mature-badge { display:inline-block; background:#dc2626; color:#ffffff; font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:4px; white-space:nowrap; float:right; }
         .approx-mature { color:#f59e0b; }
-        .rank-badge {
-            display:inline-block; font-size:0.7rem; font-weight:700;
-            padding:2px 7px; border-radius:10px; margin-left:6px;
-            white-space:nowrap; color:#ffffff; float:right;
-        }
+        .rank-badge { display:inline-block; font-size:0.7rem; font-weight:700; padding:2px 7px; border-radius:10px; margin-left:6px; white-space:nowrap; color:#ffffff; float:right; }
         .rank-badge.r1 { background:#dc2626; }
         .rank-badge.r2 { background:#f59e0b; }
         .rank-badge.r3 { background:#3b82f6; }
@@ -229,75 +142,34 @@
         .log-table th { background:#f8fafc; padding:10px 12px; text-align:left; font-weight:600; font-size:0.75rem; color:var(--text-secondary); border-bottom:1px solid #e5e7eb; position:sticky; top:0; z-index:1; }
         .log-table td { padding:8px 12px; border-bottom:1px solid #f1f3f4; vertical-align:top; white-space:pre-wrap; font-size:0.78rem; max-width:200px; word-break:break-all; }
         .log-empty { text-align:center; padding:32px 16px; color:var(--text-muted); }
-
-        .config-panel {
-            position: fixed; bottom: 20px; right: 20px; z-index: 7000;
-            background: var(--surface); border-radius: var(--radius);
-            box-shadow: var(--shadow-lg); border: 1px solid var(--border);
-            width: 340px; transition: all 0.3s ease;
-        }
+        .config-panel { position: fixed; bottom: 20px; right: 20px; z-index: 7000; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-lg); border: 1px solid var(--border); width: 340px; transition: all 0.3s ease; }
         .config-panel.collapsed .config-body { display: none; }
         .config-panel.collapsed { width: auto; }
-        .config-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 16px; cursor: pointer; font-weight: 600;
-            font-size: 0.85rem; color: var(--text);
-        }
+        .config-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--text); }
         .config-body { padding: 0 16px 16px; }
-        .config-body textarea {
-            width: 100%; height: 120px; font-family: 'SF Mono', 'Consolas', monospace;
-            font-size: 0.8rem; padding: 8px; border: 1.5px solid #d1d5db;
-            border-radius: var(--radius-sm); resize: vertical;
-        }
+        .config-body textarea { width: 100%; height: 120px; font-family: 'SF Mono', 'Consolas', monospace; font-size: 0.8rem; padding: 8px; border: 1.5px solid #d1d5db; border-radius: var(--radius-sm); resize: vertical; }
         .config-body textarea:focus { outline: none; border-color: var(--primary); }
         .config-body .btn { margin-top: 8px; width: 100%; justify-content: center; }
         .config-toggle { font-size: 1rem; transition: transform 0.3s; }
         .config-panel.collapsed .config-toggle { transform: rotate(180deg); }
-
-        /* 打卡表格样式 */
-        .checkin-wrapper {
-            background: var(--surface);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
+        .checkin-wrapper { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; }
         .checkin-table { min-width: auto !important; font-size: 0.8rem; }
-        .checkin-table thead th {
-            padding: 8px 14px; font-size: 0.75rem; text-align: center;
-            white-space: nowrap; background: #f0f4f8;
-        }
-        .checkin-table tbody td {
-            padding: 8px 14px; text-align: center; vertical-align: middle;
-        }
-        .checkin-table .type-label {
-            font-weight: 700; font-size: 0.8rem; color: var(--text);
-            white-space: nowrap;
-        }
-        .checkin-tag {
-            display: inline-block; padding: 3px 8px; margin: 2px 3px;
-            border-radius: 4px; font-size: 0.72rem; font-weight: 600;
-            cursor: pointer; transition: all var(--transition);
-            user-select: none; white-space: nowrap;
-            background: #e5e7eb; color: #6b7280; border: 1.5px solid #d1d5db;
-        }
-        .checkin-tag.checked {
-            background: #10b981; color: #ffffff; border-color: #059669;
-        }
-
-        .task-checkin-tag {
-            display: inline-block; padding: 3px 8px; margin: 2px 3px;
-            border-radius: 4px; font-size: 0.72rem; font-weight: 600;
-            cursor: pointer; transition: all var(--transition);
-            user-select: none; white-space: nowrap;
-            background: #e5e7eb; color: #6b7280; border: 1.5px solid #d1d5db;
-        }
-        .task-checkin-tag.checked {
-            background: #3b82f6; color: #ffffff; border-color: #2563eb;
-        }
-        .checkin-tag:hover { transform: scale(1.05); box-shadow: var(--shadow-sm); }
-
-        @media (max-width:768px) { .app-container { padding:10px 8px; } table { min-width:1500px; } .log-modal { max-width:95vw; } .config-panel { width: 90vw; right: 5vw; } .checkin-table { min-width: auto !important; } }
+        .checkin-table thead th { padding: 8px 14px; font-size: 0.75rem; text-align: center; white-space: nowrap; background: #f0f4f8; }
+        .checkin-table tbody td { padding: 8px 14px; text-align: center; vertical-align: middle; }
+        .checkin-table .type-label { font-weight: 700; font-size: 0.8rem; color: var(--text); white-space: nowrap; }
+        .checkin-tag-wrapper { position: relative; display: inline-block; margin: 2px 3px; vertical-align: middle; }
+        .checkin-tag { display: inline-flex; align-items:center; justify-content:center; padding: 3px 8px; height: 24px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: all var(--transition); user-select: none; white-space: nowrap; background: #e5e7eb; color: #6b7280; border: 1.5px solid #d1d5db; position: relative; }
+        .checkin-tag.checked-bless { background: #10b981; color: #ffffff; border-color: #059669; }
+        .checkin-tag.checked-task { background: #3b82f6; color: #ffffff; border-color: #2563eb; }
+        .checkin-tag:hover { transform: scale(1.02); box-shadow: var(--shadow-sm); }
+        .tag-extra-label { position: absolute; top: -8px; right: -8px; background: #f97316; color: #ffffff; font-size: 0.5rem; font-weight: 700; padding: 1px 4px; border-radius: 10px; line-height: 1; z-index: 2; white-space: nowrap; pointer-events: none; }
+        .tag-hover-options { display: none; position: absolute; bottom: 100%; left: 0; z-index: 10; background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: var(--shadow-lg); padding: 4px; white-space: nowrap; margin-bottom: 4px; }
+        .tag-hover-options.show { display: flex; gap: 4px; }
+        .task-type-cell { display:inline-flex; align-items:center; gap:2px; margin:2px; padding:4px; border:1px solid #e2e6ea; border-radius:4px; background:#f9fafb; }
+        .task-type-input { width:40px; padding:2px 4px; border:1px solid #d1d5db; border-radius:3px; font-size:0.7rem; text-align:center; }
+        .task-type-input:focus { border-color: var(--primary); outline:none; }
+        .task-type-select { padding:2px; border:1px solid #d1d5db; border-radius:3px; font-size:0.65rem; }
+        @media (max-width:768px) { .app-container { padding:10px 8px; } table { min-width:1300px; } .log-modal { max-width:95vw; } .config-panel { width: 90vw; right: 5vw; } .checkin-table { min-width: auto !important; } }
     </style>
 </head>
 <body>
@@ -318,20 +190,20 @@
                     <th style="width:50px;">Id</th>
                     <th>用户</th><th>作物类型</th>
                     <th class="sortable" id="thMature">成熟倒计时<span class="sort-icon">↕</span><span class="reset-sort" id="resetSort">↺</span></th>
-                    <th>浇水湿润倒计时</th><th>浇水成熟剩余时间</th><th>祝福</th><th>每日任务</th><th>连续祝福</th><th>备注</th><th>操作</th>
+                    <th>浇水湿润倒计时</th><th>浇水成熟剩余时间</th><th>连续祝福</th><th>备注</th><th>操作</th>
                 </tr></thead>
             </table>
         </div>
         <div id="emptyState" style="display:none; padding:48px; text-align:center; color:var(--text-muted);">📋<p>暂无数据</p></div>
     </div>
 
-    <!-- 打卡表格 -->
     <div class="checkin-wrapper" style="margin-top:16px;">
         <div style="overflow-x:auto;">
             <table class="checkin-table" id="checkinTable">
                 <thead><tr>
                     <th style="width:80px;">类型 \\ 名称</th>
                     <th>主</th><th>豆子鱼</th><th>seven</th><th>大猪</th><th>微信</th>
+                    <th style="width:60px;">操作</th>
                 </tr></thead>
                 <tbody>
                 <tr id="checkinBlessRow">
@@ -339,6 +211,9 @@
                 </tr>
                 <tr id="checkinTaskRow">
                     <td class="type-label">📋 任务</td>
+                </tr>
+                <tr id="checkinTaskTypeRow">
+                    <td class="type-label">📝 任务类型</td>
                 </tr>
                 </tbody>
             </table>
@@ -369,17 +244,18 @@
         const LAYER_COLORS = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6'];
         const STORAGE_KEY = 'crop-management-data';
         const CHECKIN_STORAGE_KEY = 'crop-checkin-data';
+        const TASK_TYPE_STORAGE_KEY = 'crop-task-type-data';
         const CONFIG_STORAGE_KEY = 'crop-management-config';
         const LOG_STORAGE_KEY = 'crop-management-logs';
         const SORT_DEFAULT = 'default';
         const SORT_MATURE_ASC = 'matureAsc';
         const UNDO_TIMEOUT = 5000, WATER_HINT_DURATION = 3000;
-        const BLESS_RESET_HOUR = 3;
+        const BLESS_RESET_HOUR = 0;
+        const BLESS_RESET_MINUTE = 30;
         const LOG_RETENTION_DAYS = 3;
         const WATER_LOW_THRESHOLD = 7200;
-        const COL_COUNT = 11;
+        const COL_COUNT = 9;
 
-        // 打卡数据配置
         const CHECKIN_USERS = ['主', '豆子鱼', 'seven', '大猪', '微信'];
         const CHECKIN_BLESS_TAGS = {
             '主': [116, 393, 545],
@@ -395,6 +271,8 @@
             '大猪': [543, 544, 545, 546],
             '微信': [119]
         };
+        const TASK_EXTRA_OPTIONS = ['2场', '胜1', '25助'];
+        const TASK_TYPE_OPTIONS = ['-', '胜1', '2场', '25助攻'];
 
         let rows = [], nextId = 1, nextCreateOrder = 1, sortState = SORT_DEFAULT;
         let editingRowId = null, editSnapshot = null, lastSaveTime = Date.now(), undoData = {};
@@ -402,8 +280,8 @@
         let tickBaseTime = Date.now();
         let logs = [], nextLogId = 1;
         let groupConfig = '';
-        // 打卡数据：{ bless: { '主': [545, 393], ... }, task: { '主': [116], ... } }
-        let checkinData = { bless: {}, task: {} };
+        let checkinData = { bless: {}, task: {}, taskExtra: {} };
+        let taskTypeData = {};
 
         const $ = s => document.querySelector(s);
         const mainTable = $('#mainTable');
@@ -413,375 +291,86 @@
         const configPanel = $('#configPanel'), configHeader = $('#configHeader');
         const configTextarea = $('#configTextarea'), btnApplyConfig = $('#btnApplyConfig');
 
-        // ============ 打卡系统 ============
-        function loadCheckinData() {
-            try {
-                const raw = localStorage.getItem(CHECKIN_STORAGE_KEY);
-                if (raw) {
-                    const data = JSON.parse(raw);
-                    checkinData = { bless: data.bless || {}, task: data.task || {} };
-                }
-            } catch(e) {
-                checkinData = { bless: {}, task: {} };
-            }
-            // 初始化缺失的key
-            CHECKIN_USERS.forEach(u => {
-                if (!checkinData.bless[u]) checkinData.bless[u] = [];
-                if (!checkinData.task[u]) checkinData.task[u] = [];
+        function loadCheckinData() { try { const raw = localStorage.getItem(CHECKIN_STORAGE_KEY); if (raw) { const data = JSON.parse(raw); checkinData = { bless: data.bless || {}, task: data.task || {}, taskExtra: data.taskExtra || {} }; } } catch(e) { checkinData = { bless: {}, task: {}, taskExtra: {} }; } CHECKIN_USERS.forEach(u => { if (!checkinData.bless[u]) checkinData.bless[u] = []; if (!checkinData.task[u]) checkinData.task[u] = []; if (!checkinData.taskExtra[u]) checkinData.taskExtra[u] = {}; }); }
+        function saveCheckinData() { try { localStorage.setItem(CHECKIN_STORAGE_KEY, JSON.stringify(checkinData)); } catch(e) {} }
+        function resetCheckinData() { CHECKIN_USERS.forEach(u => { checkinData.bless[u] = []; const savedExtra = {}; if (checkinData.taskExtra[u]) { Object.keys(checkinData.taskExtra[u]).forEach(tagNum => { if (!checkinData.task[u] || !checkinData.task[u].includes(parseInt(tagNum))) { savedExtra[tagNum] = checkinData.taskExtra[u][tagNum]; } }); } checkinData.task[u] = []; checkinData.taskExtra[u] = savedExtra; }); saveCheckinData(); renderCheckinTable(); }
+        function resetCheckinRow(type) { CHECKIN_USERS.forEach(u => { if (type === 'task') { checkinData.task[u] = []; checkinData.taskExtra[u] = {}; } else { checkinData[type][u] = []; } }); saveCheckinData(); renderCheckinTable(); }
+        function toggleCheckinTag(type, user, tagNum) { const arr = checkinData[type][user]; const idx = arr.indexOf(tagNum); if (idx >= 0) { arr.splice(idx, 1); if (type === 'task') delete checkinData.taskExtra[user][tagNum]; } else { arr.push(tagNum); } saveCheckinData(); renderCheckinTable(); }
+        function setTaskExtra(user, tagNum, value) { if (!checkinData.taskExtra[user]) checkinData.taskExtra[user] = {}; checkinData.taskExtra[user][tagNum] = value; saveCheckinData(); renderCheckinTable(); }
+
+        function loadTaskTypeData() { try { const raw = localStorage.getItem(TASK_TYPE_STORAGE_KEY); if (raw) { taskTypeData = JSON.parse(raw); } } catch(e) { taskTypeData = {}; } CHECKIN_USERS.forEach(u => { if (!taskTypeData[u]) taskTypeData[u] = {}; const tags = CHECKIN_TASK_TAGS[u] || []; tags.forEach(tagNum => { if (!taskTypeData[u][tagNum]) taskTypeData[u][tagNum] = { value: '', type: '-' }; }); }); }
+        function saveTaskTypeData() { try { localStorage.setItem(TASK_TYPE_STORAGE_KEY, JSON.stringify(taskTypeData)); } catch(e) {} }
+        function resetTaskTypeData() { CHECKIN_USERS.forEach(u => { taskTypeData[u] = {}; const tags = CHECKIN_TASK_TAGS[u] || []; tags.forEach(tagNum => { taskTypeData[u][tagNum] = { value: '', type: '-' }; }); }); saveTaskTypeData(); renderTaskTypeRow(); }
+        function renderTaskTypeRow() {
+            const row = document.getElementById('checkinTaskTypeRow'); if (!row) return;
+            while (row.children.length > 1) row.removeChild(row.lastChild);
+            CHECKIN_USERS.forEach(user => {
+                const td = document.createElement('td'); const tags = CHECKIN_TASK_TAGS[user] || [];
+                tags.forEach(tagNum => {
+                    const wrapper = document.createElement('span'); wrapper.className = 'task-type-cell';
+                    const input = document.createElement('input'); input.type = 'text'; input.className = 'task-type-input';
+                    input.value = taskTypeData[user]?.[tagNum]?.value || '';
+                    input.addEventListener('input', (e) => { if (!taskTypeData[user]) taskTypeData[user] = {}; if (!taskTypeData[user][tagNum]) taskTypeData[user][tagNum] = { value: '', type: '-' }; taskTypeData[user][tagNum].value = e.target.value; saveTaskTypeData(); });
+                    wrapper.appendChild(input);
+                    const select = document.createElement('select'); select.className = 'task-type-select';
+                    TASK_TYPE_OPTIONS.forEach(opt => { const option = document.createElement('option'); option.value = opt; option.textContent = opt; if (taskTypeData[user]?.[tagNum]?.type === opt) option.selected = true; select.appendChild(option); });
+                    select.addEventListener('change', (e) => { if (!taskTypeData[user]) taskTypeData[user] = {}; if (!taskTypeData[user][tagNum]) taskTypeData[user][tagNum] = { value: '', type: '-' }; taskTypeData[user][tagNum].type = e.target.value; saveTaskTypeData(); });
+                    wrapper.appendChild(select); td.appendChild(wrapper);
+                }); row.appendChild(td);
             });
-        }
-
-        function saveCheckinData() {
-            try {
-                localStorage.setItem(CHECKIN_STORAGE_KEY, JSON.stringify(checkinData));
-            } catch(e) {}
-        }
-
-        function resetCheckinData() {
-            CHECKIN_USERS.forEach(u => {
-                checkinData.bless[u] = [];
-                checkinData.task[u] = [];
-            });
-            saveCheckinData();
-            renderCheckinTable();
-        }
-
-        function toggleCheckinTag(type, user, tagNum) {
-            const arr = checkinData[type][user];
-            const idx = arr.indexOf(tagNum);
-            if (idx >= 0) {
-                arr.splice(idx, 1);
-            } else {
-                arr.push(tagNum);
-            }
-            saveCheckinData();
-            renderCheckinTable();
+            const actTd = document.createElement('td'); const clearBtn = document.createElement('button'); clearBtn.className = 'btn btn-outline btn-xs'; clearBtn.textContent = '🗑️ 清除'; clearBtn.addEventListener('click', () => { resetTaskTypeData(); renderTaskTypeRow(); }); actTd.appendChild(clearBtn); row.appendChild(actTd);
         }
 
         function renderCheckinTable() {
-            const blessRow = document.getElementById('checkinBlessRow');
-            const taskRow = document.getElementById('checkinTaskRow');
-            if (!blessRow || !taskRow) return;
-
-            // 清除旧内容（保留第一列标题）
+            const blessRow = document.getElementById('checkinBlessRow'); const taskRow = document.getElementById('checkinTaskRow'); if (!blessRow || !taskRow) return;
             while (blessRow.children.length > 1) blessRow.removeChild(blessRow.lastChild);
             while (taskRow.children.length > 1) taskRow.removeChild(taskRow.lastChild);
-
             CHECKIN_USERS.forEach(user => {
-                const blessTd = document.createElement('td');
-                const blessTags = CHECKIN_BLESS_TAGS[user] || [];
-                blessTags.forEach(tagNum => {
-                    const span = document.createElement('span');
-                    span.className = 'checkin-tag';
-                    if (checkinData.bless[user] && checkinData.bless[user].includes(tagNum)) {
-                        span.classList.add('checked');
-                    }
-                    span.textContent = `[${tagNum}]`;
-                    span.addEventListener('click', () => toggleCheckinTag('bless', user, tagNum));
-                    blessTd.appendChild(span);
-                });
-                blessRow.appendChild(blessTd);
-
-                const taskTd = document.createElement('td');
-                const taskTags = CHECKIN_TASK_TAGS[user] || [];
-                taskTags.forEach(tagNum => {
-                    const span = document.createElement('span');
-                    span.className = 'task-checkin-tag';
-                    if (checkinData.task[user] && checkinData.task[user].includes(tagNum)) {
-                        span.classList.add('checked');
-                    }
-                    span.textContent = `[${tagNum}]`;
-                    span.addEventListener('click', () => toggleCheckinTag('task', user, tagNum));
-                    taskTd.appendChild(span);
-                });
-                taskRow.appendChild(taskTd);
+                const blessTd = document.createElement('td'); (CHECKIN_BLESS_TAGS[user] || []).forEach(tagNum => { const wrapper = document.createElement('span'); wrapper.className = 'checkin-tag-wrapper'; const span = document.createElement('span'); span.className = 'checkin-tag'; if (checkinData.bless[user] && checkinData.bless[user].includes(tagNum)) span.classList.add('checked-bless'); span.textContent = `[${tagNum}]`; span.addEventListener('click', () => toggleCheckinTag('bless', user, tagNum)); wrapper.appendChild(span); blessTd.appendChild(wrapper); }); blessRow.appendChild(blessTd);
+                const taskTd = document.createElement('td'); (CHECKIN_TASK_TAGS[user] || []).forEach(tagNum => { const wrapper = document.createElement('span'); wrapper.className = 'checkin-tag-wrapper'; const isChecked = checkinData.task[user] && checkinData.task[user].includes(tagNum); if (isChecked) wrapper.classList.add('checked-task'); const span = document.createElement('span'); span.className = 'checkin-tag'; if (isChecked) span.classList.add('checked-task'); span.textContent = `[${tagNum}]`; span.addEventListener('click', () => toggleCheckinTag('task', user, tagNum)); const extraVal = checkinData.taskExtra[user]?.[tagNum]; if (extraVal && !isChecked) { const extraLabel = document.createElement('span'); extraLabel.className = 'tag-extra-label'; extraLabel.textContent = extraVal; wrapper.appendChild(extraLabel); } wrapper.appendChild(span); if (!isChecked) { const optionsDiv = document.createElement('div'); optionsDiv.className = 'tag-hover-options'; TASK_EXTRA_OPTIONS.forEach(opt => { const optBtn = document.createElement('button'); optBtn.className = 'btn btn-outline btn-xs'; optBtn.textContent = opt; optBtn.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); setTaskExtra(user, tagNum, opt); }); optionsDiv.appendChild(optBtn); }); wrapper.appendChild(optionsDiv); } taskTd.appendChild(wrapper); }); taskRow.appendChild(taskTd);
             });
+            const blessActTd = document.createElement('td'); const blessClearBtn = document.createElement('button'); blessClearBtn.className = 'btn btn-outline btn-xs'; blessClearBtn.textContent = '🗑️ 清除'; blessClearBtn.addEventListener('click', () => resetCheckinRow('bless')); blessActTd.appendChild(blessClearBtn); blessRow.appendChild(blessActTd);
+            const taskActTd = document.createElement('td'); const taskClearBtn = document.createElement('button'); taskClearBtn.className = 'btn btn-outline btn-xs'; taskClearBtn.textContent = '🗑️ 清除'; taskClearBtn.addEventListener('click', () => resetCheckinRow('task')); taskActTd.appendChild(taskClearBtn); taskRow.appendChild(taskActTd);
         }
 
-        // ============ 分组排序 ============
-        function parseGroupConfig(configStr) {
-            const groups = [];
-            if (!configStr.trim()) return groups;
-            const lines = configStr.split('\n');
-            lines.forEach(line => {
-                const trimmed = line.trim();
-                if (!trimmed) return;
-                const ids = trimmed.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
-                if (ids.length > 0) groups.push(ids);
-            });
-            return groups;
-        }
-
-        function getGroupSortedRows() {
-            if (sortState !== SORT_DEFAULT) {
-                const sorted = [...rows];
-                if (sortState === SORT_MATURE_ASC) sorted.sort((a,b) => a.matureCountdown - b.matureCountdown);
-                return { sorted, groups: [] };
-            }
-            const groups = parseGroupConfig(groupConfig);
-            if (groups.length === 0) return { sorted: [...rows].sort((a,b) => a.createOrder - b.createOrder), groups: [] };
-
-            const groupedRows = [];
-            const groupedIds = new Set();
-            groups.forEach(groupIds => {
-                const groupRows = [];
-                groupIds.forEach(id => {
-                    const row = rows.find(r => r.id === id);
-                    if (row) { groupRows.push(row); groupedIds.add(id); }
-                });
-                if (groupRows.length > 0) groupedRows.push(groupRows);
-            });
-            const ungrouped = rows.filter(r => !groupedIds.has(r.id)).sort((a,b) => a.createOrder - b.createOrder);
-            return { grouped: groupedRows, ungrouped, groups };
-        }
-
-        function clearTableBody() {
-            while (mainTable.children.length > 1) {
-                mainTable.removeChild(mainTable.lastChild);
-            }
-        }
-
-        function computeRanks() {
-            const waitList = [];
-            rows.forEach(row => {
-                const seconds = calcWaterMatureRemainingSeconds(row);
-                if (seconds !== null && seconds > 0) {
-                    waitList.push({ id: row.id, seconds });
-                }
-            });
-            waitList.sort((a, b) => a.seconds - b.seconds);
-            const rankMap = new Map();
-            let currentRank = 1;
-            let prevSeconds = -1;
-            let rankIndex = 0;
-            waitList.forEach((item, idx) => {
-                if (item.seconds !== prevSeconds) {
-                    currentRank = rankIndex + 1;
-                }
-                rankMap.set(item.id, currentRank);
-                prevSeconds = item.seconds;
-                rankIndex++;
-            });
-            return rankMap;
-        }
-
-        function showPlantModal(rowId) {
-            const row = rows.find(r => r.id === rowId);
-            if (!row) return;
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal" style="max-width:360px;">
-                    <h3 style="margin-bottom:16px;">🌱 选择播种类型</h3>
-                    <p style="color:var(--text-secondary);margin-bottom:16px;">用户：${escapeHtml(row.user || '未命名')}（ID: ${row.id}）</p>
-                    <select class="edit-select" id="plantSelect" style="width:100%;margin-bottom:16px;">
-                        <option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option>
-                        <option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option>
-                    </select>
-                    <div class="modal-actions">
-                        <button class="btn btn-outline btn-sm" id="plantCancel">取消</button>
-                        <button class="btn btn-success btn-sm" id="plantConfirm">✅ 确认播种</button>
-                    </div>
-                </div>`;
-            modalContainer.appendChild(overlay);
-
-            const confirmBtn = overlay.querySelector('#plantConfirm');
-            const selectEl = overlay.querySelector('#plantSelect');
-
-            overlay.querySelector('#plantCancel').onclick = () => overlay.remove();
-            overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-
-            overlay.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowDown') { e.preventDefault(); selectEl.value = '32h'; }
-                else if (e.key === 'ArrowUp') { e.preventDefault(); selectEl.value = '16h'; }
-                else if (e.key === 'Enter') { e.preventDefault(); confirmBtn.click(); }
-                else if (e.key === 'Escape') { overlay.remove(); }
-            });
-            setTimeout(() => confirmBtn.focus(), 100);
-
-            confirmBtn.onclick = () => {
-                const sel = selectEl.value;
-                overlay.remove();
-                const prev = { user: row.user, cropType: row.cropType, mature: row.matureCountdown, water: row.waterCountdown };
-                const bs = formatRowState(row);
-                undoData[row.id] = prev;
-                row.cropType = sel;
-                const c = CROP_CONFIG[sel];
-                row.matureCountdown = c.matureTotal;
-                row.waterCountdown = c.waterMax;
-                const reduction = Math.floor(c.waterMax / 4);
-                row.matureCountdown = Math.max(0, row.matureCountdown - reduction);
-                addLog(row.id, '播种', bs, formatRowState(row));
-                saveToStorage();
-                showWaterHint(row.id, reduction);
-                showToast(`✅ 已播种 ${c.label}，-${formatTimeHM(reduction)}`, () => {
-                    if (undoData[row.id]) {
-                        const p = undoData[row.id];
-                        row.user = p.user; row.cropType = p.cropType;
-                        row.matureCountdown = p.mature; row.waterCountdown = p.water;
-                        delete undoData[row.id]; saveToStorage(); renderGroupedTable();
-                    }
-                }, UNDO_TIMEOUT);
-                renderGroupedTable();
-            };
-        }
+        function parseGroupConfig(configStr) { const groups = []; if (!configStr.trim()) return groups; const lines = configStr.split('\n'); lines.forEach(line => { const trimmed = line.trim(); if (!trimmed) return; const ids = trimmed.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n)); if (ids.length > 0) groups.push(ids); }); return groups; }
+        function getGroupSortedRows() { if (sortState !== SORT_DEFAULT) { const sorted = [...rows]; if (sortState === SORT_MATURE_ASC) sorted.sort((a,b) => a.matureCountdown - b.matureCountdown); return { sorted, groups: [] }; } const groups = parseGroupConfig(groupConfig); if (groups.length === 0) return { sorted: [...rows].sort((a,b) => a.createOrder - b.createOrder), groups: [] }; const groupedRows = []; const groupedIds = new Set(); groups.forEach(groupIds => { const groupRows = []; groupIds.forEach(id => { const row = rows.find(r => r.id === id); if (row) { groupRows.push(row); groupedIds.add(id); } }); if (groupRows.length > 0) groupedRows.push(groupRows); }); const ungrouped = rows.filter(r => !groupedIds.has(r.id)).sort((a,b) => a.createOrder - b.createOrder); return { grouped: groupedRows, ungrouped, groups }; }
+        function clearTableBody() { while (mainTable.children.length > 1) { mainTable.removeChild(mainTable.lastChild); } }
+        function computeRanks() { const waitList = []; rows.forEach(row => { const seconds = calcWaterMatureRemainingSeconds(row); if (seconds !== null && seconds > 0) waitList.push({ id: row.id, seconds }); }); waitList.sort((a, b) => a.seconds - b.seconds); const rankMap = new Map(); let currentRank = 1; let prevSeconds = -1; let rankIndex = 0; waitList.forEach((item, idx) => { if (item.seconds !== prevSeconds) { currentRank = rankIndex + 1; } rankMap.set(item.id, currentRank); prevSeconds = item.seconds; rankIndex++; }); return rankMap; }
+        function showPlantModal(rowId) { const row = rows.find(r => r.id === rowId); if (!row) return; const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; overlay.innerHTML = `<div class="modal" style="max-width:360px;"><h3 style="margin-bottom:16px;">🌱 选择播种类型</h3><p style="color:var(--text-secondary);margin-bottom:16px;">用户：${escapeHtml(row.user || '未命名')}（ID: ${row.id}）</p><select class="edit-select" id="plantSelect" style="width:100%;margin-bottom:16px;"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select><div class="modal-actions"><button class="btn btn-outline btn-sm" id="plantCancel">取消</button><button class="btn btn-success btn-sm" id="plantConfirm">✅ 确认播种</button></div></div>`; modalContainer.appendChild(overlay); const confirmBtn = overlay.querySelector('#plantConfirm'); const selectEl = overlay.querySelector('#plantSelect'); overlay.querySelector('#plantCancel').onclick = () => overlay.remove(); overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); }); overlay.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') { e.preventDefault(); selectEl.value = '32h'; } else if (e.key === 'ArrowUp') { e.preventDefault(); selectEl.value = '16h'; } else if (e.key === 'Enter') { e.preventDefault(); confirmBtn.click(); } else if (e.key === 'Escape') { overlay.remove(); } }); setTimeout(() => confirmBtn.focus(), 100); confirmBtn.onclick = () => { const sel = selectEl.value; overlay.remove(); const prev = { user: row.user, cropType: row.cropType, mature: row.matureCountdown, water: row.waterCountdown }; const bs = formatRowState(row); undoData[row.id] = prev; row.cropType = sel; const c = CROP_CONFIG[sel]; row.matureCountdown = c.matureTotal; row.waterCountdown = c.waterMax; const reduction = Math.floor(c.waterMax / 4); row.matureCountdown = Math.max(0, row.matureCountdown - reduction); addLog(row.id, '播种', bs, formatRowState(row)); saveToStorage(); showWaterHint(row.id, reduction); showToast(`✅ 已播种 ${c.label}，-${formatTimeHM(reduction)}`, () => { if (undoData[row.id]) { const p = undoData[row.id]; row.user = p.user; row.cropType = p.cropType; row.matureCountdown = p.mature; row.waterCountdown = p.water; delete undoData[row.id]; saveToStorage(); renderGroupedTable(); } }, UNDO_TIMEOUT); renderGroupedTable(); }; }
 
         function renderGroupedTable() {
-            clearTableBody();
-            const { grouped, ungrouped, sorted } = getGroupSortedRows();
-            const rankMap = computeRanks();
-
-            if (sortState !== SORT_DEFAULT || (!grouped && groups.length === 0)) {
-                const allSorted = sorted || [...rows].sort((a,b) => sortState === SORT_MATURE_ASC ? a.matureCountdown - b.matureCountdown : a.createOrder - b.createOrder);
-                if (allSorted.length === 0) { emptyState.style.display='block'; tableScroll.style.display='none'; return; }
-                emptyState.style.display='none'; tableScroll.style.display='block';
-                const tbody = document.createElement('tbody');
-                allSorted.forEach(row => tbody.appendChild(createRowElement(row, rankMap)));
-                mainTable.appendChild(tbody);
-                bindAllEvents();
-                return;
-            }
-
-            const allGrouped = grouped || [];
-            const allUngrouped = ungrouped || [];
-            const totalRows = allGrouped.reduce((sum, g) => sum + g.length, 0) + allUngrouped.length;
-            if (totalRows === 0) { emptyState.style.display='block'; tableScroll.style.display='none'; return; }
-            emptyState.style.display='none'; tableScroll.style.display='block';
-
-            allGrouped.forEach((groupRows, groupIndex) => {
-                const tbody = document.createElement('tbody');
-                tbody.className = 'group-tbody';
-                groupRows.forEach(row => tbody.appendChild(createRowElement(row, rankMap)));
-                mainTable.appendChild(tbody);
-                if (groupIndex < allGrouped.length - 1 || allUngrouped.length > 0) {
-                    const spacer = document.createElement('tbody');
-                    spacer.className = 'spacer-tbody';
-                    const tr = document.createElement('tr');
-                    const td = document.createElement('td');
-                    td.colSpan = COL_COUNT; td.innerHTML = '&nbsp;';
-                    tr.appendChild(td); spacer.appendChild(tr);
-                    mainTable.appendChild(spacer);
-                }
-            });
-            if (allUngrouped.length > 0) {
-                const tbody = document.createElement('tbody');
-                allUngrouped.forEach(row => tbody.appendChild(createRowElement(row, rankMap)));
-                mainTable.appendChild(tbody);
-            }
+            clearTableBody(); const { grouped, ungrouped, sorted } = getGroupSortedRows(); const rankMap = computeRanks();
+            if (sortState !== SORT_DEFAULT || (!grouped && groups.length === 0)) { const allSorted = sorted || [...rows].sort((a,b) => sortState === SORT_MATURE_ASC ? a.matureCountdown - b.matureCountdown : a.createOrder - b.createOrder); if (allSorted.length === 0) { emptyState.style.display='block'; tableScroll.style.display='none'; return; } emptyState.style.display='none'; tableScroll.style.display='block'; const tbody = document.createElement('tbody'); allSorted.forEach(row => tbody.appendChild(createRowElement(row, rankMap))); mainTable.appendChild(tbody); bindAllEvents(); return; }
+            const allGrouped = grouped || []; const allUngrouped = ungrouped || []; const totalRows = allGrouped.reduce((sum, g) => sum + g.length, 0) + allUngrouped.length; if (totalRows === 0) { emptyState.style.display='block'; tableScroll.style.display='none'; return; } emptyState.style.display='none'; tableScroll.style.display='block';
+            allGrouped.forEach((groupRows, groupIndex) => { const tbody = document.createElement('tbody'); tbody.className = 'group-tbody'; groupRows.forEach(row => tbody.appendChild(createRowElement(row, rankMap))); mainTable.appendChild(tbody); if (groupIndex < allGrouped.length - 1 || allUngrouped.length > 0) { const spacer = document.createElement('tbody'); spacer.className = 'spacer-tbody'; const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = COL_COUNT; td.innerHTML = '&nbsp;'; tr.appendChild(td); spacer.appendChild(tr); mainTable.appendChild(spacer); } });
+            if (allUngrouped.length > 0) { const tbody = document.createElement('tbody'); allUngrouped.forEach(row => tbody.appendChild(createRowElement(row, rankMap))); mainTable.appendChild(tbody); }
             bindAllEvents();
         }
 
         function createRowElement(row, rankMap) {
-            const isEdit = editingRowId === row.id;
-            const c = CROP_CONFIG[row.cropType];
+            const isEdit = editingRowId === row.id; const c = CROP_CONFIG[row.cropType];
             const waterPercent = c.waterMax ? Math.min(100, (row.waterCountdown / c.waterMax) * 100) : 0;
             const waterColor = waterPercent > 50 ? 'green' : (waterPercent >= 20 ? 'orange' : 'red');
-            const isMature = row.matureCountdown <= 0;
-            const isWarn = !isMature && row.matureCountdown <= 3600;
-            const reduction = calcWaterReduction(row);
-            const matureWait = calcWaterMatureRemaining(row);
-            const waterStatus = canWater(row);
-            const waterLow = row.waterCountdown > 0 && row.waterCountdown <= WATER_LOW_THRESHOLD;
-            const isDry = row.waterCountdown <= 0;
-            const rank = rankMap.get(row.id) || 0;
-
-            let cls = '';
-            if (isEdit) cls = 'row-editing';
-            else if (isMature) cls = 'row-success';
-            else if (isWarn) cls = 'row-warning';
-
-            const tr = document.createElement('tr');
-            tr.className = cls; tr.setAttribute('data-id', row.id);
-
-            const tdId = document.createElement('td');
-            tdId.textContent = row.id; tdId.style.fontWeight = '600'; tdId.style.color = 'var(--text-secondary)';
-            tr.appendChild(tdId);
-
-            const tdUser = document.createElement('td');
-            if (isEdit) tdUser.innerHTML = `<input class="edit-user-input" id="eu-${row.id}" value="${escapeHtml(row.user)}" placeholder="用户名">`;
-            else tdUser.textContent = row.user || '—';
-            tr.appendChild(tdUser);
-
-            const tdCrop = document.createElement('td');
-            if (isEdit) tdCrop.innerHTML = `<select class="edit-select" id="ec-${row.id}" onchange="cropTypeChange(${row.id})"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select>`;
-            else tdCrop.innerHTML = renderCropBadge(row);
-            tr.appendChild(tdCrop);
-
-            const tdMature = document.createElement('td');
-            tdMature.id = `mature-cell-${row.id}`; tdMature.className = 'mature-cell';
-            if (isEdit) {
-                const h = Math.floor(row.matureCountdown/3600), m = Math.floor((row.matureCountdown%3600)/60);
-                tdMature.innerHTML = `<input class="edit-input" id="em-${row.id}" value="${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}" maxlength="4" placeholder="HHMM">`;
-            } else {
-                const ts = document.createElement('span'); ts.className = 'mature-time';
-                ts.innerHTML = formatTime(row.matureCountdown) + (isMature ? ' <span class="mature-ripe-badge">熟</span>' : '');
-                tdMature.appendChild(ts);
-                if (isMature) { const eb = document.createElement('div'); eb.className = 'mature-progress'; const s = document.createElement('div'); s.className = 'boss-hp-stack'; eb.appendChild(s); tdMature.appendChild(eb); }
-                else tdMature.appendChild(renderBossHpBar(row.matureCountdown));
-            }
-            tr.appendChild(tdMature);
-
-            const tdWater = document.createElement('td');
-            if (isEdit) {
-                const h = Math.floor(row.waterCountdown/3600), m = Math.floor((row.waterCountdown%3600)/60);
-                tdWater.innerHTML = `<input class="edit-input" id="ew-${row.id}" value="${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}" maxlength="4" placeholder="HHMM">`;
-            } else {
-                const waterIcon = waterLow && !isDry ? ' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>' : '';
-                const dryBadge = isDry ? ' <span class="dry-badge-large">干枯</span>' : '';
-                const reductionHtml = reduction > 0 ? ` <span class="water-reduction-inline">(${formatReductionBold(reduction)})</span>` : '';
-                const timeDisplay = isDry ? '' : formatTime(row.waterCountdown);
-                tdWater.innerHTML = `<div class="water-vertical"><span style="font-weight:600;font-family:monospace;">${timeDisplay}${dryBadge}${waterIcon}${reductionHtml}</span><div class="progress-bar-wrap"><div class="progress-bar-fill ${waterColor}" style="width:${waterPercent}%"></div></div></div>`;
-            }
-            tr.appendChild(tdWater);
-
-            const tdWait = document.createElement('td');
-            tdWait.className = 'water-wait-cell'; tdWait.style.fontSize = '0.8rem';
-            if (isMature) {
-                tdWait.innerHTML = '<span class="immediate-mature-badge" style="background:#10b981;">✅ 已成熟</span>';
-            } else if (matureWait.seconds === 0) {
-                tdWait.innerHTML = '<span class="immediate-mature-badge">🔥 浇水立即成熟</span>';
-            } else if (matureWait.seconds !== null && matureWait.seconds > 0) {
-                const predictedTime = getFutureTime(matureWait.seconds);
-                let rankHtml = '';
-                if (rank > 0 && rank <= 3) { rankHtml = ` <span class="rank-badge r${rank}">#${rank}</span>`; }
-                tdWait.innerHTML = `<span class="approx-mature"><b>${matureWait.boldPart}</b>后浇水成熟（预计 ${predictedTime}）</span>${rankHtml}`;
-            } else { tdWait.textContent = '-'; }
-            tr.appendChild(tdWait);
-
-            const tdBless = document.createElement('td'); tdBless.innerHTML = renderBlessBadge(row); tr.appendChild(tdBless);
-            const tdTask = document.createElement('td'); tdTask.innerHTML = renderTaskBadge(row); tr.appendChild(tdTask);
-
-            const tdCb = document.createElement('td');
-            if (isEdit) tdCb.innerHTML = `<select class="edit-select" id="ecb-${row.id}"><option value="-" ${row.consecutiveBless==='-'?'selected':''}>-</option><option value="是" ${row.consecutiveBless==='是'?'selected':''}>是</option><option value="否" ${row.consecutiveBless==='否'?'selected':''}>否</option></select>`;
-            else tdCb.innerHTML = renderConsecutiveBlessBadge(row);
-            tr.appendChild(tdCb);
-
-            const tdRemark = document.createElement('td'); tdRemark.className = 'remark-cell';
-            if (isEdit) tdRemark.innerHTML = `<input class="edit-input" id="erm-${row.id}" value="${escapeHtml(row.remark||'')}" style="width:120px;">`;
-            else tdRemark.innerHTML = `<div class="remark-text" id="remark-${row.id}" title="点击编辑备注">${escapeHtml(row.remark||'') || '<span style="color:var(--text-muted);">-</span>'}</div>`;
-            tr.appendChild(tdRemark);
-
-            const tdAct = document.createElement('td'); tdAct.style.whiteSpace = 'nowrap';
-            if (isEdit) tdAct.innerHTML = `<button class="btn btn-success btn-sm" id="save-${row.id}">💾 保存</button> <button class="btn btn-outline btn-sm" id="cancel-${row.id}">✕ 取消</button>`;
-            else tdAct.innerHTML = `<button class="btn btn-outline btn-sm edit-btn" data-id="${row.id}">✎ 修改</button> <span class="tooltip-wrapper"><button class="btn btn-primary btn-sm water-btn" data-id="${row.id}" ${!waterStatus.can?'disabled':''}>💧 浇水</button>${!waterStatus.can?`<span class="tooltip-text">${waterStatus.reason}</span>`:''}</span> <button class="btn btn-success btn-sm plant-trigger" data-id="${row.id}">🌱 播种</button> <button class="btn btn-info btn-sm log-btn" data-id="${row.id}">📋 日志</button> <button class="btn btn-danger btn-sm delete-btn" data-id="${row.id}">🗑 删除</button>`;
-            tr.appendChild(tdAct);
+            const isMature = row.matureCountdown <= 0; const isWarn = !isMature && row.matureCountdown <= 3600;
+            const reduction = calcWaterReduction(row); const matureWait = calcWaterMatureRemaining(row);
+            const waterStatus = canWater(row); const waterLow = row.waterCountdown > 0 && row.waterCountdown <= WATER_LOW_THRESHOLD;
+            const isDry = row.waterCountdown <= 0; const rank = rankMap.get(row.id) || 0;
+            let cls = ''; if (isEdit) cls = 'row-editing'; else if (isMature) cls = 'row-success'; else if (isWarn) cls = 'row-warning';
+            const tr = document.createElement('tr'); tr.className = cls; tr.setAttribute('data-id', row.id);
+            const tdId = document.createElement('td'); tdId.textContent = row.id; tdId.style.fontWeight = '600'; tdId.style.color = 'var(--text-secondary)'; tr.appendChild(tdId);
+            const tdUser = document.createElement('td'); if (isEdit) tdUser.innerHTML = `<input class="edit-user-input" id="eu-${row.id}" value="${escapeHtml(row.user)}" placeholder="用户名">`; else tdUser.textContent = row.user || '—'; tr.appendChild(tdUser);
+            const tdCrop = document.createElement('td'); if (isEdit) tdCrop.innerHTML = `<select class="edit-select" id="ec-${row.id}" onchange="cropTypeChange(${row.id})"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select>`; else tdCrop.innerHTML = renderCropBadge(row); tr.appendChild(tdCrop);
+            const tdMature = document.createElement('td'); tdMature.id = `mature-cell-${row.id}`; tdMature.className = 'mature-cell'; if (isEdit) { const h = Math.floor(row.matureCountdown/3600), m = Math.floor((row.matureCountdown%3600)/60); tdMature.innerHTML = `<input class="edit-input" id="em-${row.id}" value="${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}" maxlength="4" placeholder="HHMM">`; } else { const ts = document.createElement('span'); ts.className = 'mature-time'; ts.innerHTML = formatTime(row.matureCountdown) + (isMature ? ' <span class="mature-ripe-badge">熟</span>' : ''); tdMature.appendChild(ts); if (isMature) { const eb = document.createElement('div'); eb.className = 'mature-progress'; const s = document.createElement('div'); s.className = 'boss-hp-stack'; eb.appendChild(s); tdMature.appendChild(eb); } else tdMature.appendChild(renderBossHpBar(row.matureCountdown)); } tr.appendChild(tdMature);
+            const tdWater = document.createElement('td'); if (isEdit) { const h = Math.floor(row.waterCountdown/3600), m = Math.floor((row.waterCountdown%3600)/60); tdWater.innerHTML = `<input class="edit-input" id="ew-${row.id}" value="${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}" maxlength="4" placeholder="HHMM">`; } else { const waterIcon = waterLow && !isDry ? ' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>' : ''; const dryBadge = isDry ? ' <span class="dry-badge-large">干枯</span>' : ''; const reductionHtml = reduction > 0 ? ` <span class="water-reduction-inline">(${formatReductionBold(reduction)})</span>` : ''; const timeDisplay = isDry ? '' : formatTime(row.waterCountdown); tdWater.innerHTML = `<div class="water-vertical"><span style="font-weight:600;font-family:monospace;">${timeDisplay}${dryBadge}${waterIcon}${reductionHtml}</span><div class="progress-bar-wrap"><div class="progress-bar-fill ${waterColor}" style="width:${waterPercent}%"></div></div></div>`; } tr.appendChild(tdWater);
+            const tdWait = document.createElement('td'); tdWait.className = 'water-wait-cell'; tdWait.style.fontSize = '0.8rem'; if (isMature) { tdWait.innerHTML = '<span class="immediate-mature-badge" style="background:#10b981;">✅ 已成熟</span>'; } else if (matureWait.seconds === 0) { tdWait.innerHTML = '<span class="immediate-mature-badge">🔥 浇水立即成熟</span>'; } else if (matureWait.seconds !== null && matureWait.seconds > 0) { const predictedTime = getFutureTime(matureWait.seconds); let rankHtml = ''; if (rank > 0 && rank <= 3) { rankHtml = ` <span class="rank-badge r${rank}">#${rank}</span>`; } tdWait.innerHTML = `<span class="approx-mature"><b>${matureWait.boldPart}</b>后浇水成熟（预计 ${predictedTime}）</span>${rankHtml}`; } else { tdWait.textContent = '-'; } tr.appendChild(tdWait);
+            const tdCb = document.createElement('td'); if (isEdit) tdCb.innerHTML = `<select class="edit-select" id="ecb-${row.id}"><option value="-" ${row.consecutiveBless==='-'?'selected':''}>-</option><option value="是" ${row.consecutiveBless==='是'?'selected':''}>是</option><option value="否" ${row.consecutiveBless==='否'?'selected':''}>否</option></select>`; else tdCb.innerHTML = renderConsecutiveBlessBadge(row); tr.appendChild(tdCb);
+            const tdRemark = document.createElement('td'); tdRemark.className = 'remark-cell'; if (isEdit) tdRemark.innerHTML = `<input class="edit-input" id="erm-${row.id}" value="${escapeHtml(row.remark||'')}" style="width:120px;">`; else tdRemark.innerHTML = `<div class="remark-text" id="remark-${row.id}" title="点击编辑备注">${escapeHtml(row.remark||'') || '<span style="color:var(--text-muted);">-</span>'}</div>`; tr.appendChild(tdRemark);
+            const tdAct = document.createElement('td'); tdAct.style.whiteSpace = 'nowrap'; if (isEdit) tdAct.innerHTML = `<button class="btn btn-success btn-sm" id="save-${row.id}">💾 保存</button> <button class="btn btn-outline btn-sm" id="cancel-${row.id}">✕ 取消</button>`; else tdAct.innerHTML = `<button class="btn btn-outline btn-sm edit-btn" data-id="${row.id}">✎ 修改</button> <span class="tooltip-wrapper"><button class="btn btn-primary btn-sm water-btn" data-id="${row.id}" ${!waterStatus.can?'disabled':''}>💧 浇水</button>${!waterStatus.can?`<span class="tooltip-text">${waterStatus.reason}</span>`:''}</span> <button class="btn btn-success btn-sm plant-trigger" data-id="${row.id}">🌱 播种</button> <button class="btn btn-info btn-sm log-btn" data-id="${row.id}">📋 日志</button> <button class="btn btn-danger btn-sm delete-btn" data-id="${row.id}">🗑 删除</button>`; tr.appendChild(tdAct);
             return tr;
         }
 
-        window.cropTypeChange = function(rowId) {
-            const row = rows.find(r => r.id === rowId);
-            if (!row || editingRowId !== rowId) return;
-            const cs = document.getElementById(`ec-${rowId}`), mi = document.getElementById(`em-${rowId}`), wi = document.getElementById(`ew-${rowId}`);
-            if (!cs || !mi || !wi) return;
-            const newCrop = cs.value, cfg = CROP_CONFIG[newCrop];
-            const h = Math.floor(cfg.matureTotal/3600), m = Math.floor((cfg.matureTotal%3600)/60);
-            mi.value = String(h).padStart(2,'0') + String(m).padStart(2,'0');
-            const wh = Math.floor(cfg.waterMax/3600), wm = Math.floor((cfg.waterMax%3600)/60);
-            wi.value = String(wh).padStart(2,'0') + String(wm).padStart(2,'0');
-            row.matureCountdown = cfg.matureTotal; row.waterCountdown = cfg.waterMax;
-            if (editSnapshot) { editSnapshot.matureDirty = true; editSnapshot.waterDirty = true; editSnapshot.cropChanged = true; }
-        };
-
+        window.cropTypeChange = function(rowId) { const row = rows.find(r => r.id === rowId); if (!row || editingRowId !== rowId) return; const cs = document.getElementById(`ec-${rowId}`), mi = document.getElementById(`em-${rowId}`), wi = document.getElementById(`ew-${rowId}`); if (!cs || !mi || !wi) return; const newCrop = cs.value, cfg = CROP_CONFIG[newCrop]; const h = Math.floor(cfg.matureTotal/3600), m = Math.floor((cfg.matureTotal%3600)/60); mi.value = String(h).padStart(2,'0') + String(m).padStart(2,'0'); const wh = Math.floor(cfg.waterMax/3600), wm = Math.floor((cfg.waterMax%3600)/60); wi.value = String(wh).padStart(2,'0') + String(wm).padStart(2,'0'); row.matureCountdown = cfg.matureTotal; row.waterCountdown = cfg.waterMax; if (editSnapshot) { editSnapshot.matureDirty = true; editSnapshot.waterDirty = true; editSnapshot.cropChanged = true; } };
         function formatReductionBold(seconds) { if (seconds<=0) return ''; const h=Math.floor(seconds/3600), m=Math.floor((seconds%3600)/60); let t='浇水减少'; if(h>0)t+=`<b>${h}小时</b>`; if(m>0)t+=`<b>${m}分钟</b>`; return t; }
 
         function bindAllEvents() {
@@ -790,8 +379,6 @@
             document.querySelectorAll('.delete-btn').forEach(b=>b.onclick=function(){const id=Number(this.dataset.id),row=rows.find(r=>r.id===id);showConfirm('确认删除',`删除用户"${row?.user||'未命名'}"的记录？`,()=>{deleteRow(id);renderGroupedTable();showToast('已删除');});});
             document.querySelectorAll('.log-btn').forEach(b=>b.onclick=function(){showLogModal(Number(this.dataset.id));});
             document.querySelectorAll('.plant-trigger').forEach(btn=>{btn.onclick=function(){showPlantModal(Number(this.dataset.id));};});
-            document.querySelectorAll('.blessed-badge').forEach(b=>{const rid=Number(b.getAttribute('data-bless-id'));b.addEventListener('click',()=>toggleBless(rid));});
-            document.querySelectorAll('.task-badge').forEach(b=>{const rid=Number(b.getAttribute('data-task-id'));b.addEventListener('click',()=>toggleDailyTask(rid));});
             document.querySelectorAll('.remark-text').forEach(div=>{const rowId=Number(div.id.replace('remark-',''));div.addEventListener('click',()=>{if(editingRowId===rowId)return;const row=rows.find(r=>r.id===rowId);if(!row)return;const input=document.createElement('input');input.className='remark-input';input.value=row.remark||'';input.addEventListener('blur',()=>{saveRemark(rowId,input.value);renderGroupedTable();});input.addEventListener('keydown',(e)=>{if(e.key==='Enter'){input.blur();}if(e.key==='Escape'){renderGroupedTable();}});div.replaceWith(input);input.focus();});});
             if(editingRowId){const row=rows.find(r=>r.id===editingRowId);if(row){const saveBtn=document.getElementById(`save-${row.id}`);if(saveBtn)saveBtn.onclick=()=>{const ui=document.getElementById(`eu-${row.id}`),cs=document.getElementById(`ec-${row.id}`),mi=document.getElementById(`em-${row.id}`),wi=document.getElementById(`ew-${row.id}`),cbs=document.getElementById(`ecb-${row.id}`),rmi=document.getElementById(`erm-${row.id}`);if(ui)row.user=ui.value;if(cs&&cs.value!==editSnapshot.crop){row.cropType=cs.value;editSnapshot.cropChanged=true;if(!editSnapshot.matureDirty){const cfg=CROP_CONFIG[row.cropType];row.matureCountdown=cfg.matureTotal;if(mi){const h=Math.floor(cfg.matureTotal/3600),m=Math.floor((cfg.matureTotal%3600)/60);mi.value=String(h).padStart(2,'0')+String(m).padStart(2,'0');}}if(!editSnapshot.waterDirty){const cfg=CROP_CONFIG[row.cropType];row.waterCountdown=cfg.waterMax;if(wi){const h=Math.floor(cfg.waterMax/3600),m=Math.floor((cfg.waterMax%3600)/60);wi.value=String(h).padStart(2,'0')+String(m).padStart(2,'0');}}}if(mi){const sec=parseTimeInput(mi.value);if(sec!==null){row.matureCountdown=sec;editSnapshot.matureDirty=true;}}if(wi){const sec=parseTimeInput(wi.value);if(sec!==null){row.waterCountdown=sec;editSnapshot.waterDirty=true;}}if(cbs)row.consecutiveBless=cbs.value;if(rmi)row.remark=rmi.value;saveEdit(row.id);};document.getElementById(`cancel-${row.id}`).onclick=()=>cancelEdit();const eh=e=>{if(e.key==='Enter')saveBtn?.click();};['eu','em','ew','ec','ecb','erm'].forEach(p=>{const el=document.getElementById(`${p}-${row.id}`);if(el)el.addEventListener('keydown',eh);});}}
             updateSortUI();
@@ -799,7 +386,6 @@
 
         function loadGroupConfig(){try{const raw=localStorage.getItem(CONFIG_STORAGE_KEY);groupConfig=raw||'';configTextarea.value=groupConfig;}catch(e){groupConfig='';}}
         function saveGroupConfig(){groupConfig=configTextarea.value;try{localStorage.setItem(CONFIG_STORAGE_KEY,groupConfig);}catch(e){}}
-
         function formatTime(s){if(s<=0)return'00:00:00';const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60);return`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}
         function formatTimeHM(s){if(s<=0)return'0h 0m';return`${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m`;}
         function getFutureTime(seconds){const ft=Math.floor(Date.now()/1000)+seconds;const d=new Date(ft*1000);return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
@@ -808,11 +394,9 @@
         function calcWaterMatureRemainingSeconds(row){if(row.matureCountdown<=0)return null;const reduction=calcWaterReduction(row);if(reduction>=row.matureCountdown)return 0;const remainingAfterWater=row.matureCountdown-reduction;const targetWater=Math.floor(remainingAfterWater/5*4);if(row.waterCountdown>targetWater)return targetWater;return null;}
         function calcWaterMatureRemaining(row){const seconds=calcWaterMatureRemainingSeconds(row);if(seconds===null)return{seconds:null,text:'-',cls:'',boldPart:''};if(seconds===0)return{seconds:0,text:'浇水立即成熟',cls:'immediate-mature',boldPart:''};const wm=Math.ceil(seconds/60);let bp;if(wm>=60){const h=Math.floor(wm/60),m=wm%60;bp=`${h}小时${m}分钟`;}else{bp=`${wm}分钟`;}return{seconds,text:`${bp}后浇水成熟`,cls:'approx-mature',boldPart:bp};}
         function canWater(row){if(row.matureCountdown<=0)return{can:false,reason:'已成熟'};const c=CROP_CONFIG[row.cropType];if(row.waterCountdown>=c.waterThreshold)return{can:false,reason:`需低于${formatTimeHM(c.waterThreshold)}`};return{can:true,reason:''};}
-        function getTodayResetTime(){const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate(),BLESS_RESET_HOUR,0,0,0).getTime();}
+        function getTodayResetTime(){const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate(),BLESS_RESET_HOUR,BLESS_RESET_MINUTE,0,0).getTime();}
         function getTodayDateStr(){const n=new Date();return`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;}
         function formatRowState(row){const c=CROP_CONFIG[row.cropType];return`作物类型：${c.label}\n成熟倒计时：${formatTime(row.matureCountdown)}\n浇水湿润倒计时：${formatTime(row.waterCountdown)}`;}
-        function formatBlessState(b){return b?'有祝福':'无祝福';}
-        function formatTaskState(d){return d?'已完成':'未完成';}
         function addLog(rowId,type,before,after){const log={id:nextLogId++,rowId,type,time:formatDateTime(Date.now()),before,after};logs.push(log);saveLogs();}
         function saveLogs(){try{localStorage.setItem(LOG_STORAGE_KEY,JSON.stringify({nextLogId,logs}));}catch(e){}}
         function loadLogs(){try{const raw=localStorage.getItem(LOG_STORAGE_KEY);if(!raw)return;const data=JSON.parse(raw);logs=data.logs||[];nextLogId=data.nextLogId||1;}catch(e){logs=[];nextLogId=1;}}
@@ -820,26 +404,18 @@
         function getRowLogs(rowId){return logs.filter(log=>log.rowId===rowId).sort((a,b)=>new Date(b.time.replace(/-/g,'/')).getTime()-new Date(a.time.replace(/-/g,'/')).getTime());}
         function deleteRowLogs(rowId){logs=logs.filter(log=>log.rowId!==rowId);saveLogs();}
         function showLogModal(rowId){const row=rows.find(r=>r.id===rowId);const rl=getRowLogs(rowId);const overlay=document.createElement('div');overlay.className='modal-overlay';let trs=rl.length===0?'<tr><td colspan="4" class="log-empty">暂无操作日志</td></tr>':rl.map(log=>`<tr><td>${escapeHtml(log.type)}</td><td style="white-space:nowrap;">${log.time}</td><td>${escapeHtml(log.before)}</td><td>${escapeHtml(log.after)}</td></tr>`).join('');overlay.innerHTML=`<div class="modal log-modal"><div style="display:flex;justify-content:space-between;align-items:center;"><h3>📋 操作日志 - ${escapeHtml(row?.user||'未命名')}</h3><button class="toast-close" style="font-size:1.2rem;cursor:pointer;" id="logClose">✕</button></div><div class="log-table-wrap"><table class="log-table"><thead><tr><th style="width:12%;">操作类型</th><th style="width:20%;">操作时间</th><th style="width:34%;">操作前</th><th style="width:34%;">操作后</th></tr></thead><tbody>${trs}</tbody></table></div></div>`;modalContainer.appendChild(overlay);overlay.querySelector('#logClose').onclick=()=>overlay.remove();overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});}
-        function saveToStorage(){lastSaveTime=Date.now();localStorage.setItem(STORAGE_KEY,JSON.stringify({version:30,nextId,nextCreateOrder,lastSaveTime,lastBlessResetDate,rows:rows.map(r=>({id:r.id,user:r.user,cropType:r.cropType,matureCountdown:r.matureCountdown,waterCountdown:r.waterCountdown,blessed:r.blessed,dailyTaskDone:r.dailyTaskDone,consecutiveBless:r.consecutiveBless,remark:r.remark,createOrder:r.createOrder,createdAt:r.createdAt}))}));}
-        function loadFromStorage(){const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return false;try{const data=JSON.parse(raw);if(!data.rows)return false;nextId=data.nextId||1;nextCreateOrder=data.nextCreateOrder||1;lastBlessResetDate=data.lastBlessResetDate||'';const elapsed=Math.floor((Date.now()-(data.lastSaveTime||Date.now()))/1000);rows=data.rows.map(r=>({id:r.id,user:r.user||'',cropType:r.cropType||'16h',matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed),waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed),blessed:r.blessed!==undefined?r.blessed:true,dailyTaskDone:r.dailyTaskDone!==undefined?r.dailyTaskDone:false,consecutiveBless:r.consecutiveBless||'-',remark:r.remark||'',createOrder:r.createOrder||0,createdAt:r.createdAt||Date.now()}));if(rows.length){nextId=Math.max(nextId,Math.max(...rows.map(r=>r.id))+1);nextCreateOrder=Math.max(nextCreateOrder,Math.max(...rows.map(r=>r.createOrder))+1);}lastSaveTime=Date.now();tickBaseTime=Date.now();return true;}catch(e){return false;}}
-        function checkAndResetDaily(){const today=getTodayDateStr();const resetTime=getTodayResetTime();const now=Date.now();if(now>=resetTime&&lastBlessResetDate!==today){rows.forEach(r=>{const ob=r.blessed,ot=r.dailyTaskDone;r.blessed=true;r.dailyTaskDone=false;if(!ob)addLog(r.id,'修改祝福状态',formatBlessState(ob),formatBlessState(true));if(ot)addLog(r.id,'修改每日任务状态',formatTaskState(ot),formatTaskState(false));});saveToStorage();lastBlessResetDate=today;resetCheckinData();}}
+        function saveToStorage(){lastSaveTime=Date.now();localStorage.setItem(STORAGE_KEY,JSON.stringify({version:36,nextId,nextCreateOrder,lastSaveTime,lastBlessResetDate,rows:rows.map(r=>({id:r.id,user:r.user,cropType:r.cropType,matureCountdown:r.matureCountdown,waterCountdown:r.waterCountdown,consecutiveBless:r.consecutiveBless,remark:r.remark,createOrder:r.createOrder,createdAt:r.createdAt}))}));}
+        function loadFromStorage(){const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return false;try{const data=JSON.parse(raw);if(!data.rows)return false;nextId=data.nextId||1;nextCreateOrder=data.nextCreateOrder||1;lastBlessResetDate=data.lastBlessResetDate||'';const elapsed=Math.floor((Date.now()-(data.lastSaveTime||Date.now()))/1000);rows=data.rows.map(r=>({id:r.id,user:r.user||'',cropType:r.cropType||'16h',matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed),waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed),consecutiveBless:r.consecutiveBless||'-',remark:r.remark||'',createOrder:r.createOrder||0,createdAt:r.createdAt||Date.now()}));if(rows.length){nextId=Math.max(nextId,Math.max(...rows.map(r=>r.id))+1);nextCreateOrder=Math.max(nextCreateOrder,Math.max(...rows.map(r=>r.createOrder))+1);}lastSaveTime=Date.now();tickBaseTime=Date.now();return true;}catch(e){return false;}}
+        function checkAndResetDaily(){const today=getTodayDateStr();const resetTime=getTodayResetTime();const now=Date.now();if(now>=resetTime&&lastBlessResetDate!==today){saveToStorage();lastBlessResetDate=today;/* 不再清除任务/任务类型数据 */}}
         function renderBossHpBar(remaining){const segSize=36000,cl=Math.ceil(remaining/segSize),ci=cl-1;const ri=remaining%segSize,tp=ri===0?100:Math.min(100,(ri/segSize)*100);const container=document.createElement('div');container.className='mature-progress';const stack=document.createElement('div');stack.className='boss-hp-stack';for(let i=0;i<cl;i++){const ld=document.createElement('div');ld.className='boss-hp-layer';ld.style.backgroundColor=LAYER_COLORS[i%LAYER_COLORS.length];ld.style.width=(i<ci?'100%':(i===ci?tp+'%':'0%'));stack.appendChild(ld);}container.appendChild(stack);const lbl=document.createElement('span');lbl.className='layer-label';lbl.textContent=`x${cl}`;container.appendChild(lbl);return container;}
         function showToast(msg,undoCallback,duration=3500){const toast=document.createElement('div');toast.className='toast';toast.innerHTML=`<span>${msg}</span>${undoCallback?'<button class="toast-undo">撤销</button>':''}<button class="toast-close">✕</button>`;toastContainer.appendChild(toast);const remove=()=>{if(toast.parentNode){toast.style.opacity='0';toast.style.transform='translateX(60px)';toast.style.transition='0.3s';setTimeout(()=>toast.remove(),300);}};if(undoCallback)toast.querySelector('.toast-undo').onclick=()=>{undoCallback();remove();};toast.querySelector('.toast-close').onclick=remove;setTimeout(remove,duration);}
         function showConfirm(title,msg,onConfirm){const overlay=document.createElement('div');overlay.className='modal-overlay';overlay.innerHTML=`<div class="modal"><h3>${title}</h3><p>${msg}</p><div class="modal-actions"><button class="btn btn-outline btn-sm" id="modalCancel">取消</button><button class="btn btn-danger btn-sm" id="modalConfirm">确认</button></div></div>`;modalContainer.appendChild(overlay);overlay.querySelector('#modalCancel').onclick=()=>overlay.remove();overlay.querySelector('#modalConfirm').onclick=()=>{overlay.remove();onConfirm();};overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};}
-        function addRow(user='',cropType='16h'){const c=CROP_CONFIG[cropType];const nr={id:nextId++,user,cropType,matureCountdown:c.matureTotal,waterCountdown:c.waterMax,blessed:true,dailyTaskDone:false,consecutiveBless:'-',remark:'',createOrder:nextCreateOrder++,createdAt:Date.now()};rows.push(nr);addLog(nr.id,'新增','-',formatRowState(nr));saveToStorage();return nr;}
+        function addRow(user='',cropType='16h'){const c=CROP_CONFIG[cropType];const nr={id:nextId++,user,cropType,matureCountdown:c.matureTotal,waterCountdown:c.waterMax,consecutiveBless:'-',remark:'',createOrder:nextCreateOrder++,createdAt:Date.now()};rows.push(nr);addLog(nr.id,'新增','-',formatRowState(nr));saveToStorage();return nr;}
         function deleteRow(id){if(editingRowId===id)cancelEdit();rows=rows.filter(r=>r.id!==id);deleteRowLogs(id);saveToStorage();}
         function doWater(row){const bs=formatRowState(row);const c=CROP_CONFIG[row.cropType],reduction=Math.floor((c.waterMax-row.waterCountdown)/4);row.waterCountdown=c.waterMax;row.matureCountdown=Math.max(0,row.matureCountdown-reduction);addLog(row.id,'浇水',bs,formatRowState(row));saveToStorage();showWaterHint(row.id,reduction);}
         function showWaterHint(rowId,reduction){const cell=document.getElementById(`mature-cell-${rowId}`);if(!cell)return;const old=document.getElementById(`hint-${rowId}`);if(old)old.remove();const hint=document.createElement('span');hint.className='water-reduction-hint';hint.id=`hint-${rowId}`;hint.textContent=`- ${formatTimeHM(reduction)}`;cell.appendChild(hint);setTimeout(()=>hint.remove(),WATER_HINT_DURATION);}
-        function toggleBless(rowId){const row=rows.find(r=>r.id===rowId);if(!row||editingRowId===rowId)return;const ob=row.blessed;row.blessed=!row.blessed;addLog(row.id,'修改祝福状态',formatBlessState(ob),formatBlessState(row.blessed));saveToStorage();updateBlessCell(row);if(!row.blessed)showToast('🙏 祝福已使用，明天凌晨3点恢复');}
-        function toggleDailyTask(rowId){const row=rows.find(r=>r.id===rowId);if(!row||editingRowId===rowId)return;const ot=row.dailyTaskDone;row.dailyTaskDone=!row.dailyTaskDone;addLog(row.id,'修改每日任务状态',formatTaskState(ot),formatTaskState(row.dailyTaskDone));saveToStorage();updateTaskCell(row);if(row.dailyTaskDone)showToast('✅ 每日任务已完成');}
-        function updateBlessCell(row){const tr=document.querySelector(`tbody tr[data-id="${row.id}"]`);if(!tr)return;const td=tr.children[6];if(td){td.innerHTML=renderBlessBadge(row);bindBlessClick(row.id,td);}}
-        function updateTaskCell(row){const tr=document.querySelector(`tbody tr[data-id="${row.id}"]`);if(!tr)return;const td=tr.children[7];if(td){td.innerHTML=renderTaskBadge(row);bindTaskClick(row.id,td);}}
-        function renderBlessBadge(row){return row.blessed?`<span class="blessed-badge has-bless" data-bless-id="${row.id}"><span class="bless-icon">✨</span> 有</span>`:`<span class="blessed-badge no-bless" data-bless-id="${row.id}"><span class="bless-icon">💤</span> 无</span>`;}
-        function renderTaskBadge(row){return row.dailyTaskDone?`<span class="task-badge done" data-task-id="${row.id}"><span class="task-icon">✅</span> 已完成</span>`:`<span class="task-badge undone" data-task-id="${row.id}"><span class="task-icon">⏳</span> 未完成</span>`;}
         function renderConsecutiveBlessBadge(row){const val=row.consecutiveBless||'-';const cls=val==='是'?'yes':(val==='否'?'no':'na');const icon=val==='是'?'✅':(val==='否'?'❌':'➖');return`<span class="yesterday-bless-badge ${cls}"><span>${icon}</span> ${val}</span>`;}
         function renderCropBadge(row){const c=CROP_CONFIG[row.cropType];return`<span class="crop-badge ${c.cssClass}">🌱 ${c.label}</span>`;}
-        function bindBlessClick(rowId,td){const b=td.querySelector('.blessed-badge');if(b)b.addEventListener('click',()=>toggleBless(rowId));}
-        function bindTaskClick(rowId,td){const b=td.querySelector('.task-badge');if(b)b.addEventListener('click',()=>toggleDailyTask(rowId));}
         function enterEdit(rowId){if(editingRowId&&editingRowId!==rowId)cancelEdit();const row=rows.find(r=>r.id===rowId);if(!row)return;editingRowId=rowId;editSnapshot={mature:row.matureCountdown,water:row.waterCountdown,time:Date.now(),crop:row.cropType,user:row.user,matureDirty:false,waterDirty:false,cropChanged:false,beforeState:formatRowState(row)};renderGroupedTable();}
         function cancelEdit(){if(!editingRowId)return;const row=rows.find(r=>r.id===editingRowId);if(row&&editSnapshot){row.matureCountdown=editSnapshot.mature;row.waterCountdown=editSnapshot.water;row.cropType=editSnapshot.crop;row.user=editSnapshot.user;}editingRowId=null;editSnapshot=null;saveToStorage();renderGroupedTable();}
         function saveEdit(rowId){if(editingRowId!==rowId)return;const row=rows.find(r=>r.id===rowId);if(!row)return;const bs=editSnapshot.beforeState;const elapsed=Math.floor((Date.now()-editSnapshot.time)/1000);if(editSnapshot.cropChanged){const c=CROP_CONFIG[row.cropType];row.matureCountdown=editSnapshot.matureDirty?row.matureCountdown:c.matureTotal;row.waterCountdown=editSnapshot.waterDirty?row.waterCountdown:c.waterMax;}else{if(!editSnapshot.matureDirty)row.matureCountdown=Math.max(0,editSnapshot.mature-elapsed);if(!editSnapshot.waterDirty)row.waterCountdown=Math.max(0,editSnapshot.water-elapsed);}addLog(row.id,'修改',bs,formatRowState(row));editingRowId=null;editSnapshot=null;saveToStorage();renderGroupedTable();}
@@ -852,17 +428,14 @@
         document.getElementById('btnAddRow').onclick=()=>{if(editingRowId)cancelEdit();const row=addRow();renderGroupedTable();enterEdit(row.id);};
         document.getElementById('btnExport').onclick=()=>{const data={exportTime:Date.now(),rows:rows.map(r=>({...r})),nextId,nextCreateOrder};const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`crop-data-${new Date().toISOString().slice(0,10)}.json`;a.click();showToast('已导出');};
         document.getElementById('btnImport').onclick=()=>document.getElementById('importFileInput').click();
-        document.getElementById('importFileInput').onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(!data.rows)throw new Error('格式错误');const elapsed=Math.floor((Date.now()-(data.exportTime||Date.now()))/1000);rows=data.rows.map(r=>({id:r.id,user:r.user||'',cropType:r.cropType||'16h',matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed),waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed),blessed:r.blessed!==undefined?r.blessed:true,dailyTaskDone:r.dailyTaskDone!==undefined?r.dailyTaskDone:false,consecutiveBless:r.consecutiveBless||'-',remark:r.remark||'',createOrder:r.createOrder||0,createdAt:r.createdAt||Date.now()}));nextId=data.nextId||1;nextCreateOrder=data.nextCreateOrder||1;lastBlessResetDate=data.lastBlessResetDate||'';sortState=SORT_DEFAULT;editingRowId=null;editSnapshot=null;tickBaseTime=Date.now();checkAndResetDaily();saveToStorage();renderGroupedTable();showToast(`导入成功 (${rows.length}条)`);}catch(ex){showToast('导入失败: '+ex.message);}};reader.readAsText(file);e.target.value='';};
+        document.getElementById('importFileInput').onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(!data.rows)throw new Error('格式错误');const elapsed=Math.floor((Date.now()-(data.exportTime||Date.now()))/1000);rows=data.rows.map(r=>({id:r.id,user:r.user||'',cropType:r.cropType||'16h',matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed),waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed),consecutiveBless:r.consecutiveBless||'-',remark:r.remark||'',createOrder:r.createOrder||0,createdAt:r.createdAt||Date.now()}));nextId=data.nextId||1;nextCreateOrder=data.nextCreateOrder||1;lastBlessResetDate=data.lastBlessResetDate||'';sortState=SORT_DEFAULT;editingRowId=null;editSnapshot=null;tickBaseTime=Date.now();checkAndResetDaily();saveToStorage();renderGroupedTable();showToast(`导入成功 (${rows.length}条)`);}catch(ex){showToast('导入失败: '+ex.message);}};reader.readAsText(file);e.target.value='';};
         configHeader.addEventListener('click',()=>{configPanel.classList.toggle('collapsed');});
         btnApplyConfig.addEventListener('click',()=>{saveGroupConfig();renderGroupedTable();showToast('✅ 分组配置已应用');});
-
         setInterval(()=>{const now=Date.now(),elapsed=Math.floor((now-tickBaseTime)/1000);if(elapsed<=0)return;tickBaseTime+=elapsed*1000;let changed=false;rows.forEach(r=>{if(editingRowId===r.id)return;if(r.matureCountdown>0){r.matureCountdown=Math.max(0,r.matureCountdown-elapsed);changed=true;}if(r.waterCountdown>0){r.waterCountdown=Math.max(0,r.waterCountdown-elapsed);changed=true;}});if(changed){updateDynamicDisplay();saveToStorage();}if(Math.floor(Date.now()/60000)!==Math.floor((Date.now()-1000)/60000)){renderGroupedTable();}if(Math.floor(Date.now()/30000)!==Math.floor((Date.now()-1000)/30000))checkAndResetDaily();},1000);
-
         function updateDynamicDisplay(){document.querySelectorAll('tbody tr[data-id]').forEach(tr=>{const id=Number(tr.getAttribute('data-id')),row=rows.find(r=>r.id===id);if(!row||editingRowId===id)return;const c=CROP_CONFIG[row.cropType];const matureCell=document.getElementById(`mature-cell-${id}`);if(matureCell&&!matureCell.querySelector('input')){const ts=matureCell.querySelector('.mature-time');if(ts)ts.innerHTML=formatTime(row.matureCountdown)+(row.matureCountdown<=0?' <span class="mature-ripe-badge">熟</span>':'');const op=matureCell.querySelector('.mature-progress');if(op)op.remove();if(row.matureCountdown<=0){const eb=document.createElement('div');eb.className='mature-progress';const s=document.createElement('div');s.className='boss-hp-stack';eb.appendChild(s);matureCell.appendChild(eb);}else matureCell.appendChild(renderBossHpBar(row.matureCountdown));}const waterDiv=tr.querySelector('.water-vertical');if(waterDiv){const span=waterDiv.querySelector('span');if(span){const waterLow=row.waterCountdown>0&&row.waterCountdown<=WATER_LOW_THRESHOLD;const isDry=row.waterCountdown<=0;const waterIcon=waterLow&&!isDry?' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>':'';const dryBadge=isDry?' <span class="dry-badge-large">干枯</span>':'';const reduction=calcWaterReduction(row);const reductionHtml=reduction>0?` <span class="water-reduction-inline">(${formatReductionBold(reduction)})</span>`:'';const timeDisplay=isDry?'':formatTime(row.waterCountdown);span.innerHTML=timeDisplay+dryBadge+waterIcon+reductionHtml;}const percent=c.waterMax?Math.min(100,(row.waterCountdown/c.waterMax)*100):0;const fill=waterDiv.querySelector('.progress-bar-fill');if(fill){fill.style.width=percent+'%';fill.className='progress-bar-fill '+(percent>50?'green':percent>=20?'orange':'red');}}const waterBtn=tr.querySelector('.water-btn');if(waterBtn){const st=canWater(row);waterBtn.disabled=!st.can;const wr=waterBtn.closest('.tooltip-wrapper');if(wr){let tip=wr.querySelector('.tooltip-text');if(!st.can){if(!tip){tip=document.createElement('span');tip.className='tooltip-text';wr.appendChild(tip);}tip.textContent=st.reason;}else if(tip)tip.remove();}}tr.className=row.matureCountdown<=0?'row-success':(row.matureCountdown<=3600?'row-warning':'');});}
-
-        loadLogs();cleanOldLogs();loadGroupConfig();loadCheckinData();
+        loadLogs();cleanOldLogs();loadGroupConfig();loadCheckinData();loadTaskTypeData();
         if(!loadFromStorage()){rows=[];nextId=1;nextCreateOrder=1;lastBlessResetDate='';saveToStorage();}
-        checkAndResetDaily();renderGroupedTable();renderCheckinTable();
+        checkAndResetDaily();renderGroupedTable();renderCheckinTable();renderTaskTypeRow();
         window.addEventListener('beforeunload',saveToStorage);
         document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){const now=Date.now(),elapsed=Math.floor((now-tickBaseTime)/1000);if(elapsed>1){rows.forEach(r=>{if(editingRowId===r.id)return;r.matureCountdown=Math.max(0,r.matureCountdown-elapsed);r.waterCountdown=Math.max(0,r.waterCountdown-elapsed);});tickBaseTime=now;saveToStorage();renderGroupedTable();checkAndResetDaily();}}else{saveToStorage();}});
     })();
