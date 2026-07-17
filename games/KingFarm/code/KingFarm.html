@@ -165,10 +165,13 @@
         .tag-extra-label { position: absolute; top: -8px; right: -8px; background: #f97316; color: #ffffff; font-size: 0.5rem; font-weight: 700; padding: 1px 4px; border-radius: 10px; line-height: 1; z-index: 2; white-space: nowrap; pointer-events: none; }
         .tag-hover-options { display: none; position: absolute; bottom: 100%; left: 0; z-index: 10; background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: var(--shadow-lg); padding: 4px; white-space: nowrap; margin-bottom: 4px; }
         .tag-hover-options.show { display: flex; gap: 4px; }
-        .task-type-cell { display:inline-flex; align-items:center; gap:2px; margin:2px; padding:4px; border:1px solid #e2e6ea; border-radius:4px; background:#f9fafb; }
+        .task-type-cell { display:inline-flex; align-items:center; gap:2px; margin:2px; padding:4px; border:1px solid #e2e6ea; border-radius:4px; background:#f9fafb; transition: background 0.2s; }
+        .task-type-cell.has-both { background: #a3e635; }
         .task-type-input { width:40px; padding:2px 4px; border:1px solid #d1d5db; border-radius:3px; font-size:0.7rem; text-align:center; }
         .task-type-input:focus { border-color: var(--primary); outline:none; }
         .task-type-select { padding:2px; border:1px solid #d1d5db; border-radius:3px; font-size:0.65rem; }
+        .btn-copy { background: #8b5cf6; color: #fff; border-color: #8b5cf6; }
+        .btn-copy:hover { background: #7c3aed; border-color: #7c3aed; }
         @media (max-width:768px) { .app-container { padding:10px 8px; } table { min-width:1300px; } .log-modal { max-width:95vw; } .config-panel { width: 90vw; right: 5vw; } .checkin-table { min-width: auto !important; } }
     </style>
 </head>
@@ -291,7 +294,23 @@
         const configPanel = $('#configPanel'), configHeader = $('#configHeader');
         const configTextarea = $('#configTextarea'), btnApplyConfig = $('#btnApplyConfig');
 
-        function loadCheckinData() { try { const raw = localStorage.getItem(CHECKIN_STORAGE_KEY); if (raw) { const data = JSON.parse(raw); checkinData = { bless: data.bless || {}, task: data.task || {}, taskExtra: data.taskExtra || {} }; } } catch(e) { checkinData = { bless: {}, task: {}, taskExtra: {} }; } CHECKIN_USERS.forEach(u => { if (!checkinData.bless[u]) checkinData.bless[u] = []; if (!checkinData.task[u]) checkinData.task[u] = []; if (!checkinData.taskExtra[u]) checkinData.taskExtra[u] = {}; }); }
+        function loadCheckinData() {
+            try {
+                const raw = localStorage.getItem(CHECKIN_STORAGE_KEY);
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    checkinData = { bless: data.bless || {}, task: data.task || {}, taskExtra: data.taskExtra || {} };
+                }
+            } catch(e) {
+                checkinData = { bless: {}, task: {}, taskExtra: {} };
+            }
+            CHECKIN_USERS.forEach(u => {
+                if (!checkinData.bless[u]) checkinData.bless[u] = [];
+                if (!checkinData.task[u]) checkinData.task[u] = [];
+                if (!checkinData.taskExtra[u]) checkinData.taskExtra[u] = {};
+            });
+        }
+
         function saveCheckinData() { try { localStorage.setItem(CHECKIN_STORAGE_KEY, JSON.stringify(checkinData)); } catch(e) {} }
         function resetCheckinData() { CHECKIN_USERS.forEach(u => { checkinData.bless[u] = []; const savedExtra = {}; if (checkinData.taskExtra[u]) { Object.keys(checkinData.taskExtra[u]).forEach(tagNum => { if (!checkinData.task[u] || !checkinData.task[u].includes(parseInt(tagNum))) { savedExtra[tagNum] = checkinData.taskExtra[u][tagNum]; } }); } checkinData.task[u] = []; checkinData.taskExtra[u] = savedExtra; }); saveCheckinData(); renderCheckinTable(); }
         function resetCheckinRow(type) { CHECKIN_USERS.forEach(u => { if (type === 'task') { checkinData.task[u] = []; checkinData.taskExtra[u] = {}; } else { checkinData[type][u] = []; } }); saveCheckinData(); renderCheckinTable(); }
@@ -301,6 +320,28 @@
         function loadTaskTypeData() { try { const raw = localStorage.getItem(TASK_TYPE_STORAGE_KEY); if (raw) { taskTypeData = JSON.parse(raw); } } catch(e) { taskTypeData = {}; } CHECKIN_USERS.forEach(u => { if (!taskTypeData[u]) taskTypeData[u] = {}; const tags = CHECKIN_TASK_TAGS[u] || []; tags.forEach(tagNum => { if (!taskTypeData[u][tagNum]) taskTypeData[u][tagNum] = { value: '', type: '-' }; }); }); }
         function saveTaskTypeData() { try { localStorage.setItem(TASK_TYPE_STORAGE_KEY, JSON.stringify(taskTypeData)); } catch(e) {} }
         function resetTaskTypeData() { CHECKIN_USERS.forEach(u => { taskTypeData[u] = {}; const tags = CHECKIN_TASK_TAGS[u] || []; tags.forEach(tagNum => { taskTypeData[u][tagNum] = { value: '', type: '-' }; }); }); saveTaskTypeData(); renderTaskTypeRow(); }
+
+        function updateTaskTypeCellBg(cell) {
+            const input = cell.querySelector('.task-type-input');
+            const select = cell.querySelector('.task-type-select');
+            if (input && select) {
+                const hasInput = input.value.trim() !== '';
+                const hasSelect = select.value !== '-';
+                if (hasInput && hasSelect) {
+                    cell.classList.add('has-both');
+                } else {
+                    cell.classList.remove('has-both');
+                }
+            }
+        }
+
+        function getTaskTypeDisplay(user, tagNum) {
+            const data = taskTypeData[user]?.[tagNum];
+            if (!data) return '';
+            if (data.type && data.type !== '-') return data.type;
+            return data.value || '';
+        }
+
         function renderTaskTypeRow() {
             const row = document.getElementById('checkinTaskTypeRow'); if (!row) return;
             while (row.children.length > 1) row.removeChild(row.lastChild);
@@ -310,12 +351,28 @@
                     const wrapper = document.createElement('span'); wrapper.className = 'task-type-cell';
                     const input = document.createElement('input'); input.type = 'text'; input.className = 'task-type-input';
                     input.value = taskTypeData[user]?.[tagNum]?.value || '';
-                    input.addEventListener('input', (e) => { if (!taskTypeData[user]) taskTypeData[user] = {}; if (!taskTypeData[user][tagNum]) taskTypeData[user][tagNum] = { value: '', type: '-' }; taskTypeData[user][tagNum].value = e.target.value; saveTaskTypeData(); });
+                    input.addEventListener('input', (e) => {
+                        if (!taskTypeData[user]) taskTypeData[user] = {};
+                        if (!taskTypeData[user][tagNum]) taskTypeData[user][tagNum] = { value: '', type: '-' };
+                        taskTypeData[user][tagNum].value = e.target.value;
+                        saveTaskTypeData();
+                        updateTaskTypeCellBg(wrapper);
+                        renderCheckinTable();
+                    });
                     wrapper.appendChild(input);
                     const select = document.createElement('select'); select.className = 'task-type-select';
                     TASK_TYPE_OPTIONS.forEach(opt => { const option = document.createElement('option'); option.value = opt; option.textContent = opt; if (taskTypeData[user]?.[tagNum]?.type === opt) option.selected = true; select.appendChild(option); });
-                    select.addEventListener('change', (e) => { if (!taskTypeData[user]) taskTypeData[user] = {}; if (!taskTypeData[user][tagNum]) taskTypeData[user][tagNum] = { value: '', type: '-' }; taskTypeData[user][tagNum].type = e.target.value; saveTaskTypeData(); });
-                    wrapper.appendChild(select); td.appendChild(wrapper);
+                    select.addEventListener('change', (e) => {
+                        if (!taskTypeData[user]) taskTypeData[user] = {};
+                        if (!taskTypeData[user][tagNum]) taskTypeData[user][tagNum] = { value: '', type: '-' };
+                        taskTypeData[user][tagNum].type = e.target.value;
+                        saveTaskTypeData();
+                        updateTaskTypeCellBg(wrapper);
+                        renderCheckinTable();
+                    });
+                    wrapper.appendChild(select);
+                    setTimeout(() => updateTaskTypeCellBg(wrapper), 0);
+                    td.appendChild(wrapper);
                 }); row.appendChild(td);
             });
             const actTd = document.createElement('td'); const clearBtn = document.createElement('button'); clearBtn.className = 'btn btn-outline btn-xs'; clearBtn.textContent = '🗑️ 清除'; clearBtn.addEventListener('click', () => { resetTaskTypeData(); renderTaskTypeRow(); }); actTd.appendChild(clearBtn); row.appendChild(actTd);
@@ -327,14 +384,174 @@
             while (taskRow.children.length > 1) taskRow.removeChild(taskRow.lastChild);
             CHECKIN_USERS.forEach(user => {
                 const blessTd = document.createElement('td'); (CHECKIN_BLESS_TAGS[user] || []).forEach(tagNum => { const wrapper = document.createElement('span'); wrapper.className = 'checkin-tag-wrapper'; const span = document.createElement('span'); span.className = 'checkin-tag'; if (checkinData.bless[user] && checkinData.bless[user].includes(tagNum)) span.classList.add('checked-bless'); span.textContent = `[${tagNum}]`; span.addEventListener('click', () => toggleCheckinTag('bless', user, tagNum)); wrapper.appendChild(span); blessTd.appendChild(wrapper); }); blessRow.appendChild(blessTd);
-                const taskTd = document.createElement('td'); (CHECKIN_TASK_TAGS[user] || []).forEach(tagNum => { const wrapper = document.createElement('span'); wrapper.className = 'checkin-tag-wrapper'; const isChecked = checkinData.task[user] && checkinData.task[user].includes(tagNum); if (isChecked) wrapper.classList.add('checked-task'); const span = document.createElement('span'); span.className = 'checkin-tag'; if (isChecked) span.classList.add('checked-task'); span.textContent = `[${tagNum}]`; span.addEventListener('click', () => toggleCheckinTag('task', user, tagNum)); const extraVal = checkinData.taskExtra[user]?.[tagNum]; if (extraVal && !isChecked) { const extraLabel = document.createElement('span'); extraLabel.className = 'tag-extra-label'; extraLabel.textContent = extraVal; wrapper.appendChild(extraLabel); } wrapper.appendChild(span); if (!isChecked) { const optionsDiv = document.createElement('div'); optionsDiv.className = 'tag-hover-options'; TASK_EXTRA_OPTIONS.forEach(opt => { const optBtn = document.createElement('button'); optBtn.className = 'btn btn-outline btn-xs'; optBtn.textContent = opt; optBtn.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); setTaskExtra(user, tagNum, opt); }); optionsDiv.appendChild(optBtn); }); wrapper.appendChild(optionsDiv); } taskTd.appendChild(wrapper); }); taskRow.appendChild(taskTd);
+                const taskTd = document.createElement('td'); (CHECKIN_TASK_TAGS[user] || []).forEach(tagNum => {
+                    const wrapper = document.createElement('span'); wrapper.className = 'checkin-tag-wrapper';
+                    const isChecked = checkinData.task[user] && checkinData.task[user].includes(tagNum);
+                    const span = document.createElement('span'); span.className = 'checkin-tag';
+                    if (isChecked) { span.classList.add('checked-task'); }
+                    span.textContent = `[${tagNum}]`;
+                    span.addEventListener('click', () => toggleCheckinTag('task', user, tagNum));
+
+                    const displayVal = getTaskTypeDisplay(user, tagNum);
+                    if (displayVal) {
+                        const extraLabel = document.createElement('span');
+                        extraLabel.className = 'tag-extra-label';
+                        extraLabel.textContent = displayVal;
+                        wrapper.appendChild(extraLabel);
+                    }
+
+                    wrapper.appendChild(span);
+                    taskTd.appendChild(wrapper);
+                }); taskRow.appendChild(taskTd);
             });
             const blessActTd = document.createElement('td'); const blessClearBtn = document.createElement('button'); blessClearBtn.className = 'btn btn-outline btn-xs'; blessClearBtn.textContent = '🗑️ 清除'; blessClearBtn.addEventListener('click', () => resetCheckinRow('bless')); blessActTd.appendChild(blessClearBtn); blessRow.appendChild(blessActTd);
             const taskActTd = document.createElement('td'); const taskClearBtn = document.createElement('button'); taskClearBtn.className = 'btn btn-outline btn-xs'; taskClearBtn.textContent = '🗑️ 清除'; taskClearBtn.addEventListener('click', () => resetCheckinRow('task')); taskActTd.appendChild(taskClearBtn); taskRow.appendChild(taskActTd);
         }
 
-        function parseGroupConfig(configStr) { const groups = []; if (!configStr.trim()) return groups; const lines = configStr.split('\n'); lines.forEach(line => { const trimmed = line.trim(); if (!trimmed) return; const ids = trimmed.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n)); if (ids.length > 0) groups.push(ids); }); return groups; }
-        function getGroupSortedRows() { if (sortState !== SORT_DEFAULT) { const sorted = [...rows]; if (sortState === SORT_MATURE_ASC) sorted.sort((a,b) => a.matureCountdown - b.matureCountdown); return { sorted, groups: [] }; } const groups = parseGroupConfig(groupConfig); if (groups.length === 0) return { sorted: [...rows].sort((a,b) => a.createOrder - b.createOrder), groups: [] }; const groupedRows = []; const groupedIds = new Set(); groups.forEach(groupIds => { const groupRows = []; groupIds.forEach(id => { const row = rows.find(r => r.id === id); if (row) { groupRows.push(row); groupedIds.add(id); } }); if (groupRows.length > 0) groupedRows.push(groupRows); }); const ungrouped = rows.filter(r => !groupedIds.has(r.id)).sort((a,b) => a.createOrder - b.createOrder); return { grouped: groupedRows, ungrouped, groups }; }
+        // 分组配置相关函数
+        function parseGroupConfig(configStr) {
+            const groups = [];
+            if (!configStr.trim()) return groups;
+            const lines = configStr.split('\n');
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (!trimmed) return;
+                const ids = trimmed.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+                if (ids.length > 0) groups.push(ids);
+            });
+            return groups;
+        }
+
+        // 将分组配置转换为文本
+        function groupsToConfig(groups) {
+            return groups.map(g => g.join(', ')).join('\n');
+        }
+
+        // 查找某个ID所在的组索引和组内位置
+        function findIdInGroups(groups, id) {
+            for (let i = 0; i < groups.length; i++) {
+                const idx = groups[i].indexOf(id);
+                if (idx !== -1) {
+                    return { groupIndex: i, posInGroup: idx };
+                }
+            }
+            return null;
+        }
+
+        // 复制行功能
+        function duplicateRow(sourceId) {
+            const sourceRow = rows.find(r => r.id === sourceId);
+            if (!sourceRow) {
+                showToast('❌ 未找到要复制的行');
+                return;
+            }
+
+            // 检查是否有编辑中的行，如果有则先取消
+            if (editingRowId) {
+                cancelEdit();
+            }
+
+            // 创建新行数据（复制源行数据）
+            const newRow = {
+                id: nextId++,
+                user: sourceRow.user || '',
+                cropType: sourceRow.cropType || '16h',
+                matureCountdown: sourceRow.matureCountdown,
+                waterCountdown: sourceRow.waterCountdown,
+                consecutiveBless: sourceRow.consecutiveBless || '-',
+                remark: sourceRow.remark || '',
+                createOrder: nextCreateOrder++,
+                createdAt: Date.now()
+            };
+
+            // 找到源行在 rows 中的位置
+            const sourceIndex = rows.findIndex(r => r.id === sourceId);
+            // 在源行后面插入新行
+            rows.splice(sourceIndex + 1, 0, newRow);
+
+            // 更新分组配置
+            let groups = parseGroupConfig(groupConfig);
+            let foundGroup = false;
+
+            // 查找源行所在的组
+            const result = findIdInGroups(groups, sourceId);
+            if (result) {
+                const { groupIndex, posInGroup } = result;
+                // 在组内源行的后面插入新ID
+                groups[groupIndex].splice(posInGroup + 1, 0, newRow.id);
+                foundGroup = true;
+            }
+
+            // 如果没有找到组，或者没有分组配置，则创建新组（包含源ID和新ID）
+            if (!foundGroup || groups.length === 0) {
+                // 检查是否有未分组的行，如果有则创建一个包含源ID和新ID的组
+                const ungroupedIds = rows.filter(r => {
+                    // 检查该ID是否已在任何组中
+                    let inGroup = false;
+                    for (const g of groups) {
+                        if (g.includes(r.id)) { inGroup = true; break; }
+                    }
+                    return !inGroup;
+                }).map(r => r.id);
+
+                if (ungroupedIds.includes(sourceId)) {
+                    // 源ID未分组，创建新组
+                    groups.push([sourceId, newRow.id]);
+                } else {
+                    // 源ID已在组中（但上面的查找没找到？保险起见，直接添加到第一个组或创建新组）
+                    if (groups.length > 0) {
+                        groups[0].push(newRow.id);
+                    } else {
+                        groups.push([sourceId, newRow.id]);
+                    }
+                }
+            }
+
+            // 更新配置文本
+            groupConfig = groupsToConfig(groups);
+            configTextarea.value = groupConfig;
+            saveGroupConfig();
+
+            // 添加日志
+            addLog(newRow.id, '复制', '-', formatRowState(newRow));
+
+            // 保存数据
+            saveToStorage();
+
+            // 重新渲染表格
+            renderGroupedTable();
+
+            // 进入编辑状态
+            enterEdit(newRow.id);
+
+            showToast(`✅ 已复制行 ID:${sourceId} → 新行 ID:${newRow.id}`);
+        }
+
+        function getGroupSortedRows() {
+            if (sortState !== SORT_DEFAULT) {
+                const sorted = [...rows];
+                if (sortState === SORT_MATURE_ASC) sorted.sort((a,b) => a.matureCountdown - b.matureCountdown);
+                return { sorted, groups: [] };
+            }
+            const groups = parseGroupConfig(groupConfig);
+            if (groups.length === 0) return { sorted: [...rows].sort((a,b) => a.createOrder - b.createOrder), groups: [] };
+            const groupedRows = [];
+            const groupedIds = new Set();
+            groups.forEach(groupIds => {
+                const groupRows = [];
+                groupIds.forEach(id => {
+                    const row = rows.find(r => r.id === id);
+                    if (row) {
+                        groupRows.push(row);
+                        groupedIds.add(id);
+                    }
+                });
+                if (groupRows.length > 0) groupedRows.push(groupRows);
+            });
+            const ungrouped = rows.filter(r => !groupedIds.has(r.id)).sort((a,b) => a.createOrder - b.createOrder);
+            return { grouped: groupedRows, ungrouped, groups };
+        }
+
         function clearTableBody() { while (mainTable.children.length > 1) { mainTable.removeChild(mainTable.lastChild); } }
         function computeRanks() { const waitList = []; rows.forEach(row => { const seconds = calcWaterMatureRemainingSeconds(row); if (seconds !== null && seconds > 0) waitList.push({ id: row.id, seconds }); }); waitList.sort((a, b) => a.seconds - b.seconds); const rankMap = new Map(); let currentRank = 1; let prevSeconds = -1; let rankIndex = 0; waitList.forEach((item, idx) => { if (item.seconds !== prevSeconds) { currentRank = rankIndex + 1; } rankMap.set(item.id, currentRank); prevSeconds = item.seconds; rankIndex++; }); return rankMap; }
         function showPlantModal(rowId) { const row = rows.find(r => r.id === rowId); if (!row) return; const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; overlay.innerHTML = `<div class="modal" style="max-width:360px;"><h3 style="margin-bottom:16px;">🌱 选择播种类型</h3><p style="color:var(--text-secondary);margin-bottom:16px;">用户：${escapeHtml(row.user || '未命名')}（ID: ${row.id}）</p><select class="edit-select" id="plantSelect" style="width:100%;margin-bottom:16px;"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select><div class="modal-actions"><button class="btn btn-outline btn-sm" id="plantCancel">取消</button><button class="btn btn-success btn-sm" id="plantConfirm">✅ 确认播种</button></div></div>`; modalContainer.appendChild(overlay); const confirmBtn = overlay.querySelector('#plantConfirm'); const selectEl = overlay.querySelector('#plantSelect'); overlay.querySelector('#plantCancel').onclick = () => overlay.remove(); overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); }); overlay.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') { e.preventDefault(); selectEl.value = '32h'; } else if (e.key === 'ArrowUp') { e.preventDefault(); selectEl.value = '16h'; } else if (e.key === 'Enter') { e.preventDefault(); confirmBtn.click(); } else if (e.key === 'Escape') { overlay.remove(); } }); setTimeout(() => confirmBtn.focus(), 100); confirmBtn.onclick = () => { const sel = selectEl.value; overlay.remove(); const prev = { user: row.user, cropType: row.cropType, mature: row.matureCountdown, water: row.waterCountdown }; const bs = formatRowState(row); undoData[row.id] = prev; row.cropType = sel; const c = CROP_CONFIG[sel]; row.matureCountdown = c.matureTotal; row.waterCountdown = c.waterMax; const reduction = Math.floor(c.waterMax / 4); row.matureCountdown = Math.max(0, row.matureCountdown - reduction); addLog(row.id, '播种', bs, formatRowState(row)); saveToStorage(); showWaterHint(row.id, reduction); showToast(`✅ 已播种 ${c.label}，-${formatTimeHM(reduction)}`, () => { if (undoData[row.id]) { const p = undoData[row.id]; row.user = p.user; row.cropType = p.cropType; row.matureCountdown = p.mature; row.waterCountdown = p.water; delete undoData[row.id]; saveToStorage(); renderGroupedTable(); } }, UNDO_TIMEOUT); renderGroupedTable(); }; }
@@ -366,7 +583,13 @@
             const tdWait = document.createElement('td'); tdWait.className = 'water-wait-cell'; tdWait.style.fontSize = '0.8rem'; if (isMature) { tdWait.innerHTML = '<span class="immediate-mature-badge" style="background:#10b981;">✅ 已成熟</span>'; } else if (matureWait.seconds === 0) { tdWait.innerHTML = '<span class="immediate-mature-badge">🔥 浇水立即成熟</span>'; } else if (matureWait.seconds !== null && matureWait.seconds > 0) { const predictedTime = getFutureTime(matureWait.seconds); let rankHtml = ''; if (rank > 0 && rank <= 3) { rankHtml = ` <span class="rank-badge r${rank}">#${rank}</span>`; } tdWait.innerHTML = `<span class="approx-mature"><b>${matureWait.boldPart}</b>后浇水成熟（预计 ${predictedTime}）</span>${rankHtml}`; } else { tdWait.textContent = '-'; } tr.appendChild(tdWait);
             const tdCb = document.createElement('td'); if (isEdit) tdCb.innerHTML = `<select class="edit-select" id="ecb-${row.id}"><option value="-" ${row.consecutiveBless==='-'?'selected':''}>-</option><option value="是" ${row.consecutiveBless==='是'?'selected':''}>是</option><option value="否" ${row.consecutiveBless==='否'?'selected':''}>否</option></select>`; else tdCb.innerHTML = renderConsecutiveBlessBadge(row); tr.appendChild(tdCb);
             const tdRemark = document.createElement('td'); tdRemark.className = 'remark-cell'; if (isEdit) tdRemark.innerHTML = `<input class="edit-input" id="erm-${row.id}" value="${escapeHtml(row.remark||'')}" style="width:120px;">`; else tdRemark.innerHTML = `<div class="remark-text" id="remark-${row.id}" title="点击编辑备注">${escapeHtml(row.remark||'') || '<span style="color:var(--text-muted);">-</span>'}</div>`; tr.appendChild(tdRemark);
-            const tdAct = document.createElement('td'); tdAct.style.whiteSpace = 'nowrap'; if (isEdit) tdAct.innerHTML = `<button class="btn btn-success btn-sm" id="save-${row.id}">💾 保存</button> <button class="btn btn-outline btn-sm" id="cancel-${row.id}">✕ 取消</button>`; else tdAct.innerHTML = `<button class="btn btn-outline btn-sm edit-btn" data-id="${row.id}">✎ 修改</button> <span class="tooltip-wrapper"><button class="btn btn-primary btn-sm water-btn" data-id="${row.id}" ${!waterStatus.can?'disabled':''}>💧 浇水</button>${!waterStatus.can?`<span class="tooltip-text">${waterStatus.reason}</span>`:''}</span> <button class="btn btn-success btn-sm plant-trigger" data-id="${row.id}">🌱 播种</button> <button class="btn btn-info btn-sm log-btn" data-id="${row.id}">📋 日志</button> <button class="btn btn-danger btn-sm delete-btn" data-id="${row.id}">🗑 删除</button>`; tr.appendChild(tdAct);
+            const tdAct = document.createElement('td'); tdAct.style.whiteSpace = 'nowrap';
+            if (isEdit) {
+                tdAct.innerHTML = `<button class="btn btn-success btn-sm" id="save-${row.id}">💾 保存</button> <button class="btn btn-outline btn-sm" id="cancel-${row.id}">✕ 取消</button>`;
+            } else {
+                tdAct.innerHTML = `<button class="btn btn-outline btn-sm edit-btn" data-id="${row.id}">✎ 修改</button> <span class="tooltip-wrapper"><button class="btn btn-primary btn-sm water-btn" data-id="${row.id}" ${!waterStatus.can?'disabled':''}>💧 浇水</button>${!waterStatus.can?`<span class="tooltip-text">${waterStatus.reason}</span>`:''}</span> <button class="btn btn-success btn-sm plant-trigger" data-id="${row.id}">🌱 播种</button> <button class="btn btn-info btn-sm log-btn" data-id="${row.id}">📋 日志</button> <button class="btn btn-copy btn-sm copy-btn" data-id="${row.id}">📋 复制</button> <button class="btn btn-danger btn-sm delete-btn" data-id="${row.id}">🗑 删除</button>`;
+            }
+            tr.appendChild(tdAct);
             return tr;
         }
 
@@ -376,6 +599,7 @@
         function bindAllEvents() {
             document.querySelectorAll('.edit-btn').forEach(b=>b.onclick=function(){enterEdit(Number(this.dataset.id));});
             document.querySelectorAll('.water-btn').forEach(b=>b.onclick=function(){const row=rows.find(r=>r.id===Number(this.dataset.id)); if(row&&canWater(row).can){doWater(row);renderGroupedTable();}});
+            document.querySelectorAll('.copy-btn').forEach(b=>b.onclick=function(){duplicateRow(Number(this.dataset.id));});
             document.querySelectorAll('.delete-btn').forEach(b=>b.onclick=function(){const id=Number(this.dataset.id),row=rows.find(r=>r.id===id);showConfirm('确认删除',`删除用户"${row?.user||'未命名'}"的记录？`,()=>{deleteRow(id);renderGroupedTable();showToast('已删除');});});
             document.querySelectorAll('.log-btn').forEach(b=>b.onclick=function(){showLogModal(Number(this.dataset.id));});
             document.querySelectorAll('.plant-trigger').forEach(btn=>{btn.onclick=function(){showPlantModal(Number(this.dataset.id));};});
@@ -406,7 +630,7 @@
         function showLogModal(rowId){const row=rows.find(r=>r.id===rowId);const rl=getRowLogs(rowId);const overlay=document.createElement('div');overlay.className='modal-overlay';let trs=rl.length===0?'<tr><td colspan="4" class="log-empty">暂无操作日志</td></tr>':rl.map(log=>`<tr><td>${escapeHtml(log.type)}</td><td style="white-space:nowrap;">${log.time}</td><td>${escapeHtml(log.before)}</td><td>${escapeHtml(log.after)}</td></tr>`).join('');overlay.innerHTML=`<div class="modal log-modal"><div style="display:flex;justify-content:space-between;align-items:center;"><h3>📋 操作日志 - ${escapeHtml(row?.user||'未命名')}</h3><button class="toast-close" style="font-size:1.2rem;cursor:pointer;" id="logClose">✕</button></div><div class="log-table-wrap"><table class="log-table"><thead><tr><th style="width:12%;">操作类型</th><th style="width:20%;">操作时间</th><th style="width:34%;">操作前</th><th style="width:34%;">操作后</th></tr></thead><tbody>${trs}</tbody></table></div></div>`;modalContainer.appendChild(overlay);overlay.querySelector('#logClose').onclick=()=>overlay.remove();overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});}
         function saveToStorage(){lastSaveTime=Date.now();localStorage.setItem(STORAGE_KEY,JSON.stringify({version:36,nextId,nextCreateOrder,lastSaveTime,lastBlessResetDate,rows:rows.map(r=>({id:r.id,user:r.user,cropType:r.cropType,matureCountdown:r.matureCountdown,waterCountdown:r.waterCountdown,consecutiveBless:r.consecutiveBless,remark:r.remark,createOrder:r.createOrder,createdAt:r.createdAt}))}));}
         function loadFromStorage(){const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return false;try{const data=JSON.parse(raw);if(!data.rows)return false;nextId=data.nextId||1;nextCreateOrder=data.nextCreateOrder||1;lastBlessResetDate=data.lastBlessResetDate||'';const elapsed=Math.floor((Date.now()-(data.lastSaveTime||Date.now()))/1000);rows=data.rows.map(r=>({id:r.id,user:r.user||'',cropType:r.cropType||'16h',matureCountdown:Math.max(0,(r.matureCountdown||0)-elapsed),waterCountdown:Math.max(0,(r.waterCountdown||0)-elapsed),consecutiveBless:r.consecutiveBless||'-',remark:r.remark||'',createOrder:r.createOrder||0,createdAt:r.createdAt||Date.now()}));if(rows.length){nextId=Math.max(nextId,Math.max(...rows.map(r=>r.id))+1);nextCreateOrder=Math.max(nextCreateOrder,Math.max(...rows.map(r=>r.createOrder))+1);}lastSaveTime=Date.now();tickBaseTime=Date.now();return true;}catch(e){return false;}}
-        function checkAndResetDaily(){const today=getTodayDateStr();const resetTime=getTodayResetTime();const now=Date.now();if(now>=resetTime&&lastBlessResetDate!==today){saveToStorage();lastBlessResetDate=today;/* 不再清除任务/任务类型数据 */}}
+        function checkAndResetDaily(){const today=getTodayDateStr();const resetTime=getTodayResetTime();const now=Date.now();if(now>=resetTime&&lastBlessResetDate!==today){saveToStorage();lastBlessResetDate=today;}}
         function renderBossHpBar(remaining){const segSize=36000,cl=Math.ceil(remaining/segSize),ci=cl-1;const ri=remaining%segSize,tp=ri===0?100:Math.min(100,(ri/segSize)*100);const container=document.createElement('div');container.className='mature-progress';const stack=document.createElement('div');stack.className='boss-hp-stack';for(let i=0;i<cl;i++){const ld=document.createElement('div');ld.className='boss-hp-layer';ld.style.backgroundColor=LAYER_COLORS[i%LAYER_COLORS.length];ld.style.width=(i<ci?'100%':(i===ci?tp+'%':'0%'));stack.appendChild(ld);}container.appendChild(stack);const lbl=document.createElement('span');lbl.className='layer-label';lbl.textContent=`x${cl}`;container.appendChild(lbl);return container;}
         function showToast(msg,undoCallback,duration=3500){const toast=document.createElement('div');toast.className='toast';toast.innerHTML=`<span>${msg}</span>${undoCallback?'<button class="toast-undo">撤销</button>':''}<button class="toast-close">✕</button>`;toastContainer.appendChild(toast);const remove=()=>{if(toast.parentNode){toast.style.opacity='0';toast.style.transform='translateX(60px)';toast.style.transition='0.3s';setTimeout(()=>toast.remove(),300);}};if(undoCallback)toast.querySelector('.toast-undo').onclick=()=>{undoCallback();remove();};toast.querySelector('.toast-close').onclick=remove;setTimeout(remove,duration);}
         function showConfirm(title,msg,onConfirm){const overlay=document.createElement('div');overlay.className='modal-overlay';overlay.innerHTML=`<div class="modal"><h3>${title}</h3><p>${msg}</p><div class="modal-actions"><button class="btn btn-outline btn-sm" id="modalCancel">取消</button><button class="btn btn-danger btn-sm" id="modalConfirm">确认</button></div></div>`;modalContainer.appendChild(overlay);overlay.querySelector('#modalCancel').onclick=()=>overlay.remove();overlay.querySelector('#modalConfirm').onclick=()=>{overlay.remove();onConfirm();};overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};}
