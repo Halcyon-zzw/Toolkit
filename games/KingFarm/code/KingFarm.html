@@ -136,6 +136,23 @@
         .rank-badge.r2 { background:#f59e0b; }
         .rank-badge.r3 { background:#3b82f6; }
         .water-wait-cell { text-align:left; }
+        /* 浇水剩余时间高亮样式 */
+        .water-wait-cell .highlight-time {
+            font-weight: 700;
+            font-size: 1.1em;
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 0 4px;
+            border-radius: 3px;
+        }
+        .water-wait-cell .highlight-predict {
+            font-weight: 700;
+            font-size: 1.1em;
+            color: #2563eb;
+            background: #eff6ff;
+            padding: 0 4px;
+            border-radius: 3px;
+        }
         .log-modal { max-width:700px; max-height:80vh; width:95%; }
         .log-table-wrap { max-height:50vh; overflow-y:auto; margin-top:12px; border:1px solid var(--border); border-radius:var(--radius-sm); }
         .log-table { width:100%; border-collapse:collapse; font-size:0.8rem; min-width:600px; }
@@ -163,12 +180,14 @@
         .checkin-tag.checked-task { background: #3b82f6; color: #ffffff; border-color: #2563eb; }
         .checkin-tag:hover { transform: scale(1.02); box-shadow: var(--shadow-sm); }
         .tag-extra-label { position: absolute; top: -8px; right: -8px; background: #f97316; color: #ffffff; font-size: 0.5rem; font-weight: 700; padding: 1px 4px; border-radius: 10px; line-height: 1; z-index: 2; white-space: nowrap; pointer-events: none; }
+        .tag-extra-label.achieved { background: #3b82f6; }
         .tag-hover-options { display: none; position: absolute; bottom: 100%; left: 0; z-index: 10; background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: var(--shadow-lg); padding: 4px; white-space: nowrap; margin-bottom: 4px; }
         .tag-hover-options.show { display: flex; gap: 4px; }
         .task-type-cell { display:inline-flex; align-items:center; gap:2px; margin:2px; padding:4px; border:1px solid #e2e6ea; border-radius:4px; background:#f9fafb; transition: background 0.2s; }
         .task-type-cell.has-both { background: #a3e635; }
         .task-type-input { width:40px; padding:2px 4px; border:1px solid #d1d5db; border-radius:3px; font-size:0.7rem; text-align:center; }
         .task-type-input:focus { border-color: var(--primary); outline:none; }
+        .task-type-input.achieved { border-color: #3b82f6; background: #eff6ff; }
         .task-type-select { padding:2px; border:1px solid #d1d5db; border-radius:3px; font-size:0.65rem; }
         .btn-copy { background: #8b5cf6; color: #fff; border-color: #8b5cf6; }
         .btn-copy:hover { background: #7c3aed; border-color: #7c3aed; }
@@ -206,6 +225,7 @@
                 <thead><tr>
                     <th style="width:80px;">类型 \\ 名称</th>
                     <th>主</th><th>豆子鱼</th><th>seven</th><th>大猪</th><th>微信</th>
+                    <th>玥</th>
                     <th style="width:60px;">操作</th>
                 </tr></thead>
                 <tbody>
@@ -259,23 +279,31 @@
         const WATER_LOW_THRESHOLD = 7200;
         const COL_COUNT = 9;
 
-        const CHECKIN_USERS = ['主', '豆子鱼', 'seven', '大猪', '微信'];
+        const CHECKIN_USERS = ['主', '豆子鱼', 'seven', '大猪', '微信', '玥'];
         const CHECKIN_BLESS_TAGS = {
             '主': [116, 393, 545],
             '豆子鱼': [542, 543, 544],
             'seven': [522, 543, 544, 545, 546],
             '大猪': [543, 544, 545, 546],
-            '微信': [119]
+            '微信': [119],
+            '玥': [97]
         };
         const CHECKIN_TASK_TAGS = {
             '主': [116, 393, 545],
             '豆子鱼': [542, 543, 544],
             'seven': [522, 543, 544, 545, 546],
             '大猪': [543, 544, 545, 546],
-            '微信': [119]
+            '微信': [119],
+            '玥': [97]
         };
         const TASK_EXTRA_OPTIONS = ['2场', '胜1', '25助'];
         const TASK_TYPE_OPTIONS = ['-', '胜1', '2场', '25助攻'];
+
+        const TYPE_THRESHOLDS = {
+            '胜1': 1,
+            '2场': 2,
+            '25助攻': 25
+        };
 
         let rows = [], nextId = 1, nextCreateOrder = 1, sortState = SORT_DEFAULT;
         let editingRowId = null, editSnapshot = null, lastSaveTime = Date.now(), undoData = {};
@@ -332,7 +360,21 @@
                 } else {
                     cell.classList.remove('has-both');
                 }
+                if (isAchieved(select.value, input.value)) {
+                    input.classList.add('achieved');
+                } else {
+                    input.classList.remove('achieved');
+                }
             }
+        }
+
+        function isAchieved(type, value) {
+            if (!type || type === '-' || !value) return false;
+            const threshold = TYPE_THRESHOLDS[type];
+            if (threshold === undefined) return false;
+            const num = parseInt(value, 10);
+            if (isNaN(num)) return false;
+            return num >= threshold;
         }
 
         function getTaskTypeDisplay(user, tagNum) {
@@ -340,6 +382,21 @@
             if (!data) return '';
             if (data.type && data.type !== '-') return data.type;
             return data.value || '';
+        }
+
+        function getTaskTypeDisplayWithAchieved(user, tagNum) {
+            const data = taskTypeData[user]?.[tagNum];
+            if (!data) return { display: '', achieved: false };
+            let display = '';
+            let achieved = false;
+            if (data.type && data.type !== '-') {
+                display = data.type;
+                achieved = isAchieved(data.type, data.value);
+            } else {
+                display = data.value || '';
+                achieved = false;
+            }
+            return { display, achieved };
         }
 
         function renderTaskTypeRow() {
@@ -392,11 +449,14 @@
                     span.textContent = `[${tagNum}]`;
                     span.addEventListener('click', () => toggleCheckinTag('task', user, tagNum));
 
-                    const displayVal = getTaskTypeDisplay(user, tagNum);
-                    if (displayVal) {
+                    const { display, achieved } = getTaskTypeDisplayWithAchieved(user, tagNum);
+                    if (display) {
                         const extraLabel = document.createElement('span');
                         extraLabel.className = 'tag-extra-label';
-                        extraLabel.textContent = displayVal;
+                        if (achieved) {
+                            extraLabel.classList.add('achieved');
+                        }
+                        extraLabel.textContent = display;
                         wrapper.appendChild(extraLabel);
                     }
 
@@ -408,7 +468,6 @@
             const taskActTd = document.createElement('td'); const taskClearBtn = document.createElement('button'); taskClearBtn.className = 'btn btn-outline btn-xs'; taskClearBtn.textContent = '🗑️ 清除'; taskClearBtn.addEventListener('click', () => resetCheckinRow('task')); taskActTd.appendChild(taskClearBtn); taskRow.appendChild(taskActTd);
         }
 
-        // 分组配置相关函数
         function parseGroupConfig(configStr) {
             const groups = [];
             if (!configStr.trim()) return groups;
@@ -422,12 +481,10 @@
             return groups;
         }
 
-        // 将分组配置转换为文本
         function groupsToConfig(groups) {
             return groups.map(g => g.join(', ')).join('\n');
         }
 
-        // 查找某个ID所在的组索引和组内位置
         function findIdInGroups(groups, id) {
             for (let i = 0; i < groups.length; i++) {
                 const idx = groups[i].indexOf(id);
@@ -438,7 +495,6 @@
             return null;
         }
 
-        // 复制行功能
         function duplicateRow(sourceId) {
             const sourceRow = rows.find(r => r.id === sourceId);
             if (!sourceRow) {
@@ -446,12 +502,10 @@
                 return;
             }
 
-            // 检查是否有编辑中的行，如果有则先取消
             if (editingRowId) {
                 cancelEdit();
             }
 
-            // 创建新行数据（复制源行数据）
             const newRow = {
                 id: nextId++,
                 user: sourceRow.user || '',
@@ -464,29 +518,21 @@
                 createdAt: Date.now()
             };
 
-            // 找到源行在 rows 中的位置
             const sourceIndex = rows.findIndex(r => r.id === sourceId);
-            // 在源行后面插入新行
             rows.splice(sourceIndex + 1, 0, newRow);
 
-            // 更新分组配置
             let groups = parseGroupConfig(groupConfig);
             let foundGroup = false;
 
-            // 查找源行所在的组
             const result = findIdInGroups(groups, sourceId);
             if (result) {
                 const { groupIndex, posInGroup } = result;
-                // 在组内源行的后面插入新ID
                 groups[groupIndex].splice(posInGroup + 1, 0, newRow.id);
                 foundGroup = true;
             }
 
-            // 如果没有找到组，或者没有分组配置，则创建新组（包含源ID和新ID）
             if (!foundGroup || groups.length === 0) {
-                // 检查是否有未分组的行，如果有则创建一个包含源ID和新ID的组
                 const ungroupedIds = rows.filter(r => {
-                    // 检查该ID是否已在任何组中
                     let inGroup = false;
                     for (const g of groups) {
                         if (g.includes(r.id)) { inGroup = true; break; }
@@ -495,10 +541,8 @@
                 }).map(r => r.id);
 
                 if (ungroupedIds.includes(sourceId)) {
-                    // 源ID未分组，创建新组
                     groups.push([sourceId, newRow.id]);
                 } else {
-                    // 源ID已在组中（但上面的查找没找到？保险起见，直接添加到第一个组或创建新组）
                     if (groups.length > 0) {
                         groups[0].push(newRow.id);
                     } else {
@@ -507,21 +551,14 @@
                 }
             }
 
-            // 更新配置文本
             groupConfig = groupsToConfig(groups);
             configTextarea.value = groupConfig;
             saveGroupConfig();
 
-            // 添加日志
             addLog(newRow.id, '复制', '-', formatRowState(newRow));
 
-            // 保存数据
             saveToStorage();
-
-            // 重新渲染表格
             renderGroupedTable();
-
-            // 进入编辑状态
             enterEdit(newRow.id);
 
             showToast(`✅ 已复制行 ID:${sourceId} → 新行 ID:${newRow.id}`);
@@ -565,6 +602,28 @@
             bindAllEvents();
         }
 
+        // 高亮格式化浇水剩余时间
+        function formatWaterWaitDisplay(matureWait, rank, isMature) {
+            if (isMature) {
+                return '<span class="immediate-mature-badge" style="background:#10b981;">✅ 已成熟</span>';
+            }
+            if (matureWait.seconds === 0) {
+                return '<span class="immediate-mature-badge">🔥 浇水立即成熟</span>';
+            }
+            if (matureWait.seconds !== null && matureWait.seconds > 0) {
+                const predictedTime = getFutureTime(matureWait.seconds);
+                let rankHtml = '';
+                if (rank > 0 && rank <= 3) {
+                    rankHtml = ` <span class="rank-badge r${rank}">#${rank}</span>`;
+                }
+                // 对关键时间进行高亮：boldPart 和 predictedTime
+                const boldPartHtml = `<span class="highlight-time">${matureWait.boldPart}</span>`;
+                const predictHtml = `<span class="highlight-predict">${predictedTime}</span>`;
+                return `<span class="approx-mature">${boldPartHtml}后浇水成熟（预计 ${predictHtml}）</span>${rankHtml}`;
+            }
+            return '-';
+        }
+
         function createRowElement(row, rankMap) {
             const isEdit = editingRowId === row.id; const c = CROP_CONFIG[row.cropType];
             const waterPercent = c.waterMax ? Math.min(100, (row.waterCountdown / c.waterMax) * 100) : 0;
@@ -580,7 +639,10 @@
             const tdCrop = document.createElement('td'); if (isEdit) tdCrop.innerHTML = `<select class="edit-select" id="ec-${row.id}" onchange="cropTypeChange(${row.id})"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select>`; else tdCrop.innerHTML = renderCropBadge(row); tr.appendChild(tdCrop);
             const tdMature = document.createElement('td'); tdMature.id = `mature-cell-${row.id}`; tdMature.className = 'mature-cell'; if (isEdit) { const h = Math.floor(row.matureCountdown/3600), m = Math.floor((row.matureCountdown%3600)/60); tdMature.innerHTML = `<input class="edit-input" id="em-${row.id}" value="${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}" maxlength="4" placeholder="HHMM">`; } else { const ts = document.createElement('span'); ts.className = 'mature-time'; ts.innerHTML = formatTime(row.matureCountdown) + (isMature ? ' <span class="mature-ripe-badge">熟</span>' : ''); tdMature.appendChild(ts); if (isMature) { const eb = document.createElement('div'); eb.className = 'mature-progress'; const s = document.createElement('div'); s.className = 'boss-hp-stack'; eb.appendChild(s); tdMature.appendChild(eb); } else tdMature.appendChild(renderBossHpBar(row.matureCountdown)); } tr.appendChild(tdMature);
             const tdWater = document.createElement('td'); if (isEdit) { const h = Math.floor(row.waterCountdown/3600), m = Math.floor((row.waterCountdown%3600)/60); tdWater.innerHTML = `<input class="edit-input" id="ew-${row.id}" value="${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}" maxlength="4" placeholder="HHMM">`; } else { const waterIcon = waterLow && !isDry ? ' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>' : ''; const dryBadge = isDry ? ' <span class="dry-badge-large">干枯</span>' : ''; const reductionHtml = reduction > 0 ? ` <span class="water-reduction-inline">(${formatReductionBold(reduction)})</span>` : ''; const timeDisplay = isDry ? '' : formatTime(row.waterCountdown); tdWater.innerHTML = `<div class="water-vertical"><span style="font-weight:600;font-family:monospace;">${timeDisplay}${dryBadge}${waterIcon}${reductionHtml}</span><div class="progress-bar-wrap"><div class="progress-bar-fill ${waterColor}" style="width:${waterPercent}%"></div></div></div>`; } tr.appendChild(tdWater);
-            const tdWait = document.createElement('td'); tdWait.className = 'water-wait-cell'; tdWait.style.fontSize = '0.8rem'; if (isMature) { tdWait.innerHTML = '<span class="immediate-mature-badge" style="background:#10b981;">✅ 已成熟</span>'; } else if (matureWait.seconds === 0) { tdWait.innerHTML = '<span class="immediate-mature-badge">🔥 浇水立即成熟</span>'; } else if (matureWait.seconds !== null && matureWait.seconds > 0) { const predictedTime = getFutureTime(matureWait.seconds); let rankHtml = ''; if (rank > 0 && rank <= 3) { rankHtml = ` <span class="rank-badge r${rank}">#${rank}</span>`; } tdWait.innerHTML = `<span class="approx-mature"><b>${matureWait.boldPart}</b>后浇水成熟（预计 ${predictedTime}）</span>${rankHtml}`; } else { tdWait.textContent = '-'; } tr.appendChild(tdWait);
+            const tdWait = document.createElement('td'); tdWait.className = 'water-wait-cell'; tdWait.style.fontSize = '0.8rem';
+            // 使用高亮格式化
+            tdWait.innerHTML = formatWaterWaitDisplay(matureWait, rank, isMature);
+            tr.appendChild(tdWait);
             const tdCb = document.createElement('td'); if (isEdit) tdCb.innerHTML = `<select class="edit-select" id="ecb-${row.id}"><option value="-" ${row.consecutiveBless==='-'?'selected':''}>-</option><option value="是" ${row.consecutiveBless==='是'?'selected':''}>是</option><option value="否" ${row.consecutiveBless==='否'?'selected':''}>否</option></select>`; else tdCb.innerHTML = renderConsecutiveBlessBadge(row); tr.appendChild(tdCb);
             const tdRemark = document.createElement('td'); tdRemark.className = 'remark-cell'; if (isEdit) tdRemark.innerHTML = `<input class="edit-input" id="erm-${row.id}" value="${escapeHtml(row.remark||'')}" style="width:120px;">`; else tdRemark.innerHTML = `<div class="remark-text" id="remark-${row.id}" title="点击编辑备注">${escapeHtml(row.remark||'') || '<span style="color:var(--text-muted);">-</span>'}</div>`; tr.appendChild(tdRemark);
             const tdAct = document.createElement('td'); tdAct.style.whiteSpace = 'nowrap';
