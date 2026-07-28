@@ -1,4 +1,3 @@
-// ==================== 防止重复运行 ====================
 "auto";
 
 // 检查并请求无障碍服务
@@ -30,12 +29,10 @@ function getScreenSize() {
     // 确保横屏状态（宽 > 高）
     var screenWidth, screenHeight;
     if (width > height) {
-        // 已经是横屏
         screenWidth = width;
         screenHeight = height;
         console.log("当前为横屏模式");
     } else {
-        // 竖屏模式，交换宽高
         screenWidth = height;
         screenHeight = width;
         console.log("当前为竖屏模式，自动转换为横屏坐标");
@@ -53,11 +50,8 @@ var screenSize = getScreenSize();
 
 var config = {
     // ========== 屏幕配置 ==========
-    // 设计分辨率（横屏：2400 * 1080）
     designWidth: 2400,
     designHeight: 1080,
-
-    // ========== 实际屏幕像素（自动获取） ==========
     screenWidth: screenSize.width,
     screenHeight: screenSize.height,
 
@@ -75,15 +69,40 @@ var config = {
         confirmExit: 500,
         toServerSelect: 7000,
         toNextServer: 500,
-        toStartGame: 1000
+        toStartGame: 1000,
+        enterVillage: 5000
+    },
+
+    // ========== 浇水功能配置 ==========
+    water: {
+        // 进入农村按钮 (左, 上, 右, 下)
+        enterVillageBtn: { left: 640, top: 780, right: 780, bottom: 840 },
+        // 轮盘区域 (左, 上, 右, 下)
+        joystick: { left: 300, top: 600, right: 600, bottom: 850 },
+        // 浇水按钮区域
+        waterBtn: { left: 1490, top: 590, right: 1550, bottom: 640 },
+        // 移动参数
+        moveSettings: {
+            // 方向偏移（西北方向：向左上）
+            directionX: -1,
+            directionY: -1,
+            // 移动距离（从中心向外拖拽的距离）
+            distance: 250,
+            // 移动持续时间（毫秒）
+            duration: 2000,
+            // 保持按压时间（毫秒）
+            holdDuration: 2000
+        }
     }
 };
 
 // ==================== 全局变量 ====================
 var controlWindow = null;
 var isSwitching = false;
+var isWatering = false;
 var isExiting = false;
-var clickCount = 0; // 点击计数器
+var clickCount = 0;
+var waterType = ""; // 记录当前浇水类型: "water1" 或 "water2"
 
 // ==================== 坐标转换函数 ====================
 function scaleCoordinate(x, y, width, height) {
@@ -174,11 +193,278 @@ function getServerPosition(index) {
     return scaledPos;
 }
 
+// ==================== 轮盘移动函数 ====================
+function executeJoystickMove() {
+    console.log("开始执行轮盘移动");
+
+    // 计算轮盘中心位置
+    var joystick = scaleCoordinate(
+        config.water.joystick.left,
+        config.water.joystick.top,
+        config.water.joystick.right,
+        config.water.joystick.bottom
+    );
+
+    var centerX = Math.round((joystick.left + joystick.right) / 2);
+    var centerY = Math.round((joystick.top + joystick.bottom) / 2);
+
+    console.log("轮盘区域: (" + joystick.left + "," + joystick.top + "," +
+        joystick.right + "," + joystick.bottom + ")");
+    console.log("轮盘中心: (" + centerX + "," + centerY + ")");
+
+    // 获取移动参数
+    var directionX = config.water.moveSettings.directionX;
+    var directionY = config.water.moveSettings.directionY;
+    var distance = config.water.moveSettings.distance;
+    var duration = config.water.moveSettings.duration;
+    var holdDuration = config.water.moveSettings.holdDuration;
+
+    // 根据屏幕缩放调整距离
+    var scaleX = config.screenWidth / config.designWidth;
+    var scaleY = config.screenHeight / config.designHeight;
+    var scaledDistance = Math.round(distance * Math.min(scaleX, scaleY));
+
+    // 归一化方向向量
+    var len = Math.sqrt(directionX * directionX + directionY * directionY);
+    if (len === 0) {
+        console.error("方向向量为零");
+        return false;
+    }
+    var normX = directionX / len;
+    var normY = directionY / len;
+
+    // 计算目标位置（从中心向指定方向移动）
+    var targetX = centerX + Math.round(normX * scaledDistance);
+    var targetY = centerY + Math.round(normY * scaledDistance);
+
+    // 确保目标在屏幕范围内
+    targetX = Math.max(0, Math.min(targetX, config.screenWidth));
+    targetY = Math.max(0, Math.min(targetY, config.screenHeight));
+
+    console.log("移动参数:");
+    console.log("  - 方向向量: (" + normX.toFixed(3) + "," + normY.toFixed(3) + ")");
+    console.log("  - 移动距离: " + scaledDistance + "px (设计: " + distance + "px)");
+    console.log("  - 持续时间: " + duration + "ms");
+    console.log("  - 保持时间: " + holdDuration + "ms");
+    console.log("  - 起始位置: (" + centerX + "," + centerY + ")");
+    console.log("  - 目标位置: (" + targetX + "," + targetY + ")");
+
+    try {
+        // 执行滑动操作（从中心向目标方向滑动）
+        console.log("执行滑动操作...");
+        swipe(centerX, centerY, targetX, targetY, duration);
+        console.log("滑动操作完成");
+
+        // 保持按压
+        console.log("保持按压 " + holdDuration + "ms...");
+        var holdStart = Date.now();
+        while (Date.now() - holdStart < holdDuration) {
+            press(targetX, targetY, 50);
+            sleep(50);
+        }
+        console.log("保持按压完成");
+
+        // 释放（回到中心）
+        console.log("释放轮盘，回到中心...");
+        swipe(targetX, targetY, centerX, centerY, 200);
+        console.log("释放完成");
+
+        return true;
+
+    } catch (e) {
+        console.error("轮盘移动失败: " + e.message);
+        return false;
+    }
+}
+
+// ==================== 浇水功能1（不点击进入农村） ====================
+function executeWater1() {
+    if (isWatering) {
+        toast("正在浇水，请稍候...");
+        return;
+    }
+
+    if (isSwitching) {
+        toast("正在切换服务器，无法浇水");
+        return;
+    }
+
+    if (auto.service === null) {
+        console.log("无障碍服务未开启，尝试启动...");
+        toast("无障碍服务未开启，请先开启");
+        auto.waitFor();
+        sleep(1000);
+        if (auto.service === null) {
+            console.error("无法开启无障碍服务");
+            toast("无法开启无障碍服务");
+            return;
+        }
+    }
+
+    isWatering = true;
+    waterType = "water1";
+    updateWaterUIState(false);
+    updateUIState(false);
+
+    threads.start(function() {
+        try {
+            console.log("========================================");
+            console.log("开始浇水操作（浇1 - 不进入农村）");
+            console.log("========================================");
+
+            // ========== 步骤1: 操作轮盘向西北方向移动 ==========
+            console.log("\n--- 步骤1: 操作轮盘向西北方向移动 ---");
+
+            if (!executeJoystickMove()) {
+                throw new Error("步骤1失败: 轮盘移动操作失败");
+            }
+
+            // 额外等待确保操作完成
+            sleep(500);
+
+            // ========== 步骤2: 点击浇水按钮 ==========
+            console.log("\n--- 步骤2: 点击浇水按钮 ---");
+            var waterBtnArea = scaleCoordinate(
+                config.water.waterBtn.left,
+                config.water.waterBtn.top,
+                config.water.waterBtn.right,
+                config.water.waterBtn.bottom
+            );
+
+            if (!humanClick(waterBtnArea, "浇水按钮")) {
+                throw new Error("步骤2失败: 点击浇水按钮");
+            }
+
+            console.log("\n========================================");
+            console.log("浇水操作完成（浇1）");
+            console.log("总点击次数: " + clickCount);
+            console.log("========================================\n");
+
+            toast("浇水1完成");
+
+        } catch (e) {
+            console.error("\n========================================");
+            console.error("浇水1失败: " + e.message);
+            console.error("失败时的点击计数: " + clickCount);
+            console.error("========================================\n");
+            toast("浇水1失败: " + e.message);
+        } finally {
+            isWatering = false;
+            waterType = "";
+            updateWaterUIState(true);
+            updateUIState(true);
+        }
+    });
+}
+
+// ==================== 浇水功能2（点击进入农村） ====================
+function executeWater2() {
+    if (isWatering) {
+        toast("正在浇水，请稍候...");
+        return;
+    }
+
+    if (isSwitching) {
+        toast("正在切换服务器，无法浇水");
+        return;
+    }
+
+    if (auto.service === null) {
+        console.log("无障碍服务未开启，尝试启动...");
+        toast("无障碍服务未开启，请先开启");
+        auto.waitFor();
+        sleep(1000);
+        if (auto.service === null) {
+            console.error("无法开启无障碍服务");
+            toast("无法开启无障碍服务");
+            return;
+        }
+    }
+
+    isWatering = true;
+    waterType = "water2";
+    updateWaterUIState(false);
+    updateUIState(false);
+
+    threads.start(function() {
+        try {
+            console.log("========================================");
+            console.log("开始浇水操作（浇2 - 进入农村）");
+            console.log("========================================");
+
+            // ========== 步骤1: 点击进入农村按钮 ==========
+            console.log("\n--- 步骤1: 点击进入农村按钮 ---");
+            var enterVillageArea = scaleCoordinate(
+                config.water.enterVillageBtn.left,
+                config.water.enterVillageBtn.top,
+                config.water.enterVillageBtn.right,
+                config.water.enterVillageBtn.bottom
+            );
+
+            if (!humanClick(enterVillageArea, "进入农村按钮")) {
+                throw new Error("步骤1失败: 点击进入农村按钮");
+            }
+
+            // 等待5秒
+            console.log("等待5秒进入农村...");
+            humanDelay(config.delays.enterVillage);
+
+            // ========== 步骤2: 操作轮盘向西北方向移动 ==========
+            console.log("\n--- 步骤2: 操作轮盘向西北方向移动 ---");
+
+            if (!executeJoystickMove()) {
+                throw new Error("步骤2失败: 轮盘移动操作失败");
+            }
+
+            // 额外等待确保操作完成
+            sleep(500);
+
+            // ========== 步骤3: 点击浇水按钮 ==========
+            console.log("\n--- 步骤3: 点击浇水按钮 ---");
+            var waterBtnArea = scaleCoordinate(
+                config.water.waterBtn.left,
+                config.water.waterBtn.top,
+                config.water.waterBtn.right,
+                config.water.waterBtn.bottom
+            );
+
+            if (!humanClick(waterBtnArea, "浇水按钮")) {
+                throw new Error("步骤3失败: 点击浇水按钮");
+            }
+
+            console.log("\n========================================");
+            console.log("浇水操作完成（浇2）");
+            console.log("总点击次数: " + clickCount);
+            console.log("========================================\n");
+
+            toast("浇水2完成");
+
+        } catch (e) {
+            console.error("\n========================================");
+            console.error("浇水2失败: " + e.message);
+            console.error("失败时的点击计数: " + clickCount);
+            console.error("========================================\n");
+            toast("浇水2失败: " + e.message);
+        } finally {
+            isWatering = false;
+            waterType = "";
+            updateWaterUIState(true);
+            updateUIState(true);
+        }
+    });
+}
+
 // ==================== 自动切换服务器逻辑 ====================
 function executeServerSwitch() {
     if (isSwitching) {
         console.log("切换被阻止: 已有切换操作在进行中");
         toast("正在切换服务器，请稍候...");
+        return;
+    }
+
+    if (isWatering) {
+        console.log("切换被阻止: 正在浇水");
+        toast("正在浇水，无法切换服务器");
         return;
     }
 
@@ -196,6 +482,7 @@ function executeServerSwitch() {
 
     isSwitching = true;
     updateUIState(false);
+    updateWaterUIState(false);
 
     var currentIndex = config.currentIndex;
     var nextIndex = currentIndex + 1;
@@ -296,6 +583,7 @@ function executeServerSwitch() {
         } finally {
             isSwitching = false;
             updateUIState(true);
+            updateWaterUIState(true);
         }
     });
 }
@@ -304,6 +592,11 @@ function executeServerSwitch() {
 function showServerDropdown() {
     if (isSwitching) {
         toast("正在切换服务器，无法选择");
+        return;
+    }
+
+    if (isWatering) {
+        toast("正在浇水，无法选择");
         return;
     }
 
@@ -332,33 +625,30 @@ function updateUIState(enabled) {
         if (controlWindow) {
             try {
                 if (controlWindow.serverBtn) {
-                    if (enabled) {
+                    if (enabled && !isWatering) {
                         controlWindow.serverBtn.setText(config.serverList[config.currentIndex - 1]);
                         controlWindow.serverBtn.setBackgroundColor(colors.parseColor("#FFFFFF"));
                         controlWindow.serverBtn.setTextColor(colors.parseColor("#1976D2"));
-                        console.log("UI更新: 服务器显示 - " + config.serverList[config.currentIndex - 1]);
-                    } else {
+                    } else if (isSwitching || isWatering) {
                         controlWindow.serverBtn.setText("...");
                         controlWindow.serverBtn.setBackgroundColor(colors.parseColor("#FFE0B2"));
                         controlWindow.serverBtn.setTextColor(colors.parseColor("#E65100"));
-                        console.log("UI更新: 显示切换中状态");
                     }
                 }
 
                 if (controlWindow.nextBtn) {
-                    if (enabled) {
+                    if (enabled && !isWatering) {
                         controlWindow.nextBtn.setText("▶");
                         controlWindow.nextBtn.setBackgroundColor(colors.parseColor("#4CAF50"));
                         controlWindow.nextBtn.setTextColor(colors.parseColor("#FFFFFF"));
                     } else {
-                        controlWindow.nextBtn.setText("切换中");
+                        controlWindow.nextBtn.setText(isWatering ? "浇水" : "切换中");
                         controlWindow.nextBtn.setBackgroundColor(colors.parseColor("#FF9800"));
                         controlWindow.nextBtn.setTextColor(colors.parseColor("#FFFFFF"));
                     }
-                    controlWindow.nextBtn.setClickable(enabled);
-                    console.log("UI更新: 按钮状态 - " + (enabled ? "可用" : "禁用"));
+                    controlWindow.nextBtn.setClickable(enabled && !isWatering);
                 }
-            } catch(e) {
+            } catch (e) {
                 console.log("更新UI失败: " + e.message);
             }
         }
@@ -372,8 +662,47 @@ function updateCurrentServerDisplay() {
                 controlWindow.serverBtn.setText(config.serverList[config.currentIndex - 1]);
                 controlWindow.serverBtn.setBackgroundColor(colors.parseColor("#FFFFFF"));
                 controlWindow.serverBtn.setTextColor(colors.parseColor("#1976D2"));
-            } catch(e) {
+            } catch (e) {
                 console.log("更新显示失败: " + e.message);
+            }
+        }
+    });
+}
+
+// ==================== 更新浇水UI状态 ====================
+function updateWaterUIState(enabled) {
+    ui.run(function() {
+        if (controlWindow) {
+            try {
+                // 更新浇1按钮
+                if (controlWindow.water1Btn) {
+                    if (enabled && !isSwitching) {
+                        controlWindow.water1Btn.setText("浇1");
+                        controlWindow.water1Btn.setBackgroundColor(colors.parseColor("#4CAF50"));
+                        controlWindow.water1Btn.setTextColor(colors.parseColor("#FFFFFF"));
+                    } else {
+                        controlWindow.water1Btn.setText(isSwitching ? "切换" : "浇水中");
+                        controlWindow.water1Btn.setBackgroundColor(colors.parseColor("#FF9800"));
+                        controlWindow.water1Btn.setTextColor(colors.parseColor("#FFFFFF"));
+                    }
+                    controlWindow.water1Btn.setClickable(enabled && !isSwitching);
+                }
+
+                // 更新浇2按钮
+                if (controlWindow.water2Btn) {
+                    if (enabled && !isSwitching) {
+                        controlWindow.water2Btn.setText("浇2");
+                        controlWindow.water2Btn.setBackgroundColor(colors.parseColor("#2196F3"));
+                        controlWindow.water2Btn.setTextColor(colors.parseColor("#FFFFFF"));
+                    } else {
+                        controlWindow.water2Btn.setText(isSwitching ? "切换" : "浇水中");
+                        controlWindow.water2Btn.setBackgroundColor(colors.parseColor("#FF9800"));
+                        controlWindow.water2Btn.setTextColor(colors.parseColor("#FFFFFF"));
+                    }
+                    controlWindow.water2Btn.setClickable(enabled && !isSwitching);
+                }
+            } catch (e) {
+                console.log("更新浇水UI失败: " + e.message);
             }
         }
     });
@@ -382,7 +711,7 @@ function updateCurrentServerDisplay() {
 // ==================== 创建控制窗口 ====================
 function createControlWindow() {
     if (controlWindow != null) {
-        try { controlWindow.close(); } catch(e) {}
+        try { controlWindow.close(); } catch (e) { }
     }
 
     console.log("创建控制窗口，屏幕尺寸: " + config.screenWidth + "x" + config.screenHeight);
@@ -390,29 +719,48 @@ function createControlWindow() {
     try {
         controlWindow = floaty.window(
             <frame>
-                <horizontal bg="#E8F5E9" padding="8">
-                    <button id="serverBtn"
-                            text="1"
-                            w="30"
-                            h="32"
-                            bg="#FFFFFF"
-                            textColor="#1976D2"
-                            textSize="12"
-                            marginBottom="4"/>
-                    <button id="nextBtn"
-                            text="▶"
-                            w="30"
-                            h="32"
-                            bg="#4CAF50"
-                            textColor="#FFFFFF"
-                            textSize="12"/>
-                </horizontal>
+                <vertical bg="#E8F5E9" padding="8">
+                    <horizontal>
+                        <button id="serverBtn"
+                                text="1"
+                                w="30"
+                                h="32"
+                                bg="#FFFFFF"
+                                textColor="#1976D2"
+                                textSize="12"
+                                marginBottom="4"/>
+                        <button id="nextBtn"
+                                text="▶"
+                                w="30"
+                                h="32"
+                                bg="#4CAF50"
+                                textColor="#FFFFFF"
+                                textSize="12"
+                                marginLeft="4"/>
+                    </horizontal>
+                    <horizontal marginTop="3">
+                        <button id="water1Btn"
+                                text="浇1"
+                                w="30"
+                                h="32"
+                                bg="#4CAF50"
+                                textColor="#FFFFFF"
+                                textSize="12"/>
+                        <button id="water2Btn"
+                                text="浇2"
+                                w="30"
+                                h="32"
+                                bg="#2196F3"
+                                textColor="#FFFFFF"
+                                textSize="12"
+                                marginLeft="3"/>
+                    </horizontal>
+                </vertical>
             </frame>
         );
 
-        // 设置窗口位置（左边中部）
+        // 设置窗口位置（左边）
         var x = 30;
-        // var y = Math.round(config.screenHeight / 2 - 60);
         var y = 100;
 
         console.log("控制窗口位置: (" + x + ", " + y + ")");
@@ -426,21 +774,43 @@ function createControlWindow() {
 
         // 下一个按钮点击事件
         controlWindow.nextBtn.on("click", function() {
-            if (!isSwitching) {
+            if (!isSwitching && !isWatering) {
                 console.log("用户点击下一个按钮");
                 executeServerSwitch();
+            } else {
+                toast(isSwitching ? "正在切换服务器" : "正在浇水");
             }
         });
 
         // 长按重置
         controlWindow.nextBtn.on("long-click", function() {
-            if (!isSwitching) {
+            if (!isSwitching && !isWatering) {
                 console.log("用户长按重置按钮");
                 config.currentIndex = 1;
                 updateCurrentServerDisplay();
                 toast("已重置为服务器 1");
             }
             return true;
+        });
+
+        // 浇1按钮点击事件（不点击进入农村）
+        controlWindow.water1Btn.on("click", function() {
+            if (!isWatering && !isSwitching) {
+                console.log("用户点击浇1按钮（不进入农村）");
+                executeWater1();
+            } else {
+                toast(isSwitching ? "正在切换服务器" : "正在浇水");
+            }
+        });
+
+        // 浇2按钮点击事件（点击进入农村）
+        controlWindow.water2Btn.on("click", function() {
+            if (!isWatering && !isSwitching) {
+                console.log("用户点击浇2按钮（进入农村）");
+                executeWater2();
+            } else {
+                toast(isSwitching ? "正在切换服务器" : "正在浇水");
+            }
         });
 
         console.log("控制窗口创建成功");
@@ -455,6 +825,7 @@ function createControlWindow() {
 function cleanup() {
     isExiting = true;
     isSwitching = false;
+    isWatering = false;
 
     console.log("\n========================================");
     console.log("脚本退出清理");
@@ -463,7 +834,7 @@ function cleanup() {
     console.log("========================================");
 
     if (controlWindow != null) {
-        try { controlWindow.close(); } catch(e) {}
+        try { controlWindow.close(); } catch (e) { }
     }
 }
 
@@ -471,31 +842,44 @@ function cleanup() {
 events.on("exit", cleanup);
 
 console.log("========================================");
-console.log("自动切换服务器脚本启动");
+console.log("自动切换服务器 + 自动浇水脚本启动");
 console.log("设备信息:");
 console.log("  - 原始屏幕: " + device.width + "x" + device.height);
 console.log("  - 使用屏幕(横屏): " + config.screenWidth + "x" + config.screenHeight);
 console.log("  - 设计分辨率: " + config.designWidth + "x" + config.designHeight);
-console.log("  - 缩放比例: X=" + (config.screenWidth/config.designWidth).toFixed(3) +
-    ", Y=" + (config.screenHeight/config.designHeight).toFixed(3));
+console.log("  - 缩放比例: X=" + (config.screenWidth / config.designWidth).toFixed(3) +
+    ", Y=" + (config.screenHeight / config.designHeight).toFixed(3));
 console.log("  - 当前服务器: " + config.currentIndex + " (" + config.serverList[config.currentIndex - 1] + ")");
+console.log("  - 浇水配置:");
+console.log("    * 浇1: 不进入农村，直接滑动轮盘并点击浇水按钮");
+console.log("    * 浇2: 进入农村，等待5秒，滑动轮盘并点击浇水按钮");
+console.log("    * 进入农村按钮: (" + config.water.enterVillageBtn.left + "," + config.water.enterVillageBtn.top +
+    "," + config.water.enterVillageBtn.right + "," + config.water.enterVillageBtn.bottom + ")");
+console.log("    * 轮盘中心: (" +
+    Math.round((config.water.joystick.left + config.water.joystick.right) / 2) + "," +
+    Math.round((config.water.joystick.top + config.water.joystick.bottom) / 2) + ")");
+console.log("    * 方向: 西北 (向量: " + config.water.moveSettings.directionX + ", " + config.water.moveSettings.directionY + ")");
+console.log("    * 移动距离: " + config.water.moveSettings.distance + "px");
+console.log("    * 移动持续: " + config.water.moveSettings.duration + "ms");
 console.log("========================================\n");
 
 createControlWindow();
 
 // 保活
 setInterval(function() {
-    // 每60秒输出一次状态
-    if (!isExiting && !isSwitching) {
-        console.log("脚本运行中 - 当前服务器: " + config.currentIndex +
-            " (" + config.serverList[config.currentIndex - 1] + ")");
+    if (!isExiting) {
+        var status = "脚本运行中 - 服务器: " + config.currentIndex +
+            " (" + config.serverList[config.currentIndex - 1] + ")";
+        if (isSwitching) status += " [切换中]";
+        if (isWatering) status += " [浇水中:" + waterType + "]";
+        console.log(status);
     }
 }, 60000);
 
 // 显示提示
 setTimeout(function() {
     if (!isExiting) {
-        toast("脚本已就绪 - 左边中部");
+        toast("脚本已就绪 - 可切换服务器和浇水");
         console.log("用户提示已显示");
     }
 }, 1000);
