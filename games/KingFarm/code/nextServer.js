@@ -50,59 +50,57 @@ var screenSize = getScreenSize();
 
 var config = {
     // ========== 屏幕配置 ==========
-    designWidth: 2400,
-    designHeight: 1080,
-    screenWidth: screenSize.width,
-    screenHeight: screenSize.height,
+    designWidth: 2400,        // 设计分辨率宽度（横屏）
+    designHeight: 1080,       // 设计分辨率高度（横屏）
+    screenWidth: screenSize.width,   // 实际屏幕宽度（自动获取）
+    screenHeight: screenSize.height, // 实际屏幕高度（自动获取）
 
     // ========== 当前服务器序号 ==========
-    currentIndex: 1,
+    // 0: 特殊值，表示从步骤6（确认换区）开始执行，然后切换到序号1
+    // 1-6: 对应服务器1-6
+    currentIndex: 0,
 
     // ========== 服务器列表 ==========
-    serverList: ["1", "2", "3", "4", "5", "6"],
+    serverList: ["0", "1", "2", "3", "4", "5", "6"], // 序号0对应显示"0"
 
     // ========== 延时配置（毫秒） ==========
     delays: {
-        returnToLobby: 500,
-        toSettings: 3000,
-        exitGame: 1000,
-        confirmExit: 500,
-        toServerSelect: 7000,
-        toNextServer: 500,
-        toStartGame: 1000,
-        enterVillage: 5000
+        returnToLobby: 500,    // 点击返回后等待时间
+        toSettings: 3000,      // 点击确认返回大厅后等待时间
+        exitGame: 1000,        // 点击设置后等待时间
+        confirmExit: 500,      // 点击退出游戏后等待时间
+        toServerSelect: 7000,  // 点击确认退出后等待时间（进入服务器选择界面）
+        toNextServer: 500,     // 点击确认换区后等待时间
+        toStartGame: 1000,     // 选择服务器后等待时间
+        enterVillage: 7000     // 进入农村后等待时间
     },
 
     // ========== 浇水功能配置 ==========
     water: {
-        // 进入农村按钮 (左, 上, 右, 下)
+        // 进入农村按钮区域 (左, 上, 右, 下) - 设计分辨率坐标
         enterVillageBtn: { left: 640, top: 780, right: 780, bottom: 840 },
-        // 轮盘区域 (左, 上, 右, 下)
+        // 轮盘区域 (左, 上, 右, 下) - 设计分辨率坐标
         joystick: { left: 300, top: 600, right: 600, bottom: 850 },
-        // 浇水按钮区域
+        // 浇水按钮区域 (左, 上, 右, 下) - 设计分辨率坐标
         waterBtn: { left: 1490, top: 590, right: 1550, bottom: 640 },
         // 移动参数
         moveSettings: {
-            // 方向偏移（西北方向：向左上）
-            directionX: -1,
-            directionY: -1,
-            // 移动距离（从中心向外拖拽的距离）
-            distance: 250,
-            // 移动持续时间（毫秒）
-            duration: 2000,
-            // 保持按压时间（毫秒）
-            holdDuration: 2000
+            directionX: -1,     // 方向向量X分量（-1表示向左）
+            directionY: -1,     // 方向向量Y分量（-1表示向上），(-1,-1)即西北方向
+            distance: 250,      // 移动距离（从中心向外拖拽的距离，设计分辨率像素）
+            duration: 1800,     // 移动持续时间（毫秒）
+            holdDuration: 2000  // 保持按压时间（毫秒）
         }
     }
 };
 
 // ==================== 全局变量 ====================
 var controlWindow = null;
-var isSwitching = false;
-var isWatering = false;
-var isExiting = false;
-var clickCount = 0;
-var waterType = ""; // 记录当前浇水类型: "water1" 或 "water2"
+var isSwitching = false;      // 是否正在切换服务器
+var isWatering = false;       // 是否正在浇水
+var isExiting = false;        // 是否正在退出
+var clickCount = 0;           // 点击计数器
+var waterType = "";           // 记录当前浇水类型: "water1" 或 "water2"
 
 // ==================== 坐标转换函数 ====================
 function scaleCoordinate(x, y, width, height) {
@@ -172,13 +170,14 @@ function humanClick(area, description) {
 function getServerPosition(index) {
     console.log("获取服务器 " + index + " 的位置");
 
+    // 服务器位置映射（设计分辨率坐标）
     var positions = {
-        1: { x: 430, y: 240, width: 1230, height: 320 },
-        2: { x: 1380, y: 240, width: 2170, height: 320 },
-        3: { x: 430, y: 370, width: 1230, height: 450 },
-        4: { x: 1380, y: 370, width: 2170, height: 450 },
-        5: { x: 430, y: 500, width: 1230, height: 580 },
-        6: { x: 1380, y: 500, width: 2170, height: 580 }
+        1: { x: 430, y: 240, width: 1230, height: 320 },   // 服务器1位置
+        2: { x: 1380, y: 240, width: 2170, height: 320 },  // 服务器2位置
+        3: { x: 430, y: 370, width: 1230, height: 450 },   // 服务器3位置
+        4: { x: 1380, y: 370, width: 2170, height: 450 },  // 服务器4位置
+        5: { x: 430, y: 500, width: 1230, height: 580 },   // 服务器5位置
+        6: { x: 1380, y: 500, width: 2170, height: 580 }   // 服务器6位置
     };
 
     var pos = positions[index];
@@ -254,20 +253,6 @@ function executeJoystickMove() {
         console.log("执行滑动操作...");
         swipe(centerX, centerY, targetX, targetY, duration);
         console.log("滑动操作完成");
-
-        // 保持按压
-        console.log("保持按压 " + holdDuration + "ms...");
-        var holdStart = Date.now();
-        while (Date.now() - holdStart < holdDuration) {
-            press(targetX, targetY, 50);
-            sleep(50);
-        }
-        console.log("保持按压完成");
-
-        // 释放（回到中心）
-        console.log("释放轮盘，回到中心...");
-        swipe(targetX, targetY, centerX, centerY, 200);
-        console.log("释放完成");
 
         return true;
 
@@ -486,93 +471,136 @@ function executeServerSwitch() {
 
     var currentIndex = config.currentIndex;
     var nextIndex = currentIndex + 1;
+
+    // 如果当前是0，下一个是1
     if (nextIndex > 6) {
         nextIndex = 1;
     }
 
     console.log("========================================");
-    console.log("开始切换服务器: " + currentIndex + " (" + config.serverList[currentIndex - 1] +
-        ") -> " + nextIndex + " (" + config.serverList[nextIndex - 1] + ")");
+    console.log("开始切换服务器: " + currentIndex + " (" + config.serverList[currentIndex] +
+        ") -> " + nextIndex + " (" + config.serverList[nextIndex] + ")");
     console.log("========================================");
 
     threads.start(function() {
         try {
-            // 步骤1: 点击返回按钮
-            console.log("\n--- 步骤1: 点击返回按钮 ---");
-            var backBtn = scaleCoordinate(80, 30, 240, 70);
-            if (!humanClick(backBtn, "返回按钮")) {
-                throw new Error("步骤1失败: 点击返回按钮");
-            }
-            humanDelay(config.delays.returnToLobby);
+            // 判断是否从步骤6开始（当前序号为0时）
+            var startFromStep6 = (currentIndex === 0);
 
-            // 步骤2: 点击确认返回大厅
-            console.log("\n--- 步骤2: 确认返回大厅 ---");
-            var confirmLobby = scaleCoordinate(1260, 730, 1500, 780);
-            if (!humanClick(confirmLobby, "确认返回大厅")) {
-                throw new Error("步骤2失败: 确认返回大厅");
-            }
-            humanDelay(config.delays.toSettings);
+            if (startFromStep6) {
+                console.log("当前序号为0，从步骤6开始执行");
 
-            // 步骤3: 点击设置
-            console.log("\n--- 步骤3: 点击设置 ---");
-            var settingsBtn = scaleCoordinate(2100, 30, 2140, 70);
-            if (!humanClick(settingsBtn, "设置按钮")) {
-                throw new Error("步骤3失败: 点击设置");
-            }
-            humanDelay(config.delays.exitGame);
+                // ========== 步骤6: 确认换区 ==========
+                console.log("\n--- 步骤6: 确认换区 ---");
+                var confirmChangeServer = scaleCoordinate(1000, 710, 1450, 740);
+                if (!humanClick(confirmChangeServer, "确认换区按钮")) {
+                    throw new Error("步骤6失败: 确认换区");
+                }
+                humanDelay(config.delays.toNextServer);
 
-            // 步骤4: 点击退出游戏
-            console.log("\n--- 步骤4: 退出游戏 ---");
-            var exitGameBtn = scaleCoordinate(1730, 900, 2000, 940);
-            if (!humanClick(exitGameBtn, "退出游戏按钮")) {
-                throw new Error("步骤4失败: 退出游戏");
-            }
-            humanDelay(config.delays.confirmExit);
+                // ========== 步骤7: 点击下一个服务器 ==========
+                console.log("\n--- 步骤7: 选择服务器 " + nextIndex + " ---");
+                var nextServerPos = getServerPosition(nextIndex);
+                if (!nextServerPos) {
+                    throw new Error("步骤7失败: 获取服务器 " + nextIndex + " 位置");
+                }
 
-            // 步骤5: 点击确认退出
-            console.log("\n--- 步骤5: 确认退出 ---");
-            var confirmExitBtn = scaleCoordinate(1250, 730, 1500, 790);
-            if (!humanClick(confirmExitBtn, "确认退出按钮")) {
-                throw new Error("步骤5失败: 确认退出");
-            }
-            humanDelay(config.delays.toServerSelect);
+                if (!humanClick(nextServerPos, "服务器 " + nextIndex + " (" + config.serverList[nextIndex] + ")")) {
+                    throw new Error("步骤7失败: 点击服务器 " + nextIndex);
+                }
 
-            // 步骤6: 确认换区
-            console.log("\n--- 步骤6: 确认换区 ---");
-            var confirmChangeServer = scaleCoordinate(1000, 710, 1450, 740);
-            if (!humanClick(confirmChangeServer, "确认换区按钮")) {
-                throw new Error("步骤6失败: 确认换区");
-            }
-            humanDelay(config.delays.toNextServer);
+                // 更新当前序号
+                config.currentIndex = nextIndex;
+                humanDelay(config.delays.toStartGame);
 
-            // 步骤7: 点击下一个服务器
-            console.log("\n--- 步骤7: 选择服务器 " + nextIndex + " ---");
-            var nextServerPos = getServerPosition(nextIndex);
-            if (!nextServerPos) {
-                throw new Error("步骤7失败: 获取服务器 " + nextIndex + " 位置");
-            }
+                // ========== 步骤8: 点击开始游戏 ==========
+                console.log("\n--- 步骤8: 开始游戏 ---");
+                var startGameBtn = scaleCoordinate(1020, 800, 1340, 870);
+                if (!humanClick(startGameBtn, "开始游戏按钮")) {
+                    throw new Error("步骤8失败: 开始游戏");
+                }
 
-            if (!humanClick(nextServerPos, "服务器 " + nextIndex + " (" + config.serverList[nextIndex - 1] + ")")) {
-                throw new Error("步骤7失败: 点击服务器 " + nextIndex);
-            }
+            } else {
+                // 正常流程：从步骤1开始
+                console.log("当前序号为" + currentIndex + "，从步骤1开始执行");
 
-            // 更新当前序号
-            config.currentIndex = nextIndex;
-            humanDelay(config.delays.toStartGame);
+                // 步骤1: 点击返回按钮
+                console.log("\n--- 步骤1: 点击返回按钮 ---");
+                var backBtn = scaleCoordinate(80, 30, 240, 70);
+                if (!humanClick(backBtn, "返回按钮")) {
+                    throw new Error("步骤1失败: 点击返回按钮");
+                }
+                humanDelay(config.delays.returnToLobby);
 
-            // 步骤8: 点击开始游戏
-            console.log("\n--- 步骤8: 开始游戏 ---");
-            var startGameBtn = scaleCoordinate(1020, 800, 1340, 870);
-            if (!humanClick(startGameBtn, "开始游戏按钮")) {
-                throw new Error("步骤8失败: 开始游戏");
+                // 步骤2: 点击确认返回大厅
+                console.log("\n--- 步骤2: 确认返回大厅 ---");
+                var confirmLobby = scaleCoordinate(1260, 730, 1500, 780);
+                if (!humanClick(confirmLobby, "确认返回大厅")) {
+                    throw new Error("步骤2失败: 确认返回大厅");
+                }
+                humanDelay(config.delays.toSettings);
+
+                // 步骤3: 点击设置
+                console.log("\n--- 步骤3: 点击设置 ---");
+                var settingsBtn = scaleCoordinate(2100, 30, 2140, 70);
+                if (!humanClick(settingsBtn, "设置按钮")) {
+                    throw new Error("步骤3失败: 点击设置");
+                }
+                humanDelay(config.delays.exitGame);
+
+                // 步骤4: 点击退出游戏
+                console.log("\n--- 步骤4: 退出游戏 ---");
+                var exitGameBtn = scaleCoordinate(1730, 900, 2000, 940);
+                if (!humanClick(exitGameBtn, "退出游戏按钮")) {
+                    throw new Error("步骤4失败: 退出游戏");
+                }
+                humanDelay(config.delays.confirmExit);
+
+                // 步骤5: 点击确认退出
+                console.log("\n--- 步骤5: 确认退出 ---");
+                var confirmExitBtn = scaleCoordinate(1250, 730, 1500, 790);
+                if (!humanClick(confirmExitBtn, "确认退出按钮")) {
+                    throw new Error("步骤5失败: 确认退出");
+                }
+                humanDelay(config.delays.toServerSelect);
+
+                // 步骤6: 确认换区
+                console.log("\n--- 步骤6: 确认换区 ---");
+                var confirmChangeServer = scaleCoordinate(1000, 710, 1450, 740);
+                if (!humanClick(confirmChangeServer, "确认换区按钮")) {
+                    throw new Error("步骤6失败: 确认换区");
+                }
+                humanDelay(config.delays.toNextServer);
+
+                // 步骤7: 点击下一个服务器
+                console.log("\n--- 步骤7: 选择服务器 " + nextIndex + " ---");
+                var nextServerPos = getServerPosition(nextIndex);
+                if (!nextServerPos) {
+                    throw new Error("步骤7失败: 获取服务器 " + nextIndex + " 位置");
+                }
+
+                if (!humanClick(nextServerPos, "服务器 " + nextIndex + " (" + config.serverList[nextIndex] + ")")) {
+                    throw new Error("步骤7失败: 点击服务器 " + nextIndex);
+                }
+
+                // 更新当前序号
+                config.currentIndex = nextIndex;
+                humanDelay(config.delays.toStartGame);
+
+                // 步骤8: 点击开始游戏
+                console.log("\n--- 步骤8: 开始游戏 ---");
+                var startGameBtn = scaleCoordinate(1020, 800, 1340, 870);
+                if (!humanClick(startGameBtn, "开始游戏按钮")) {
+                    throw new Error("步骤8失败: 开始游戏");
+                }
             }
 
             console.log("\n========================================");
-            console.log("服务器切换完成: " + config.serverList[config.currentIndex - 1]);
+            console.log("服务器切换完成: " + config.serverList[config.currentIndex]);
             console.log("总点击次数: " + clickCount);
             console.log("========================================\n");
 
-            toast("切换完成: " + config.serverList[config.currentIndex - 1]);
+            toast("切换完成: " + config.serverList[config.currentIndex]);
 
         } catch (e) {
             console.error("\n========================================");
@@ -603,14 +631,16 @@ function showServerDropdown() {
     console.log("打开服务器选择列表，当前: " + config.currentIndex);
 
     try {
-        dialogs.select("选择服务器", config.serverList, function(index) {
-            if (index >= 0 && index < config.serverList.length) {
+        // 显示服务器列表（包含0选项）
+        var displayList = ["0", "1", "2", "3", "4", "5", "6"];
+        dialogs.select("选择服务器", displayList, function(index) {
+            if (index >= 0 && index < displayList.length) {
                 var oldIndex = config.currentIndex;
-                config.currentIndex = index + 1;
+                config.currentIndex = index;
                 updateCurrentServerDisplay();
                 console.log("手动选择服务器: " + oldIndex + " -> " + config.currentIndex +
-                    " (" + config.serverList[index] + ")");
-                toast("已选择: " + config.serverList[index]);
+                    " (" + displayList[index] + ")");
+                toast("已选择: " + displayList[index]);
             }
         });
     } catch (e) {
@@ -626,7 +656,7 @@ function updateUIState(enabled) {
             try {
                 if (controlWindow.serverBtn) {
                     if (enabled && !isWatering) {
-                        controlWindow.serverBtn.setText(config.serverList[config.currentIndex - 1]);
+                        controlWindow.serverBtn.setText(config.serverList[config.currentIndex]);
                         controlWindow.serverBtn.setBackgroundColor(colors.parseColor("#FFFFFF"));
                         controlWindow.serverBtn.setTextColor(colors.parseColor("#1976D2"));
                     } else if (isSwitching || isWatering) {
@@ -659,7 +689,7 @@ function updateCurrentServerDisplay() {
     ui.run(function() {
         if (controlWindow && controlWindow.serverBtn) {
             try {
-                controlWindow.serverBtn.setText(config.serverList[config.currentIndex - 1]);
+                controlWindow.serverBtn.setText(config.serverList[config.currentIndex]);
                 controlWindow.serverBtn.setBackgroundColor(colors.parseColor("#FFFFFF"));
                 controlWindow.serverBtn.setTextColor(colors.parseColor("#1976D2"));
             } catch (e) {
@@ -761,7 +791,7 @@ function createControlWindow() {
 
         // 设置窗口位置（左边）
         var x = 30;
-        var y = 100;
+        var y = 120;
 
         console.log("控制窗口位置: (" + x + ", " + y + ")");
         controlWindow.setPosition(x, y);
@@ -830,7 +860,7 @@ function cleanup() {
     console.log("\n========================================");
     console.log("脚本退出清理");
     console.log("总点击次数: " + clickCount);
-    console.log("最终服务器: " + config.currentIndex + " (" + config.serverList[config.currentIndex - 1] + ")");
+    console.log("最终服务器: " + config.currentIndex + " (" + config.serverList[config.currentIndex] + ")");
     console.log("========================================");
 
     if (controlWindow != null) {
@@ -849,7 +879,8 @@ console.log("  - 使用屏幕(横屏): " + config.screenWidth + "x" + config.scr
 console.log("  - 设计分辨率: " + config.designWidth + "x" + config.designHeight);
 console.log("  - 缩放比例: X=" + (config.screenWidth / config.designWidth).toFixed(3) +
     ", Y=" + (config.screenHeight / config.designHeight).toFixed(3));
-console.log("  - 当前服务器: " + config.currentIndex + " (" + config.serverList[config.currentIndex - 1] + ")");
+console.log("  - 当前服务器: " + config.currentIndex + " (" + config.serverList[config.currentIndex] + ")");
+console.log("  - 特殊说明: 序号0表示从步骤6(确认换区)开始执行");
 console.log("  - 浇水配置:");
 console.log("    * 浇1: 不进入农村，直接滑动轮盘并点击浇水按钮");
 console.log("    * 浇2: 进入农村，等待5秒，滑动轮盘并点击浇水按钮");
@@ -869,7 +900,7 @@ createControlWindow();
 setInterval(function() {
     if (!isExiting) {
         var status = "脚本运行中 - 服务器: " + config.currentIndex +
-            " (" + config.serverList[config.currentIndex - 1] + ")";
+            " (" + config.serverList[config.currentIndex] + ")";
         if (isSwitching) status += " [切换中]";
         if (isWatering) status += " [浇水中:" + waterType + "]";
         console.log(status);
