@@ -136,22 +136,42 @@
         .rank-badge.r2 { background:#f59e0b; }
         .rank-badge.r3 { background:#3b82f6; }
         .water-wait-cell { text-align:left; }
-        /* 浇水剩余时间高亮样式 */
-        .water-wait-cell .highlight-time {
+        .water-wait-cell .wait-time-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .water-wait-cell .time-block {
+            display: inline-block;
+            min-width: 100px;
+            text-align: center;
             font-weight: 700;
             font-size: 1.1em;
             color: #dc2626;
             background: #fef2f2;
-            padding: 0 4px;
+            padding: 0 6px;
             border-radius: 3px;
+            font-family: var(--font);
         }
-        .water-wait-cell .highlight-predict {
+        .water-wait-cell .suffix-text {
+            white-space: nowrap;
+            color: var(--text-secondary);
+        }
+        .water-wait-cell .predict-block {
+            display: inline-block;
+            min-width: 48px;
+            text-align: center;
             font-weight: 700;
             font-size: 1.1em;
             color: #2563eb;
             background: #eff6ff;
             padding: 0 4px;
             border-radius: 3px;
+            font-family: var(--font);
+        }
+        .water-wait-cell .predict-label {
+            color: var(--text-secondary);
+            white-space: nowrap;
         }
         .log-modal { max-width:700px; max-height:80vh; width:95%; }
         .log-table-wrap { max-height:50vh; overflow-y:auto; margin-top:12px; border:1px solid var(--border); border-radius:var(--radius-sm); }
@@ -321,6 +341,19 @@
         const thMature = $('#thMature'), resetSortBtn = $('#resetSort'), tableScroll = $('#tableScroll');
         const configPanel = $('#configPanel'), configHeader = $('#configHeader');
         const configTextarea = $('#configTextarea'), btnApplyConfig = $('#btnApplyConfig');
+
+        // 保存滚动位置
+        let savedScrollTop = 0;
+
+        function saveScrollPosition() {
+            savedScrollTop = tableScroll.scrollTop;
+        }
+
+        function restoreScrollPosition() {
+            if (savedScrollTop > 0) {
+                tableScroll.scrollTop = savedScrollTop;
+            }
+        }
 
         function loadCheckinData() {
             try {
@@ -594,15 +627,18 @@
         function showPlantModal(rowId) { const row = rows.find(r => r.id === rowId); if (!row) return; const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; overlay.innerHTML = `<div class="modal" style="max-width:360px;"><h3 style="margin-bottom:16px;">🌱 选择播种类型</h3><p style="color:var(--text-secondary);margin-bottom:16px;">用户：${escapeHtml(row.user || '未命名')}（ID: ${row.id}）</p><select class="edit-select" id="plantSelect" style="width:100%;margin-bottom:16px;"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select><div class="modal-actions"><button class="btn btn-outline btn-sm" id="plantCancel">取消</button><button class="btn btn-success btn-sm" id="plantConfirm">✅ 确认播种</button></div></div>`; modalContainer.appendChild(overlay); const confirmBtn = overlay.querySelector('#plantConfirm'); const selectEl = overlay.querySelector('#plantSelect'); overlay.querySelector('#plantCancel').onclick = () => overlay.remove(); overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); }); overlay.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') { e.preventDefault(); selectEl.value = '32h'; } else if (e.key === 'ArrowUp') { e.preventDefault(); selectEl.value = '16h'; } else if (e.key === 'Enter') { e.preventDefault(); confirmBtn.click(); } else if (e.key === 'Escape') { overlay.remove(); } }); setTimeout(() => confirmBtn.focus(), 100); confirmBtn.onclick = () => { const sel = selectEl.value; overlay.remove(); const prev = { user: row.user, cropType: row.cropType, mature: row.matureCountdown, water: row.waterCountdown }; const bs = formatRowState(row); undoData[row.id] = prev; row.cropType = sel; const c = CROP_CONFIG[sel]; row.matureCountdown = c.matureTotal; row.waterCountdown = c.waterMax; const reduction = Math.floor(c.waterMax / 4); row.matureCountdown = Math.max(0, row.matureCountdown - reduction); addLog(row.id, '播种', bs, formatRowState(row)); saveToStorage(); showWaterHint(row.id, reduction); showToast(`✅ 已播种 ${c.label}，-${formatTimeHM(reduction)}`, () => { if (undoData[row.id]) { const p = undoData[row.id]; row.user = p.user; row.cropType = p.cropType; row.matureCountdown = p.mature; row.waterCountdown = p.water; delete undoData[row.id]; saveToStorage(); renderGroupedTable(); } }, UNDO_TIMEOUT); renderGroupedTable(); }; }
 
         function renderGroupedTable() {
+            // 保存滚动位置
+            saveScrollPosition();
+
             clearTableBody(); const { grouped, ungrouped, sorted } = getGroupSortedRows(); const rankMap = computeRanks();
-            if (sortState !== SORT_DEFAULT || (!grouped && groups.length === 0)) { const allSorted = sorted || [...rows].sort((a,b) => sortState === SORT_MATURE_ASC ? a.matureCountdown - b.matureCountdown : a.createOrder - b.createOrder); if (allSorted.length === 0) { emptyState.style.display='block'; tableScroll.style.display='none'; return; } emptyState.style.display='none'; tableScroll.style.display='block'; const tbody = document.createElement('tbody'); allSorted.forEach(row => tbody.appendChild(createRowElement(row, rankMap))); mainTable.appendChild(tbody); bindAllEvents(); return; }
-            const allGrouped = grouped || []; const allUngrouped = ungrouped || []; const totalRows = allGrouped.reduce((sum, g) => sum + g.length, 0) + allUngrouped.length; if (totalRows === 0) { emptyState.style.display='block'; tableScroll.style.display='none'; return; } emptyState.style.display='none'; tableScroll.style.display='block';
+            if (sortState !== SORT_DEFAULT || (!grouped && groups.length === 0)) { const allSorted = sorted || [...rows].sort((a,b) => sortState === SORT_MATURE_ASC ? a.matureCountdown - b.matureCountdown : a.createOrder - b.createOrder); if (allSorted.length === 0) { emptyState.style.display='block'; tableScroll.style.display='none'; restoreScrollPosition(); return; } emptyState.style.display='none'; tableScroll.style.display='block'; const tbody = document.createElement('tbody'); allSorted.forEach(row => tbody.appendChild(createRowElement(row, rankMap))); mainTable.appendChild(tbody); bindAllEvents(); restoreScrollPosition(); return; }
+            const allGrouped = grouped || []; const allUngrouped = ungrouped || []; const totalRows = allGrouped.reduce((sum, g) => sum + g.length, 0) + allUngrouped.length; if (totalRows === 0) { emptyState.style.display='block'; tableScroll.style.display='none'; restoreScrollPosition(); return; } emptyState.style.display='none'; tableScroll.style.display='block';
             allGrouped.forEach((groupRows, groupIndex) => { const tbody = document.createElement('tbody'); tbody.className = 'group-tbody'; groupRows.forEach(row => tbody.appendChild(createRowElement(row, rankMap))); mainTable.appendChild(tbody); if (groupIndex < allGrouped.length - 1 || allUngrouped.length > 0) { const spacer = document.createElement('tbody'); spacer.className = 'spacer-tbody'; const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = COL_COUNT; td.innerHTML = '&nbsp;'; tr.appendChild(td); spacer.appendChild(tr); mainTable.appendChild(spacer); } });
             if (allUngrouped.length > 0) { const tbody = document.createElement('tbody'); allUngrouped.forEach(row => tbody.appendChild(createRowElement(row, rankMap))); mainTable.appendChild(tbody); }
             bindAllEvents();
+            restoreScrollPosition();
         }
 
-        // 高亮格式化浇水剩余时间
         function formatWaterWaitDisplay(matureWait, rank, isMature) {
             if (isMature) {
                 return '<span class="immediate-mature-badge" style="background:#10b981;">✅ 已成熟</span>';
@@ -616,10 +652,13 @@
                 if (rank > 0 && rank <= 3) {
                     rankHtml = ` <span class="rank-badge r${rank}">#${rank}</span>`;
                 }
-                // 对关键时间进行高亮：boldPart 和 predictedTime
-                const boldPartHtml = `<span class="highlight-time">${matureWait.boldPart}</span>`;
-                const predictHtml = `<span class="highlight-predict">${predictedTime}</span>`;
-                return `<span class="approx-mature">${boldPartHtml}后浇水成熟（预计 ${predictHtml}）</span>${rankHtml}`;
+                return `<span class="wait-time-wrapper">
+                    <span class="time-block">${matureWait.boldPart}</span>
+                    <span class="suffix-text">后浇水成熟（预计 </span>
+                    <span class="predict-block">${predictedTime}</span>
+                    <span class="predict-label">）</span>
+                    ${rankHtml}
+                </span>`;
             }
             return '-';
         }
@@ -639,8 +678,7 @@
             const tdCrop = document.createElement('td'); if (isEdit) tdCrop.innerHTML = `<select class="edit-select" id="ec-${row.id}" onchange="cropTypeChange(${row.id})"><option value="16h" ${row.cropType==='16h'?'selected':''}>16h作物</option><option value="32h" ${row.cropType==='32h'?'selected':''}>32h作物</option></select>`; else tdCrop.innerHTML = renderCropBadge(row); tr.appendChild(tdCrop);
             const tdMature = document.createElement('td'); tdMature.id = `mature-cell-${row.id}`; tdMature.className = 'mature-cell'; if (isEdit) { const h = Math.floor(row.matureCountdown/3600), m = Math.floor((row.matureCountdown%3600)/60); tdMature.innerHTML = `<input class="edit-input" id="em-${row.id}" value="${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}" maxlength="4" placeholder="HHMM">`; } else { const ts = document.createElement('span'); ts.className = 'mature-time'; ts.innerHTML = formatTime(row.matureCountdown) + (isMature ? ' <span class="mature-ripe-badge">熟</span>' : ''); tdMature.appendChild(ts); if (isMature) { const eb = document.createElement('div'); eb.className = 'mature-progress'; const s = document.createElement('div'); s.className = 'boss-hp-stack'; eb.appendChild(s); tdMature.appendChild(eb); } else tdMature.appendChild(renderBossHpBar(row.matureCountdown)); } tr.appendChild(tdMature);
             const tdWater = document.createElement('td'); if (isEdit) { const h = Math.floor(row.waterCountdown/3600), m = Math.floor((row.waterCountdown%3600)/60); tdWater.innerHTML = `<input class="edit-input" id="ew-${row.id}" value="${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}" maxlength="4" placeholder="HHMM">`; } else { const waterIcon = waterLow && !isDry ? ' <span class="water-low-icon" title="湿润时间不足2小时">💧</span>' : ''; const dryBadge = isDry ? ' <span class="dry-badge-large">干枯</span>' : ''; const reductionHtml = reduction > 0 ? ` <span class="water-reduction-inline">(${formatReductionBold(reduction)})</span>` : ''; const timeDisplay = isDry ? '' : formatTime(row.waterCountdown); tdWater.innerHTML = `<div class="water-vertical"><span style="font-weight:600;font-family:monospace;">${timeDisplay}${dryBadge}${waterIcon}${reductionHtml}</span><div class="progress-bar-wrap"><div class="progress-bar-fill ${waterColor}" style="width:${waterPercent}%"></div></div></div>`; } tr.appendChild(tdWater);
-            const tdWait = document.createElement('td'); tdWait.className = 'water-wait-cell'; tdWait.style.fontSize = '0.8rem';
-            // 使用高亮格式化
+            const tdWait = document.createElement('td'); tdWait.className = 'water-wait-cell'; tdWait.style.fontSize = '0.9rem';
             tdWait.innerHTML = formatWaterWaitDisplay(matureWait, rank, isMature);
             tr.appendChild(tdWait);
             const tdCb = document.createElement('td'); if (isEdit) tdCb.innerHTML = `<select class="edit-select" id="ecb-${row.id}"><option value="-" ${row.consecutiveBless==='-'?'selected':''}>-</option><option value="是" ${row.consecutiveBless==='是'?'selected':''}>是</option><option value="否" ${row.consecutiveBless==='否'?'selected':''}>否</option></select>`; else tdCb.innerHTML = renderConsecutiveBlessBadge(row); tr.appendChild(tdCb);
@@ -660,7 +698,14 @@
 
         function bindAllEvents() {
             document.querySelectorAll('.edit-btn').forEach(b=>b.onclick=function(){enterEdit(Number(this.dataset.id));});
-            document.querySelectorAll('.water-btn').forEach(b=>b.onclick=function(){const row=rows.find(r=>r.id===Number(this.dataset.id)); if(row&&canWater(row).can){doWater(row);renderGroupedTable();}});
+            document.querySelectorAll('.water-btn').forEach(b=>b.onclick=function(){
+                const row=rows.find(r=>r.id===Number(this.dataset.id));
+                if(row&&canWater(row).can){
+                    saveScrollPosition();
+                    doWater(row);
+                    renderGroupedTable();
+                }
+            });
             document.querySelectorAll('.copy-btn').forEach(b=>b.onclick=function(){duplicateRow(Number(this.dataset.id));});
             document.querySelectorAll('.delete-btn').forEach(b=>b.onclick=function(){const id=Number(this.dataset.id),row=rows.find(r=>r.id===id);showConfirm('确认删除',`删除用户"${row?.user||'未命名'}"的记录？`,()=>{deleteRow(id);renderGroupedTable();showToast('已删除');});});
             document.querySelectorAll('.log-btn').forEach(b=>b.onclick=function(){showLogModal(Number(this.dataset.id));});
