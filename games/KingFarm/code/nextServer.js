@@ -36,7 +36,6 @@ function getScreenSize() {
         screenHeight = width;
     }
 
-    console.log("使用屏幕尺寸(横屏): " + screenWidth + " x " + screenHeight);
     return {
         width: screenWidth,
         height: screenHeight
@@ -113,7 +112,6 @@ var isSwitching = false;      // 是否正在切换服务器
 var isWatering = false;       // 是否正在浇水
 var isMoving = false;         // 是否正在自动移动
 var isExiting = false;        // 是否正在退出
-var clickCount = 0;           // 点击计数器
 var waterType = "";           // 记录当前浇水类型: "water1" 或 "water2"
 var stopAutoMove = false;     // 停止自动移动标志
 var moveThread = null;        // 自动移动线程
@@ -146,9 +144,6 @@ function humanDelay(baseDelay) {
 }
 
 function humanClick(area, description) {
-    clickCount++;
-    var clickId = clickCount;
-
     try {
         var x = random(area.left, area.right);
         var y = random(area.top, area.bottom);
@@ -156,29 +151,17 @@ function humanClick(area, description) {
         y += random(-2, 2);
         var pressTime = random(30, 80);
 
-        console.log("[" + clickId + "] 点击: " + description);
-        console.log("[" + clickId + "] 区域: (" + area.left + "," + area.top + "," +
-            area.right + "," + area.bottom + ")");
-        console.log("[" + clickId + "] 实际坐标: (" + x + "," + y + ") 按压: " + pressTime + "ms");
+        console.log("点击: " + description);
+        console.log("区域: (" + area.left + "," + area.top + "," + area.right + "," + area.bottom + ")");
+        console.log("实际坐标: (" + x + "," + y + ") 按压: " + pressTime + "ms");
 
         press(x, y, pressTime);
         sleep(random(50, 100));
 
-        console.log("[" + clickId + "] 点击成功: " + description);
         return true;
     } catch (e) {
-        console.log("[" + clickId + "] 点击失败: " + description + " - " + e.message);
-        try {
-            var x2 = random(area.left, area.right);
-            var y2 = random(area.top, area.bottom);
-            console.log("[" + clickId + "] 备用点击坐标: (" + x2 + "," + y2 + ")");
-            click(x2, y2);
-            console.log("[" + clickId + "] 备用点击成功: " + description);
-            return true;
-        } catch (e2) {
-            console.log("[" + clickId + "] 备用点击也失败: " + description + " - " + e2.message);
-            return false;
-        }
+        console.log("点击失败: " + description + " - " + e.message);
+        return false;
     }
 }
 
@@ -349,22 +332,13 @@ function executeAutoMove() {
     isMoving = true;
     updateAllUI();
 
-    console.log("========================================");
-    console.log("开始自动移动");
-    console.log("========================================");
-
     // 获取轮盘中心
     var center = getJoystickCenter();
-    console.log("轮盘中心: (" + center.x + "," + center.y + ")");
 
     // 在独立线程中执行移动
     moveThread = threads.start(function() {
-        var moveCount = 0;
         try {
             while (isMoving && !stopAutoMove && !isExiting) {
-                moveCount++;
-
-                console.log("\n--- 移动 #" + moveCount + " ---");
 
                 // 生成随机方向（3点钟到9点钟顺时针）
                 var direction = getRandomDirection();
@@ -391,7 +365,6 @@ function executeAutoMove() {
                 try {
                     console.log("执行滑动...");
                     swipe(center.x, center.y, targetX, targetY, moveDuration);
-                    console.log("滑动完成");
                 } catch (e) {
                     console.error("滑动执行失败: " + e.message);
                 }
@@ -403,7 +376,6 @@ function executeAutoMove() {
                 }
 
                 // 回到中心
-                console.log("回到中心...");
                 try {
                     swipe(targetX, targetY, center.x, center.y, 200);
                 } catch (e) {
@@ -435,13 +407,7 @@ function executeAutoMove() {
                     console.log("检测到停止标志，退出移动循环");
                     break;
                 }
-
-                console.log("休眠结束，准备下一次移动");
             }
-
-            console.log("\n========================================");
-            console.log("自动移动结束，总移动次数: " + moveCount);
-            console.log("========================================");
 
         } catch (e) {
             console.error("自动移动异常: " + e.message);
@@ -507,10 +473,6 @@ function executeWater1() {
 
     threads.start(function() {
         try {
-            console.log("========================================");
-            console.log("开始浇水操作（浇1 - 不进入农村）");
-            console.log("========================================");
-
             // ========== 步骤1: 操作轮盘向西北方向移动 ==========
             console.log("\n--- 步骤1: 操作轮盘向西北方向移动 ---");
 
@@ -534,18 +496,8 @@ function executeWater1() {
                 throw new Error("步骤2失败: 点击浇水按钮");
             }
 
-            console.log("\n========================================");
-            console.log("浇水操作完成（浇1）");
-            console.log("总点击次数: " + clickCount);
-            console.log("========================================\n");
-
-            toast("浇水1完成");
-
         } catch (e) {
-            console.error("\n========================================");
             console.error("浇水1失败: " + e.message);
-            console.error("失败时的点击计数: " + clickCount);
-            console.error("========================================\n");
             toast("浇水1失败: " + e.message);
         } finally {
             isWatering = false;
@@ -590,10 +542,6 @@ function executeWater2() {
 
     threads.start(function() {
         try {
-            console.log("========================================");
-            console.log("开始浇水操作（浇2 - 进入农村）");
-            console.log("========================================");
-
             // ========== 步骤1: 点击进入农村按钮 ==========
             console.log("\n--- 步骤1: 点击进入农村按钮 ---");
             var enterVillageArea = scaleCoordinate(
@@ -633,19 +581,8 @@ function executeWater2() {
             if (!humanClick(waterBtnArea, "浇水按钮")) {
                 throw new Error("步骤3失败: 点击浇水按钮");
             }
-
-            console.log("\n========================================");
-            console.log("浇水操作完成（浇2）");
-            console.log("总点击次数: " + clickCount);
-            console.log("========================================\n");
-
-            toast("浇水2完成");
-
         } catch (e) {
-            console.error("\n========================================");
             console.error("浇水2失败: " + e.message);
-            console.error("失败时的点击计数: " + clickCount);
-            console.error("========================================\n");
             toast("浇水2失败: " + e.message);
         } finally {
             isWatering = false;
@@ -816,18 +753,12 @@ function executeServerSwitch() {
                 }
             }
 
-            console.log("\n========================================");
             console.log("服务器切换完成: " + config.serverList[config.currentIndex]);
-            console.log("总点击次数: " + clickCount);
-            console.log("========================================\n");
 
             toast("切换完成: " + config.serverList[config.currentIndex]);
 
         } catch (e) {
-            console.error("\n========================================");
             console.error("切换失败: " + e.message);
-            console.error("失败时的点击计数: " + clickCount);
-            console.error("========================================\n");
             toast("切换失败: " + e.message);
         } finally {
             isSwitching = false;
@@ -1048,19 +979,16 @@ function createControlWindow() {
         var x = 30;
         var y = 120;
 
-        console.log("控制窗口位置: (" + x + ", " + y + ")");
         controlWindow.setPosition(x, y);
 
         // 服务器按钮点击事件
         controlWindow.serverBtn.on("click", function() {
-            console.log("用户点击服务器选择按钮");
             showServerDropdown();
         });
 
         // 下一个按钮点击事件
         controlWindow.nextBtn.on("click", function() {
             if (!isSwitching && !isWatering && !isMoving) {
-                console.log("用户点击下一个按钮");
                 executeServerSwitch();
             } else {
                 toast(isSwitching ? "正在切换服务器" : (isWatering ? "正在浇水" : "正在自动移动"));
@@ -1100,9 +1028,6 @@ function createControlWindow() {
 
         // 移动按钮点击事件
         controlWindow.moveBtn.on("click", function() {
-            console.log("用户点击移动按钮，当前状态: isMoving=" + isMoving +
-                ", isSwitching=" + isSwitching + ", isWatering=" + isWatering);
-
             if (isMoving) {
                 // 正在移动，点击停止
                 console.log("停止自动移动");
@@ -1141,11 +1066,8 @@ function cleanup() {
         }
     }
 
-    console.log("\n========================================");
     console.log("脚本退出清理");
-    console.log("总点击次数: " + clickCount);
     console.log("最终服务器: " + config.currentIndex + " (" + config.serverList[config.currentIndex] + ")");
-    console.log("========================================");
 
     if (controlWindow != null) {
         try { controlWindow.close(); } catch (e) { }
@@ -1156,23 +1078,16 @@ function cleanup() {
 events.on("exit", cleanup);
 
 console.log("========================================");
-console.log("自动切换服务器 + 自动浇水 + 自动移动脚本启动");
 console.log("设备信息:");
 console.log("  - 原始屏幕: " + device.width + "x" + device.height);
 console.log("  - 使用屏幕(横屏): " + config.screenWidth + "x" + config.screenHeight);
 console.log("  - 设计分辨率: " + config.designWidth + "x" + config.designHeight);
 console.log("  - 缩放比例: X=" + (config.screenWidth / config.designWidth).toFixed(3) +
     ", Y=" + (config.screenHeight / config.designHeight).toFixed(3));
-console.log("  - 当前服务器: " + config.currentIndex + " (" + config.serverList[config.currentIndex] + ")");
-console.log("  - 特殊说明: 序号0表示从步骤6(确认换区)开始执行");
-console.log("  - 浇水配置:");
-console.log("    * 浇1: 不进入农村，直接滑动轮盘并点击浇水按钮");
-console.log("    * 浇2: 进入农村，等待5秒，滑动轮盘并点击浇水按钮");
 console.log("  - 自动移动配置:");
 console.log("    * 移动距离: " + config.autoMove.distance + "px");
 console.log("    * 移动持续: " + config.autoMove.moveDuration + "ms");
 console.log("    * 休眠时间: " + config.autoMove.sleepDuration + "ms");
-console.log("    * 方向范围: 3点钟(0°)到9点钟(270°)，顺时针");
 console.log("========================================\n");
 
 createControlWindow();
@@ -1193,6 +1108,5 @@ setInterval(function() {
 setTimeout(function() {
     if (!isExiting) {
         toast("脚本已就绪 - 可切换服务器、浇水和自动移动");
-        console.log("用户提示已显示");
     }
 }, 1000);
