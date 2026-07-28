@@ -65,7 +65,7 @@ var config = {
     currentIndex: 1,
 
     // ========== 服务器列表 ==========
-    serverList: ["服务器 1", "服务器 2", "服务器 3", "服务器 4", "服务器 5", "服务器 6"],
+    serverList: ["1", "2", "3", "4", "5", "6"],
 
     // ========== 延时配置（毫秒） ==========
     delays: {
@@ -338,7 +338,7 @@ function updateUIState(enabled) {
                         controlWindow.serverBtn.setTextColor(colors.parseColor("#1976D2"));
                         console.log("UI更新: 服务器显示 - " + config.serverList[config.currentIndex - 1]);
                     } else {
-                        controlWindow.serverBtn.setText("切换中...");
+                        controlWindow.serverBtn.setText("...");
                         controlWindow.serverBtn.setBackgroundColor(colors.parseColor("#FFE0B2"));
                         controlWindow.serverBtn.setTextColor(colors.parseColor("#E65100"));
                         console.log("UI更新: 显示切换中状态");
@@ -351,7 +351,7 @@ function updateUIState(enabled) {
                         controlWindow.nextBtn.setBackgroundColor(colors.parseColor("#4CAF50"));
                         controlWindow.nextBtn.setTextColor(colors.parseColor("#FFFFFF"));
                     } else {
-                        controlWindow.nextBtn.setText("⏳");
+                        controlWindow.nextBtn.setText("切换中");
                         controlWindow.nextBtn.setBackgroundColor(colors.parseColor("#FF9800"));
                         controlWindow.nextBtn.setTextColor(colors.parseColor("#FFFFFF"));
                     }
@@ -390,29 +390,30 @@ function createControlWindow() {
     try {
         controlWindow = floaty.window(
             <frame>
-                <vertical bg="#E8F5E9" padding="8">
+                <horizontal bg="#E8F5E9" padding="8">
                     <button id="serverBtn"
-                            text="服务器 1"
-                            w="110"
+                            text="1"
+                            w="30"
                             h="32"
                             bg="#FFFFFF"
                             textColor="#1976D2"
-                            textSize="13"
+                            textSize="12"
                             marginBottom="4"/>
                     <button id="nextBtn"
                             text="▶"
-                            w="50"
-                            h="28"
+                            w="30"
+                            h="32"
                             bg="#4CAF50"
                             textColor="#FFFFFF"
                             textSize="12"/>
-                </vertical>
+                </horizontal>
             </frame>
         );
 
         // 设置窗口位置（左边中部）
         var x = 30;
-        var y = Math.round(config.screenHeight / 2 - 60);
+        // var y = Math.round(config.screenHeight / 2 - 60);
+        var y = 100;
 
         console.log("控制窗口位置: (" + x + ", " + y + ")");
         controlWindow.setPosition(x, y);
