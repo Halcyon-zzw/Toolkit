@@ -153,11 +153,13 @@ var config = {
             settleReturnLobbyBtn: { left: 980, top: 950, right: 1100, bottom: 990 }, // 游戏结算返回大厅按钮
             settleConfirmReturnBtn: { left: 1250, top: 740, right: 1500, bottom: 790 }, // 游戏结算确认返回按钮
 
-
             // ----- 功能5：领取农场奖励相关坐标 -----
             farmRewardBtn: { left: 1760, top: 30, right: 1810, bottom: 70 },      // 奖励按钮
             claimFarmRewardBtn: { left: 1100, top: 700, right: 1300, bottom: 760 },     // 领取奖励按钮
-            farmRewardBlankArea: { left: 1200, top: 860, right: 1300, bottom: 900 }     // 农场奖励空白区域点击
+            farmRewardBlankArea: { left: 1200, top: 860, right: 1300, bottom: 900 },     // 农场奖励空白区域点击
+
+            // ----- 功能6：偷菜相关坐标 -----
+            stealBtn: { left: 1930, top: 800, right: 2050, bottom: 900 }     // 偷菜按钮
         },
 
         // ========== 机型修正配置 ==========
@@ -228,6 +230,17 @@ var config = {
         waitAfterClaim: 800,    // 点击领取后等待时间（毫秒）
         waitAfterBlank: 500,    // 点击空白后等待时间（毫秒）
         waitAfterBack: 500      // 点击返回后等待时间（毫秒）
+    },
+
+    // ========== 功能6 - 偷菜配置 ==========
+    steal: {
+        stepDistance: 100,           // 移动步长（像素）
+        moveDuration: 1500,          // 每次移动持续时间（毫秒）
+        waitAfterMove: 500,          // 移动后等待时间（毫秒）
+        waitAfterSteal: 1000,        // 偷菜后等待时间（毫秒）
+        rightMoveDuration: 1500,     // 右移动持续时间（毫秒）
+        leftPath: "左左左上上右下右上右下",  // 左半区移动路径
+        rightPath: "下右上右下右上上左左左"   // 右半区移动路径
     }
 };
 
@@ -240,11 +253,14 @@ var isWatering = false;         // 是否正在浇水
 var isMoving = false;           // 是否正在自动移动
 var isSettling = false;         // 是否正在结算返回
 var isFarming = false;          // 是否正在领取农场奖励
+var isStealing = false;         // 是否正在偷菜
 var isExiting = false;          // 是否正在退出
 var waterType = "";             // 当前浇水类型
 var stopAutoMove = false;       // 停止自动移动标志
+var stopSteal = false;          // 停止偷菜标志
 var moveThread = null;          // 自动移动线程
 var switchThread = null;        // 切换服务器线程
+var stealThread = null;         // 偷菜线程
 var stopSwitch = false;         // 停止切换标志
 var isHidden = false;           // 主窗口是否隐藏
 
@@ -876,6 +892,263 @@ function executeFarmReward() {
     });
 }
 
+// ==================== 功能6 - 偷菜 ====================
+function parseDirection(dir) {
+    // 方向映射：上=减小y，下=增大y，左=减小x，右=增大x
+    switch(dir) {
+        case '上': return { dx: 0, dy: -1 };
+        case '下': return { dx: 0, dy: 1 };
+        case '左': return { dx: -1, dy: 0 };
+        case '右': return { dx: 1, dy: 0 };
+        default: return { dx: 0, dy: 0 };
+    }
+}
+
+function executeStealPath(startX, startY, path, stepDistance, moveDuration, waitAfterMove, waitAfterSteal, stealArea) {
+    var currentX = startX;
+    var currentY = startY;
+
+    for (var i = 0; i < path.length; i++) {
+        // 检查停止标志
+        if (stopSteal || isExiting) {
+            console.log("偷菜被中断");
+            return false;
+        }
+
+        var dir = path.charAt(i);
+        var direction = parseDirection(dir);
+
+        // 计算目标位置
+        var targetX = currentX + direction.dx * stepDistance;
+        var targetY = currentY + direction.dy * stepDistance;
+
+        // 确保目标在屏幕范围内
+        targetX = Math.max(0, Math.min(targetX, config.screenWidth));
+        targetY = Math.max(0, Math.min(targetY, config.screenHeight));
+
+        console.log("  移动 " + dir + ": (" + currentX + "," + currentY + ") -> (" + targetX + "," + targetY + ")");
+
+        // 执行滑动（从当前位置到目标位置）
+        try {
+            swipe(currentX, currentY, targetX, targetY, moveDuration);
+        } catch (e) {
+            console.error("滑动失败: " + e.message);
+            return false;
+        }
+
+        // 更新当前位置
+        currentX = targetX;
+        currentY = targetY;
+
+        // 检查停止标志
+        if (stopSteal || isExiting) {
+            console.log("偷菜被中断");
+            return false;
+        }
+
+        // 移动后等待
+        if (waitAfterMove > 0) {
+            sleep(waitAfterMove);
+        }
+
+        // 检查停止标志
+        if (stopSteal || isExiting) {
+            console.log("偷菜被中断");
+            return false;
+        }
+
+        // 点击偷菜按钮
+        if (stealArea) {
+            humanClick(stealArea, "偷菜按钮");
+            // 偷菜后等待
+            if (waitAfterSteal > 0) {
+                sleep(waitAfterSteal);
+            }
+        }
+
+        // 检查停止标志
+        if (stopSteal || isExiting) {
+            console.log("偷菜被中断");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function executeSteal() {
+    if (isStealing) {
+        // 如果正在偷菜，点击停止
+        console.log("用户点击停止偷菜");
+        stopSteal = true;
+        toast("正在停止偷菜...");
+        return;
+    }
+
+    if (isSwitching) {
+        toast("正在切换服务器，无法偷菜");
+        return;
+    }
+
+    if (isWatering) {
+        toast("正在浇水，无法偷菜");
+        return;
+    }
+
+    if (isMoving) {
+        toast("正在自动移动，无法偷菜");
+        return;
+    }
+
+    if (isSettling) {
+        toast("正在结算返回，无法偷菜");
+        return;
+    }
+
+    if (isFarming) {
+        toast("正在领取农场奖励，无法偷菜");
+        return;
+    }
+
+    if (auto.service === null) {
+        console.log("无障碍服务未开启，尝试启动...");
+        toast("无障碍服务未开启，请先开启");
+        auto.waitFor();
+        sleep(1000);
+        if (auto.service === null) {
+            console.error("无法开启无障碍服务");
+            toast("无法开启无障碍服务");
+            return;
+        }
+    }
+
+    stopSteal = false;
+    isStealing = true;
+    updateAllUI();
+
+    console.log("========================================");
+    console.log("开始偷菜操作");
+    console.log("========================================");
+
+    var stealConfig = config.steal;
+    var stealArea = getFixedCoordinate("stealBtn");
+    var joystick = getJoystickCenter();
+    var startX = joystick.x;
+    var startY = joystick.y;
+
+    console.log("轮盘中心: (" + startX + "," + startY + ")");
+    console.log("左半区路径: " + stealConfig.leftPath);
+    console.log("右半区路径: " + stealConfig.rightPath);
+
+    stealThread = threads.start(function() {
+        try {
+            // ========== 步骤1: 偷左半区 ==========
+            console.log("\n--- 步骤1: 偷左半区 ---");
+            if (stopSteal || isExiting) {
+                throw new Error("操作被用户中断");
+            }
+
+            // 解析左半区路径
+            var leftPath = stealConfig.leftPath;
+            var result = executeStealPath(
+                startX, startY,
+                leftPath,
+                stealConfig.stepDistance,
+                stealConfig.moveDuration,
+                stealConfig.waitAfterMove,
+                stealConfig.waitAfterSteal,
+                stealArea
+            );
+
+            if (!result) {
+                throw new Error("左半区偷菜失败或被中断");
+            }
+
+            // 检查停止标志
+            if (stopSteal || isExiting) {
+                throw new Error("操作被用户中断");
+            }
+
+            // ========== 步骤2: 移动到右半区 ==========
+            console.log("\n--- 步骤2: 移动到右半区 ---");
+            // 向右移动2秒
+            var targetX = Math.min(config.screenWidth, startX + 300);
+            console.log("  向右移动: (" + startX + "," + startY + ") -> (" + targetX + "," + startY + ")");
+            try {
+                swipe(startX, startY, targetX, startY, stealConfig.rightMoveDuration);
+            } catch (e) {
+                console.error("右移失败: " + e.message);
+                throw new Error("移动到右半区失败");
+            }
+
+            // 检查停止标志
+            if (stopSteal || isExiting) {
+                throw new Error("操作被用户中断");
+            }
+
+            // 等待0.5s
+            sleep(stealConfig.waitAfterMove);
+
+            // 检查停止标志
+            if (stopSteal || isExiting) {
+                throw new Error("操作被用户中断");
+            }
+
+            // ========== 步骤3: 偷右半区 ==========
+            console.log("\n--- 步骤3: 偷右半区 ---");
+            // 右半区从当前位置开始
+            var currentPos = getJoystickCenter();
+            var rightStartX = currentPos.x;
+            var rightStartY = currentPos.y;
+
+            var rightPath = stealConfig.rightPath;
+            var result2 = executeStealPath(
+                rightStartX, rightStartY,
+                rightPath,
+                stealConfig.stepDistance,
+                stealConfig.moveDuration,
+                stealConfig.waitAfterMove,
+                stealConfig.waitAfterSteal,
+                stealArea
+            );
+
+            if (!result2) {
+                throw new Error("右半区偷菜失败或被中断");
+            }
+
+            console.log("\n========================================");
+            console.log("偷菜操作完成");
+            console.log("========================================\n");
+
+            toast("偷菜完成");
+
+        } catch (e) {
+            if (e.message && e.message.indexOf("被用户中断") >= 0) {
+                console.log("\n========================================");
+                console.log("偷菜被用户中断");
+                console.log("========================================\n");
+                toast("偷菜已停止");
+            } else {
+                console.error("\n========================================");
+                console.error("偷菜失败: " + e.message);
+                console.error("========================================\n");
+                toast("偷菜失败: " + e.message);
+            }
+        } finally {
+            isStealing = false;
+            stopSteal = false;
+            updateAllUI();
+        }
+    });
+}
+
+function stopStealFunction() {
+    console.log("请求停止偷菜");
+    stopSteal = true;
+    isStealing = false;
+    updateAllUI();
+}
+
 // ==================== 切换服务器逻辑（农切 - 完整流程） ====================
 function executeSwitch1() {
     if (isSwitching) {
@@ -1216,7 +1489,7 @@ function updateAllUI() {
     ui.run(function() {
         if (controlWindow) {
             try {
-                var isAnyBusy = isSwitching || isWatering || isMoving || isSettling || isFarming;
+                var isAnyBusy = isSwitching || isWatering || isMoving || isSettling || isFarming || isStealing;
 
                 // 服务器按钮
                 if (controlWindow.serverBtn) {
@@ -1242,7 +1515,7 @@ function updateAllUI() {
                         controlWindow.nongQieBtn.setClickable(true);
                     } else {
                         controlWindow.nongQieBtn.setText("农切");
-                        var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming;
+                        var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming && !isStealing;
                         if (isClickable) {
                             controlWindow.nongQieBtn.setBackgroundColor(colors.parseColor("#4CAF50"));
                             controlWindow.nongQieBtn.setTextColor(colors.parseColor("#FFFFFF"));
@@ -1263,7 +1536,7 @@ function updateAllUI() {
                         controlWindow.zhuQieBtn.setClickable(true);
                     } else {
                         controlWindow.zhuQieBtn.setText("主切");
-                        var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming;
+                        var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming && !isStealing;
                         if (isClickable) {
                             controlWindow.zhuQieBtn.setBackgroundColor(colors.parseColor("#2196F3"));
                             controlWindow.zhuQieBtn.setTextColor(colors.parseColor("#FFFFFF"));
@@ -1278,7 +1551,7 @@ function updateAllUI() {
                 // 农浇按钮
                 if (controlWindow.nongJiaoBtn) {
                     controlWindow.nongJiaoBtn.setText(isWatering && waterType === "农浇" ? "浇水中" : "农浇");
-                    var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming;
+                    var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming && !isStealing;
                     if (isClickable) {
                         controlWindow.nongJiaoBtn.setBackgroundColor(colors.parseColor("#4CAF50"));
                         controlWindow.nongJiaoBtn.setTextColor(colors.parseColor("#FFFFFF"));
@@ -1292,7 +1565,7 @@ function updateAllUI() {
                 // 主浇按钮
                 if (controlWindow.zhuJiaoBtn) {
                     controlWindow.zhuJiaoBtn.setText(isWatering && waterType === "主浇" ? "浇水中" : "主浇");
-                    var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming;
+                    var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming && !isStealing;
                     if (isClickable) {
                         controlWindow.zhuJiaoBtn.setBackgroundColor(colors.parseColor("#2196F3"));
                         controlWindow.zhuJiaoBtn.setTextColor(colors.parseColor("#FFFFFF"));
@@ -1306,7 +1579,7 @@ function updateAllUI() {
                 // 农领按钮
                 if (controlWindow.nongLingBtn) {
                     controlWindow.nongLingBtn.setText(isFarming ? "农场中" : "农领");
-                    var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming;
+                    var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming && !isStealing;
                     if (isClickable) {
                         controlWindow.nongLingBtn.setBackgroundColor(colors.parseColor("#FF9800"));
                         controlWindow.nongLingBtn.setTextColor(colors.parseColor("#FFFFFF"));
@@ -1315,6 +1588,27 @@ function updateAllUI() {
                         controlWindow.nongLingBtn.setTextColor(colors.parseColor("#666666"));
                     }
                     controlWindow.nongLingBtn.setClickable(isClickable);
+                }
+
+                // 偷按钮
+                if (controlWindow.stealBtn) {
+                    if (isStealing) {
+                        controlWindow.stealBtn.setText("停");
+                        controlWindow.stealBtn.setBackgroundColor(colors.parseColor("#F44336"));
+                        controlWindow.stealBtn.setTextColor(colors.parseColor("#FFFFFF"));
+                        controlWindow.stealBtn.setClickable(true);
+                    } else {
+                        controlWindow.stealBtn.setText("偷");
+                        var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming && !isStealing;
+                        if (isClickable) {
+                            controlWindow.stealBtn.setBackgroundColor(colors.parseColor("#8BC34A"));
+                            controlWindow.stealBtn.setTextColor(colors.parseColor("#FFFFFF"));
+                        } else {
+                            controlWindow.stealBtn.setBackgroundColor(colors.parseColor("#CCCCCC"));
+                            controlWindow.stealBtn.setTextColor(colors.parseColor("#666666"));
+                        }
+                        controlWindow.stealBtn.setClickable(isClickable);
+                    }
                 }
 
                 // 移按钮
@@ -1326,7 +1620,7 @@ function updateAllUI() {
                         controlWindow.moveBtn.setClickable(true);
                     } else {
                         controlWindow.moveBtn.setText("移");
-                        var isClickable = !isSwitching && !isWatering && !isSettling && !isFarming;
+                        var isClickable = !isSwitching && !isWatering && !isSettling && !isFarming && !isStealing;
                         if (isClickable) {
                             controlWindow.moveBtn.setBackgroundColor(colors.parseColor("#9C27B0"));
                             controlWindow.moveBtn.setTextColor(colors.parseColor("#FFFFFF"));
@@ -1341,7 +1635,7 @@ function updateAllUI() {
                 // 结按钮
                 if (controlWindow.jieBtn) {
                     controlWindow.jieBtn.setText(isSettling ? "结算中" : "结");
-                    var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming;
+                    var isClickable = !isSwitching && !isWatering && !isMoving && !isSettling && !isFarming && !isStealing;
                     if (isClickable) {
                         controlWindow.jieBtn.setBackgroundColor(colors.parseColor("#F44336"));
                         controlWindow.jieBtn.setTextColor(colors.parseColor("#FFFFFF"));
@@ -1362,7 +1656,7 @@ function updateCurrentServerDisplay() {
     ui.run(function() {
         if (controlWindow && controlWindow.serverBtn) {
             try {
-                if (!isSwitching && !isWatering && !isMoving && !isSettling && !isFarming) {
+                if (!isSwitching && !isWatering && !isMoving && !isSettling && !isFarming && !isStealing) {
                     controlWindow.serverBtn.setText(config.serverList[config.currentIndex]);
                 }
             } catch (e) {
@@ -1410,7 +1704,7 @@ function createControlWindow() {
                             textSize="8"
                             marginLeft="2"/>
                 </horizontal>
-                <!-- 第二行：农浇 | 主浇 | 农领 -->
+                <!-- 第二行：农浇 | 主浇 | 农领 | 偷 -->
                 <horizontal marginTop="2">
                     <button id="nongJiaoBtn"
                             text="农浇"
@@ -1432,6 +1726,14 @@ function createControlWindow() {
                             w="30"
                             h="30"
                             bg="#FF9800"
+                            textColor="#FFFFFF"
+                            textSize="8"
+                            marginLeft="2"/>
+                    <button id="stealBtn"
+                            text="偷"
+                            w="30"
+                            h="30"
+                            bg="#8BC34A"
                             textColor="#FFFFFF"
                             textSize="8"
                             marginLeft="2"/>
@@ -1472,7 +1774,7 @@ function createControlWindow() {
         // 农切按钮 - 完整流程
         controlWindow.nongQieBtn.on("click", function() {
             console.log("用户点击农切按钮");
-            if (!isSwitching && !isWatering && !isMoving && !isSettling && !isFarming) {
+            if (!isSwitching && !isWatering && !isMoving && !isSettling && !isFarming && !isStealing) {
                 console.log("启动农切 - 完整切换流程");
                 executeSwitch1();
             } else if (isSwitching) {
@@ -1480,13 +1782,13 @@ function createControlWindow() {
                 stopSwitch = true;
                 toast("正在停止切换...");
             } else {
-                toast(isWatering ? "正在浇水" : (isMoving ? "正在移动" : (isSettling ? "正在结算" : "正在领取农场奖励")));
+                toast(isWatering ? "正在浇水" : (isMoving ? "正在移动" : (isSettling ? "正在结算" : (isFarming ? "正在领取农场奖励" : "正在偷菜"))));
             }
         });
 
         // 农切长按重置
         controlWindow.nongQieBtn.on("long-click", function() {
-            if (!isSwitching && !isWatering && !isMoving && !isSettling && !isFarming) {
+            if (!isSwitching && !isWatering && !isMoving && !isSettling && !isFarming && !isStealing) {
                 console.log("用户长按重置按钮");
                 config.currentIndex = 1;
                 updateCurrentServerDisplay();
@@ -1498,7 +1800,7 @@ function createControlWindow() {
         // 主切按钮 - 从步骤3开始
         controlWindow.zhuQieBtn.on("click", function() {
             console.log("用户点击主切按钮");
-            if (!isSwitching && !isWatering && !isMoving && !isSettling && !isFarming) {
+            if (!isSwitching && !isWatering && !isMoving && !isSettling && !isFarming && !isStealing) {
                 console.log("启动主切 - 从步骤3开始");
                 executeSwitch2();
             } else if (isSwitching) {
@@ -1506,37 +1808,52 @@ function createControlWindow() {
                 stopSwitch = true;
                 toast("正在停止切换...");
             } else {
-                toast(isWatering ? "正在浇水" : (isMoving ? "正在移动" : (isSettling ? "正在结算" : "正在领取农场奖励")));
+                toast(isWatering ? "正在浇水" : (isMoving ? "正在移动" : (isSettling ? "正在结算" : (isFarming ? "正在领取农场奖励" : "正在偷菜"))));
             }
         });
 
         // 农浇按钮 - 不进入农场
         controlWindow.nongJiaoBtn.on("click", function() {
-            if (!isWatering && !isSwitching && !isMoving && !isSettling && !isFarming) {
+            if (!isWatering && !isSwitching && !isMoving && !isSettling && !isFarming && !isStealing) {
                 console.log("用户点击农浇按钮（不进入农场）");
                 executeWater1();
             } else {
-                toast(isSwitching ? "正在切换服务器" : (isMoving ? "正在移动" : (isSettling ? "正在结算" : (isFarming ? "正在领取农场奖励" : "正在浇水"))));
+                toast(isSwitching ? "正在切换服务器" : (isMoving ? "正在移动" : (isSettling ? "正在结算" : (isFarming ? "正在领取农场奖励" : (isStealing ? "正在偷菜" : "正在浇水")))));
             }
         });
 
         // 主浇按钮 - 进入农场
         controlWindow.zhuJiaoBtn.on("click", function() {
-            if (!isWatering && !isSwitching && !isMoving && !isSettling && !isFarming) {
+            if (!isWatering && !isSwitching && !isMoving && !isSettling && !isFarming && !isStealing) {
                 console.log("用户点击主浇按钮（进入农场）");
                 executeWater2();
             } else {
-                toast(isSwitching ? "正在切换服务器" : (isMoving ? "正在移动" : (isSettling ? "正在结算" : (isFarming ? "正在领取农场奖励" : "正在浇水"))));
+                toast(isSwitching ? "正在切换服务器" : (isMoving ? "正在移动" : (isSettling ? "正在结算" : (isFarming ? "正在领取农场奖励" : (isStealing ? "正在偷菜" : "正在浇水")))));
             }
         });
 
         // 农领按钮 - 领取农场奖励
         controlWindow.nongLingBtn.on("click", function() {
-            if (!isFarming && !isSwitching && !isWatering && !isMoving && !isSettling) {
+            if (!isFarming && !isSwitching && !isWatering && !isMoving && !isSettling && !isStealing) {
                 console.log("用户点击农领按钮（领取农场奖励）");
                 executeFarmReward();
             } else {
-                toast(isSwitching ? "正在切换服务器" : (isMoving ? "正在移动" : (isSettling ? "正在结算" : (isWatering ? "正在浇水" : "正在领取农场奖励"))));
+                toast(isSwitching ? "正在切换服务器" : (isMoving ? "正在移动" : (isSettling ? "正在结算" : (isWatering ? "正在浇水" : (isStealing ? "正在偷菜" : "正在领取农场奖励")))));
+            }
+        });
+
+        // 偷按钮 - 偷菜
+        controlWindow.stealBtn.on("click", function() {
+            console.log("用户点击偷按钮");
+            if (isStealing) {
+                console.log("停止偷菜");
+                stopSteal = true;
+                toast("正在停止偷菜...");
+            } else if (!isSwitching && !isWatering && !isMoving && !isSettling && !isFarming) {
+                console.log("启动偷菜");
+                executeSteal();
+            } else {
+                toast(isSwitching ? "正在切换服务器" : (isMoving ? "正在移动" : (isSettling ? "正在结算" : (isFarming ? "正在领取农场奖励" : "正在浇水"))));
             }
         });
 
@@ -1544,27 +1861,28 @@ function createControlWindow() {
         controlWindow.moveBtn.on("click", function() {
             console.log("用户点击移动按钮，当前状态: isMoving=" + isMoving +
                 ", isSwitching=" + isSwitching + ", isWatering=" + isWatering +
-                ", isSettling=" + isSettling + ", isFarming=" + isFarming);
+                ", isSettling=" + isSettling + ", isFarming=" + isFarming +
+                ", isStealing=" + isStealing);
 
             if (isMoving) {
                 console.log("停止自动移动");
                 stopAutoMoveFunction();
-            } else if (!isSwitching && !isWatering && !isSettling && !isFarming) {
+            } else if (!isSwitching && !isWatering && !isSettling && !isFarming && !isStealing) {
                 console.log("启动自动移动");
                 executeAutoMove();
             } else {
-                toast(isSwitching ? "正在切换服务器" : (isWatering ? "正在浇水" : (isSettling ? "正在结算" : "正在领取农场奖励")));
+                toast(isSwitching ? "正在切换服务器" : (isWatering ? "正在浇水" : (isSettling ? "正在结算" : (isFarming ? "正在领取农场奖励" : "正在偷菜"))));
             }
         });
 
         // 结按钮 - 结算返回
         controlWindow.jieBtn.on("click", function() {
             console.log("用户点击结按钮");
-            if (!isSettling && !isSwitching && !isWatering && !isMoving && !isFarming) {
+            if (!isSettling && !isSwitching && !isWatering && !isMoving && !isFarming && !isStealing) {
                 console.log("启动结算返回");
                 executeSettlement();
             } else {
-                toast(isSwitching ? "正在切换服务器" : (isMoving ? "正在移动" : (isWatering ? "正在浇水" : (isFarming ? "正在领取农场奖励" : "正在结算"))));
+                toast(isSwitching ? "正在切换服务器" : (isMoving ? "正在移动" : (isWatering ? "正在浇水" : (isFarming ? "正在领取农场奖励" : (isStealing ? "正在偷菜" : "正在结算")))));
             }
         });
 
@@ -1584,7 +1902,9 @@ function cleanup() {
     isMoving = false;
     isSettling = false;
     isFarming = false;
+    isStealing = false;
     stopSwitch = true;
+    stopSteal = true;
 
     if (isMoving) {
         stopAutoMove = true;
@@ -1592,6 +1912,16 @@ function cleanup() {
         if (moveThread && moveThread.isAlive()) {
             try {
                 moveThread.interrupt();
+            } catch(e) {}
+        }
+    }
+
+    if (isStealing) {
+        stopSteal = true;
+        isStealing = false;
+        if (stealThread && stealThread.isAlive()) {
+            try {
+                stealThread.interrupt();
             } catch(e) {}
         }
     }
@@ -1656,6 +1986,7 @@ console.log("    * 主切: 从步骤3(点击设置)开始执行");
 console.log("    * 农浇: 不进入农场，直接浇水");
 console.log("    * 主浇: 进入农场后浇水");
 console.log("    * 农领: 领取农场奖励");
+console.log("    * 偷: 偷菜");
 console.log("    * 移: 自动移动");
 console.log("    * 结: 结算返回");
 console.log("  - 窗口操作:");
@@ -1675,6 +2006,7 @@ setInterval(function() {
         if (isMoving) status += " [移动中]";
         if (isSettling) status += " [结算中]";
         if (isFarming) status += " [农场领取中]";
+        if (isStealing) status += " [偷菜中]";
         console.log(status);
     }
 }, 60000);
