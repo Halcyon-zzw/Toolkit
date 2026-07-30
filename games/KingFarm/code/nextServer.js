@@ -94,22 +94,73 @@ var config = {
     // ========== 服务器列表 ==========
     serverList: ["0", "1", "2", "3", "4", "5", "6"],
 
-    // ========== 延时配置（毫秒） ==========
-    delays: {
-        returnToLobby: 500,    // 点击返回后等待时间
-        toSettings: 3000,      // 点击确认返回大厅后等待时间（已改为检测，此值作为超时时间）
-        exitGame: 1000,        // 点击设置后等待时间
-        confirmExit: 500,      // 点击退出游戏后等待时间
-        toServerSelect: 7000,  // 点击确认退出后等待时间（已改为检测，此值作为超时时间）
-        toNextServer: 500,     // 点击确认换区后等待时间
-        toStartGame: 1000,     // 选择服务器后等待时间
-        enterVillage: 7000,    // 进入农村后等待时间（已废弃，改用OCR检测）
-        detectInterval: 1000,  // 检测间隔（毫秒）
-        detectTimeout: 10000,  // 检测超时时间（毫秒）
-        waterClickDelay: 800   // 移动轮盘后点击浇水按钮的间隔（毫秒）
+    // ========== 步骤间隔时间配置（毫秒） ==========
+    // 不同机型可以配置不同的间隔时间
+    stepDelays: {
+        // 默认值
+        "default": {
+            afterBack: 500,         // 点击返回后等待
+            afterConfirmLobby: 3000, // 点击确认返回大厅后等待
+            afterSettings: 1000,     // 点击设置后等待
+            afterExitGame: 500,      // 点击退出游戏后等待
+            afterConfirmExit: 7000,  // 点击确认退出后等待（进入服务器选择界面）
+            afterChangeServer: 500,  // 点击换区后等待
+            afterSelectServer: 1000  // 选择服务器后等待
+        },
+        //小米 红米k60
+        "23113RKC6C": {
+            afterConfirmExit: 5000,  // 点击确认退出后等待（进入服务器选择界面）
+        },
+        // 华为 nova 2s
+        "HWI-AL00": {
+            afterBack: 500,
+            afterConfirmLobby: 5000,
+            afterSettings: 1200,
+            afterExitGame: 500,
+            afterConfirmExit: 10000,
+            afterChangeServer: 500,
+            afterSelectServer: 1000
+        },
+        // 华为 Mate 10 Pro
+        "ALP-TL00": {
+            afterBack: 500,
+            afterConfirmLobby: 3500,
+            afterSettings: 1200,
+            afterExitGame: 500,
+            afterConfirmExit: 8000,
+            afterChangeServer: 500,
+            afterSelectServer: 1000
+        }
+    },
+
+    // ========== 浇水等待时间配置（毫秒） ==========
+    waterDelays: {
+        // 默认值
+        "default": {
+            enterVillageWait: 7000   // 点击进入农村后等待时间
+        },
+        // 华为 nova 2s
+        "HWI-AL00": {
+            enterVillageWait: 10000
+        },
+        // 华为 Mate 10 Pro
+        "ALP-TL00": {
+            enterVillageWait: 8000
+        }
     },
 
     // ========== 坐标修正配置 ==========
+    /**
+     * backBtn - 返回按钮
+     * confirmLobby - 确认返回大厅
+     * settingsBtn - 设置按钮（已配置机型修正）
+     * exitGameBtn - 退出游戏按钮
+     * confirmExitBtn - 确认退出按钮
+     * confirmChangeServer - 确认换区按钮
+     * startGameBtn - 开始游戏按钮
+     * enterVillageBtn - 进入农村按钮
+     * waterBtn - 浇水按钮
+     */
     coordFix: {
         // 小米 Redmi K60
         "23113RKC6C": {
@@ -124,7 +175,8 @@ var config = {
         // 华为 Mate 10 Pro
         "ALP-TL00": {
             settingsBtn: [1740, 30, 1780, 70],
-            exitGameBtn: [1500, 900, 1760, 940]
+            exitGameBtn: [1500, 900, 1760, 940],
+            enterVillageBtn: [350, 780, 550, 860]
         },
         // 华为 P50 Pro
         "JAD-AL00": {
@@ -132,22 +184,12 @@ var config = {
         }
     },
 
-    // ========== 检测区域配置 ==========
-    detectAreas: {
-        // 主界面检测区域_背包 (左, 上, 右, 下) - 设计分辨率坐标
-        mainScreen: { left: 1670, top: 930, right: 2070, bottom: 1070 },
-        // 开始游戏区域 (左, 上, 右, 下) - 设计分辨率坐标
-        startGame: { left: 990, top: 790, right: 1390, bottom: 900 },
-        // 农场名称区域 (左, 上, 右, 下) - 设计分辨率坐标
-        farmName: { left: 400, top: 10, right: 750, bottom: 80 }
-    },
-
     // ========== 移动持续时间机型配置（毫秒） ==========
     moveDurationByDevice: {
         // 华为 nova 2s
         "HWI-AL00": 2000,
         // 华为 Mate 10 Pro
-        "ALP-TL00": 2000,
+        "ALP-TL00": 2500,
         // 默认值
         "default": 1800
     },
@@ -186,12 +228,41 @@ var isSwitching = false;
 var isWatering = false;
 var isMoving = false;
 var isExiting = false;
-var clickCount = 0;
 var waterType = "";
 var stopAutoMove = false;
 var moveThread = null;
 var switchThread = null;
 var stopSwitch = false;
+
+// ==================== 获取当前机型的步骤间隔时间 ====================
+function getStepDelays() {
+    var model = phoneInfo.model;
+    var delays = config.stepDelays[model];
+    if (delays === undefined) {
+        delays = config.stepDelays["default"];
+    }
+    console.log("当前机型 [" + model + "] 步骤间隔配置:");
+    console.log("  - afterBack: " + delays.afterBack + "ms");
+    console.log("  - afterConfirmLobby: " + delays.afterConfirmLobby + "ms");
+    console.log("  - afterSettings: " + delays.afterSettings + "ms");
+    console.log("  - afterExitGame: " + delays.afterExitGame + "ms");
+    console.log("  - afterConfirmExit: " + delays.afterConfirmExit + "ms");
+    console.log("  - afterChangeServer: " + delays.afterChangeServer + "ms");
+    console.log("  - afterSelectServer: " + delays.afterSelectServer + "ms");
+    return delays;
+}
+
+// ==================== 获取当前机型的浇水等待时间 ====================
+function getWaterDelays() {
+    var model = phoneInfo.model;
+    var delays = config.waterDelays[model];
+    if (delays === undefined) {
+        delays = config.waterDelays["default"];
+    }
+    console.log("当前机型 [" + model + "] 浇水等待配置:");
+    console.log("  - enterVillageWait: " + delays.enterVillageWait + "ms");
+    return delays;
+}
 
 // ==================== 坐标转换函数（支持机型修正） ====================
 function getFixedCoordinate(coordName, defaultLeft, defaultTop, defaultRight, defaultBottom) {
@@ -235,99 +306,6 @@ function scaleCoordinate(x, y, width, height) {
     return result;
 }
 
-// ==================== 检测区域函数（OCR版本） ====================
-function getDetectArea(areaName) {
-    var area = config.detectAreas[areaName];
-    if (!area) {
-        console.error("未知的检测区域: " + areaName);
-        return null;
-    }
-    return getFixedCoordinate(
-        "detect_" + areaName,
-        area.left, area.top, area.right, area.bottom
-    );
-}
-
-// ==================== waitForText - OCR检测（使用paddle） ====================
-function waitForText(areaName, targetText, timeout) {
-    timeout = timeout || config.delays.detectTimeout;
-    var interval = config.delays.detectInterval;
-    var elapsed = 0;
-
-    var area = getDetectArea(areaName);
-    if (!area) {
-        console.error("无法获取检测区域: " + areaName);
-        return false;
-    }
-
-    console.log("开始检测 [" + areaName + "] 是否包含文字: \"" + targetText + "\"");
-    console.log("检测区域: (" + area.left + "," + area.top + "," + area.right + "," + area.bottom + ")");
-    console.log("超时时间: " + timeout + "ms");
-
-    while (elapsed < timeout) {
-        // 检查是否被中断
-        if (stopSwitch || isExiting) {
-            console.log("检测被中断");
-            return false;
-        }
-
-        try {
-            // 截取屏幕
-            var img = captureScreen();
-            if (!img) {
-                console.log("截图失败，重试...");
-                sleep(interval);
-                elapsed += interval;
-                continue;
-            }
-
-            // 裁剪检测区域
-            var region = images.clip(img, area.left, area.top,
-                area.right - area.left, area.bottom - area.top);
-            if (!region) {
-                console.log("裁剪区域失败，重试...");
-                sleep(interval);
-                elapsed += interval;
-                continue;
-            }
-
-            // 使用 paddle.ocr 进行文字识别
-            var result = paddle.ocr(region);
-
-            // 处理OCR结果
-            if (result && result.length > 0) {
-                for (var i = 0; i < result.length; i++) {
-                    // 兼容不同的返回格式
-                    var text = result[i].words || result[i].text || "";
-                    text = text.replace(/[\s\n\r\t]+/g, "").trim();
-
-                    if (text.indexOf(targetText) >= 0) {
-                        console.log("检测成功: 在 [" + areaName + "] 中找到 \"" + targetText + "\" (识别到: " + text + ")");
-                        return true;
-                    }
-                }
-            }
-
-            console.log("未找到 \"" + targetText + "\"，继续检测... (已用 " + elapsed + "ms)");
-
-        } catch (e) {
-            console.log("检测异常: " + e.message);
-        }
-
-        sleep(interval);
-        elapsed += interval;
-
-        // 检查停止标志
-        if (stopSwitch || isExiting) {
-            console.log("检测被中断");
-            return false;
-        }
-    }
-
-    console.log("检测超时: " + timeout + "ms 内未找到 \"" + targetText + "\"");
-    return false;
-}
-
 // ==================== 获取当前机型的移动持续时间 ====================
 function getMoveDuration() {
     var model = phoneInfo.model;
@@ -348,9 +326,6 @@ function humanDelay(baseDelay) {
 }
 
 function humanClick(area, description) {
-    clickCount++;
-    var clickId = clickCount;
-
     try {
         var x = random(area.left, area.right);
         var y = random(area.top, area.bottom);
@@ -358,27 +333,27 @@ function humanClick(area, description) {
         y += random(-2, 2);
         var pressTime = random(30, 80);
 
-        console.log("[" + clickId + "] 点击: " + description);
-        console.log("[" + clickId + "] 区域: (" + area.left + "," + area.top + "," +
+        console.log("点击: " + description);
+        console.log("  区域: (" + area.left + "," + area.top + "," +
             area.right + "," + area.bottom + ")");
-        console.log("[" + clickId + "] 实际坐标: (" + x + "," + y + ") 按压: " + pressTime + "ms");
+        console.log("  实际坐标: (" + x + "," + y + ") 按压: " + pressTime + "ms");
 
         press(x, y, pressTime);
         sleep(random(50, 100));
 
-        console.log("[" + clickId + "] 点击成功: " + description);
+        console.log("  点击成功: " + description);
         return true;
     } catch (e) {
-        console.log("[" + clickId + "] 点击失败: " + description + " - " + e.message);
+        console.log("  点击失败: " + description + " - " + e.message);
         try {
             var x2 = random(area.left, area.right);
             var y2 = random(area.top, area.bottom);
-            console.log("[" + clickId + "] 备用点击坐标: (" + x2 + "," + y2 + ")");
+            console.log("  备用点击坐标: (" + x2 + "," + y2 + ")");
             click(x2, y2);
-            console.log("[" + clickId + "] 备用点击成功: " + description);
+            console.log("  备用点击成功: " + description);
             return true;
         } catch (e2) {
-            console.log("[" + clickId + "] 备用点击也失败: " + description + " - " + e2.message);
+            console.log("  备用点击也失败: " + description + " - " + e2.message);
             return false;
         }
     }
@@ -445,7 +420,6 @@ function executeJoystickMove() {
     var directionX = config.water.moveSettings.directionX;
     var directionY = config.water.moveSettings.directionY;
     var distance = config.water.moveSettings.distance;
-    // 从机型配置获取移动持续时间
     var duration = getMoveDuration();
 
     var scaleX = config.screenWidth / config.designWidth;
@@ -668,13 +642,13 @@ function executeWater1() {
     }
 
     isWatering = true;
-    waterType = "water1";
+    waterType = "农浇";
     updateAllUI();
 
     threads.start(function() {
         try {
             console.log("========================================");
-            console.log("开始浇水操作（浇1 - 不进入农村）");
+            console.log("开始浇水操作（农浇 - 不进入农村）");
             console.log("========================================");
 
             console.log("\n--- 步骤1: 操作轮盘向西北方向移动 ---");
@@ -683,8 +657,8 @@ function executeWater1() {
             }
 
             // 移动轮盘后等待800ms再点击浇水按钮
-            console.log("等待 " + config.delays.waterClickDelay + "ms 后点击浇水按钮...");
-            sleep(config.delays.waterClickDelay);
+            console.log("等待 800ms 后点击浇水按钮...");
+            sleep(800);
 
             console.log("\n--- 步骤2: 点击浇水按钮 ---");
             var waterBtnArea = getFixedCoordinate(
@@ -700,18 +674,16 @@ function executeWater1() {
             humanClick(waterBtnArea, "浇水按钮");
 
             console.log("\n========================================");
-            console.log("浇水操作完成（浇1）");
-            console.log("总点击次数: " + clickCount);
+            console.log("浇水操作完成（农浇）");
             console.log("========================================\n");
 
-            toast("浇水1完成");
+            toast("农浇完成");
 
         } catch (e) {
             console.error("\n========================================");
-            console.error("浇水1失败: " + e.message);
-            console.error("失败时的点击计数: " + clickCount);
+            console.error("农浇失败: " + e.message);
             console.error("========================================\n");
-            toast("浇水1失败: " + e.message);
+            toast("农浇失败: " + e.message);
         } finally {
             isWatering = false;
             waterType = "";
@@ -720,7 +692,7 @@ function executeWater1() {
     });
 }
 
-// ==================== 浇水功能2（点击进入农村 + OCR检测农场） ====================
+// ==================== 浇水功能2（点击进入农村 + 固定等待） ====================
 function executeWater2() {
     if (isWatering) {
         toast("正在浇水，请稍候...");
@@ -750,70 +722,52 @@ function executeWater2() {
     }
 
     isWatering = true;
-    waterType = "water2";
+    waterType = "主浇";
     updateAllUI();
 
     threads.start(function() {
         try {
             console.log("========================================");
-            console.log("开始浇水操作（浇2 - 进入农村）");
+            console.log("开始浇水操作（主浇 - 进入农村）");
             console.log("========================================");
 
-            // ========== 步骤1: 先检测农场名称区域是否包含"农场" ==========
-            console.log("\n--- 步骤1: 检测农场名称区域是否包含\"农场\"文字 ---");
-            if (stopSwitch || isExiting) {
-                throw new Error("操作被用户中断");
+            // 获取浇水等待配置
+            var waterDelays = getWaterDelays();
+
+            // ========== 步骤1: 点击进入农村按钮 ==========
+            console.log("\n--- 步骤1: 点击进入农村按钮 ---");
+            var enterVillageArea = getFixedCoordinate(
+                "enterVillageBtn",
+                config.water.enterVillageBtn.left,
+                config.water.enterVillageBtn.top,
+                config.water.enterVillageBtn.right,
+                config.water.enterVillageBtn.bottom
+            );
+
+            if (!humanClick(enterVillageArea, "进入农村按钮")) {
+                throw new Error("步骤1失败: 点击进入农村按钮");
             }
 
-            //不等待
-            var isInFarm = waitForText("farmName", "农场", 500);
+            // ========== 步骤2: 固定等待进入农村 ==========
+            console.log("\n--- 步骤2: 等待进入农村 (" + waterDelays.enterVillageWait + "ms) ---");
+            humanDelay(waterDelays.enterVillageWait);
+            console.log("等待完成，继续执行浇水操作");
 
-            if (isInFarm) {
-                // 已经在农场内，直接执行移动和浇水
-                console.log("已在农场内，直接执行移动和浇水操作");
-            } else {
-                // 不在农场内，执行进入农村流程
-                console.log("不在农场内，执行进入农村流程");
+            // 等待500ms后再执行移动
+            sleep(500);
 
-                // ========== 步骤2: 点击进入农村按钮 ==========
-                console.log("\n--- 步骤2: 点击进入农村按钮 ---");
-                var enterVillageArea = getFixedCoordinate(
-                    "enterVillageBtn",
-                    config.water.enterVillageBtn.left,
-                    config.water.enterVillageBtn.top,
-                    config.water.enterVillageBtn.right,
-                    config.water.enterVillageBtn.bottom
-                );
-
-                if (!humanClick(enterVillageArea, "进入农村按钮")) {
-                    throw new Error("步骤2失败: 点击进入农村按钮");
-                }
-
-                // ========== 步骤3: 检测农场名称区域是否包含"农场"文字 ==========
-                console.log("\n--- 步骤3: 检测农场名称区域是否包含\"农场\"文字 ---");
-                if (stopSwitch || isExiting) {
-                    throw new Error("操作被用户中断");
-                }
-
-                var farmDetected = waitForText("farmName", "农场", config.delays.detectTimeout);
-                if (!farmDetected) {
-                    throw new Error("步骤3超时: 未检测到农场名称");
-                }
-                console.log("已进入农场，继续执行浇水操作");
-            }
-
-            // ========== 步骤4: 操作轮盘向西北方向移动 ==========
-            console.log("\n--- 步骤4: 操作轮盘向西北方向移动 ---");
+            // ========== 步骤3: 操作轮盘向西北方向移动 ==========
+            console.log("\n--- 步骤3: 操作轮盘向西北方向移动 ---");
             if (!executeJoystickMove()) {
-                throw new Error("步骤4失败: 轮盘移动操作失败");
+                throw new Error("步骤3失败: 轮盘移动操作失败");
             }
 
             // 移动轮盘后等待800ms再点击浇水按钮
-            console.log("等待 " + config.delays.waterClickDelay + "ms 后点击浇水按钮...");
-            sleep(config.delays.waterClickDelay);
+            console.log("等待 800ms 后点击浇水按钮...");
+            sleep(800);
 
-            // ========== 步骤5: 点击浇水按钮（点击两次） ==========
-            console.log("\n--- 步骤5: 点击浇水按钮（点击两次） ---");
+            // ========== 步骤4: 点击浇水按钮（点击两次） ==========
+            console.log("\n--- 步骤4: 点击浇水按钮（点击两次） ---");
             var waterBtnArea = getFixedCoordinate(
                 "waterBtn",
                 config.water.waterBtn.left,
@@ -830,18 +784,16 @@ function executeWater2() {
             humanClick(waterBtnArea, "浇水按钮(第2次)");
 
             console.log("\n========================================");
-            console.log("浇水操作完成（浇2）");
-            console.log("总点击次数: " + clickCount);
+            console.log("浇水操作完成（主浇）");
             console.log("========================================\n");
 
-            toast("浇水2完成");
+            toast("主浇完成");
 
         } catch (e) {
             console.error("\n========================================");
-            console.error("浇水2失败: " + e.message);
-            console.error("失败时的点击计数: " + clickCount);
+            console.error("主浇失败: " + e.message);
             console.error("========================================\n");
-            toast("浇水2失败: " + e.message);
+            toast("主浇失败: " + e.message);
         } finally {
             isWatering = false;
             waterType = "";
@@ -850,8 +802,8 @@ function executeWater2() {
     });
 }
 
-// ==================== 自动切换服务器逻辑（支持中断 + OCR检测） ====================
-function executeServerSwitch() {
+// ==================== 切换服务器逻辑（农切 - 完整流程） ====================
+function executeSwitch1() {
     if (isSwitching) {
         console.log("用户点击停止切换");
         stopSwitch = true;
@@ -893,295 +845,131 @@ function executeServerSwitch() {
     }
 
     console.log("========================================");
-    console.log("开始切换服务器: " + currentIndex + " (" + config.serverList[currentIndex] +
-        ") -> " + nextIndex + " (" + config.serverList[nextIndex] + ")");
+    console.log("农切 - 完整切换流程");
+    console.log("当前序号: " + currentIndex + " (" + config.serverList[currentIndex] +
+        ") -> 下一个: " + nextIndex + " (" + config.serverList[nextIndex] + ")");
     console.log("========================================");
+
+    var stepDelays = getStepDelays();
 
     switchThread = threads.start(function() {
         try {
-            var startFromStep6 = (currentIndex === 0);
+            // ========== 步骤1: 点击返回按钮 ==========
+            console.log("\n--- 步骤1: 点击返回按钮 ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var backBtn = getFixedCoordinate(
+                "backBtn",
+                80, 30, 240, 70
+            );
+            if (!humanClick(backBtn, "返回按钮")) {
+                throw new Error("步骤1失败: 点击返回按钮");
+            }
+            humanDelay(stepDelays.afterBack);
 
-            if (startFromStep6) {
-                console.log("当前序号为0，从步骤6开始执行");
+            // ========== 步骤2: 点击确认返回大厅 ==========
+            console.log("\n--- 步骤2: 确认返回大厅 ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var confirmLobby = getFixedCoordinate(
+                "confirmLobby",
+                1260, 730, 1500, 780
+            );
+            if (!humanClick(confirmLobby, "确认返回大厅")) {
+                throw new Error("步骤2失败: 确认返回大厅");
+            }
+            humanDelay(stepDelays.afterConfirmLobby);
 
-                console.log("\n--- 步骤6: 确认换区 ---");
-                if (stopSwitch || isExiting) {
-                    throw new Error("切换被用户中断");
-                }
-                var confirmChangeServer = getFixedCoordinate(
-                    "confirmChangeServer",
-                    1000, 710, 1450, 740
-                );
-                if (!humanClick(confirmChangeServer, "确认换区按钮")) {
-                    throw new Error("步骤6失败: 确认换区");
-                }
-                humanDelay(config.delays.toNextServer);
+            // ========== 步骤3: 点击设置 ==========
+            console.log("\n--- 步骤3: 点击设置 ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var settingsBtn = getFixedCoordinate(
+                "settingsBtn",
+                2100, 30, 2140, 70
+            );
+            if (!humanClick(settingsBtn, "设置按钮")) {
+                throw new Error("步骤3失败: 点击设置");
+            }
+            humanDelay(stepDelays.afterSettings);
 
-                console.log("\n--- 步骤7: 选择服务器 " + nextIndex + " ---");
-                if (stopSwitch || isExiting) {
-                    throw new Error("切换被用户中断");
-                }
-                var nextServerPos = getServerPosition(nextIndex);
-                if (!nextServerPos) {
-                    throw new Error("步骤7失败: 获取服务器 " + nextIndex + " 位置");
-                }
+            // ========== 步骤4: 点击退出游戏 ==========
+            console.log("\n--- 步骤4: 退出游戏 ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var exitGameBtn = getFixedCoordinate(
+                "exitGameBtn",
+                1730, 900, 2000, 940
+            );
+            if (!humanClick(exitGameBtn, "退出游戏按钮")) {
+                throw new Error("步骤4失败: 退出游戏");
+            }
+            humanDelay(stepDelays.afterExitGame);
 
-                if (!humanClick(nextServerPos, "服务器 " + nextIndex + " (" + config.serverList[nextIndex] + ")")) {
-                    throw new Error("步骤7失败: 点击服务器 " + nextIndex);
-                }
+            // ========== 步骤5: 点击确认退出 ==========
+            console.log("\n--- 步骤5: 确认退出 ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var confirmExitBtn = getFixedCoordinate(
+                "confirmExitBtn",
+                1250, 730, 1500, 790
+            );
+            if (!humanClick(confirmExitBtn, "确认退出按钮")) {
+                throw new Error("步骤5失败: 确认退出");
+            }
+            humanDelay(stepDelays.afterConfirmExit);
 
-                config.currentIndex = nextIndex;
-                humanDelay(config.delays.toStartGame);
+            // ========== 步骤6: 确认换区 ==========
+            console.log("\n--- 步骤6: 确认换区 ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var confirmChangeServer = getFixedCoordinate(
+                "confirmChangeServer",
+                1000, 710, 1450, 740
+            );
+            if (!humanClick(confirmChangeServer, "确认换区按钮")) {
+                throw new Error("步骤6失败: 确认换区");
+            }
+            humanDelay(stepDelays.afterChangeServer);
 
-                console.log("\n--- 步骤8: 开始游戏 ---");
-                if (stopSwitch || isExiting) {
-                    throw new Error("切换被用户中断");
-                }
-                var startGameBtn = getFixedCoordinate(
-                    "startGameBtn",
-                    1020, 800, 1340, 870
-                );
-                if (!humanClick(startGameBtn, "开始游戏按钮")) {
-                    throw new Error("步骤8失败: 开始游戏");
-                }
+            // ========== 步骤7: 点击下一个服务器 ==========
+            console.log("\n--- 步骤7: 选择服务器 " + nextIndex + " ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var nextServerPos = getServerPosition(nextIndex);
+            if (!nextServerPos) {
+                throw new Error("步骤7失败: 获取服务器 " + nextIndex + " 位置");
+            }
 
-            } else {
-                // ============================================================
-                // 先检测主界面是否已经显示（检测"背包"文字）
-                // ============================================================
-                console.log("检测主界面状态（检测\"背包\"文字）...");
-                if (stopSwitch || isExiting) {
-                    throw new Error("切换被用户中断");
-                }
+            if (!humanClick(nextServerPos, "服务器 " + nextIndex + " (" + config.serverList[nextIndex] + ")")) {
+                throw new Error("步骤7失败: 点击服务器 " + nextIndex);
+            }
 
-                var isMainScreenVisible = waitForText("mainScreen", "背包", 500);
+            config.currentIndex = nextIndex;
+            humanDelay(stepDelays.afterSelectServer);
 
-                if (isMainScreenVisible) {
-                    // 主界面已显示，直接从步骤3开始
-                    console.log("主界面已显示，直接从步骤3开始执行");
-
-                    console.log("\n--- 步骤3: 点击设置 ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var settingsBtn = getFixedCoordinate(
-                        "settingsBtn",
-                        2100, 30, 2140, 70
-                    );
-                    if (!humanClick(settingsBtn, "设置按钮")) {
-                        throw new Error("步骤3失败: 点击设置");
-                    }
-                    humanDelay(config.delays.exitGame);
-
-                    console.log("\n--- 步骤4: 退出游戏 ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var exitGameBtn = getFixedCoordinate(
-                        "exitGameBtn",
-                        1730, 900, 2000, 940
-                    );
-                    if (!humanClick(exitGameBtn, "退出游戏按钮")) {
-                        throw new Error("步骤4失败: 退出游戏");
-                    }
-                    humanDelay(config.delays.confirmExit);
-
-                    console.log("\n--- 步骤5: 确认退出 ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var confirmExitBtn = getFixedCoordinate(
-                        "confirmExitBtn",
-                        1250, 730, 1500, 790
-                    );
-                    if (!humanClick(confirmExitBtn, "确认退出按钮")) {
-                        throw new Error("步骤5失败: 确认退出");
-                    }
-
-                    // 使用OCR检测服务器选择界面（检测"开始游戏"文字）
-                    console.log("等待服务器选择界面加载（检测\"开始游戏\"文字）...");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var detectedStart = waitForText("startGame", "开始游戏", config.delays.detectTimeout);
-                    if (!detectedStart) {
-                        throw new Error("步骤5超时: 未检测到开始游戏按钮");
-                    }
-
-                    console.log("\n--- 步骤6: 确认换区 ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var confirmChangeServer = getFixedCoordinate(
-                        "confirmChangeServer",
-                        1000, 710, 1450, 740
-                    );
-                    if (!humanClick(confirmChangeServer, "确认换区按钮")) {
-                        throw new Error("步骤6失败: 确认换区");
-                    }
-                    humanDelay(config.delays.toNextServer);
-
-                    console.log("\n--- 步骤7: 选择服务器 " + nextIndex + " ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var nextServerPos = getServerPosition(nextIndex);
-                    if (!nextServerPos) {
-                        throw new Error("步骤7失败: 获取服务器 " + nextIndex + " 位置");
-                    }
-
-                    if (!humanClick(nextServerPos, "服务器 " + nextIndex + " (" + config.serverList[nextIndex] + ")")) {
-                        throw new Error("步骤7失败: 点击服务器 " + nextIndex);
-                    }
-
-                    config.currentIndex = nextIndex;
-                    humanDelay(config.delays.toStartGame);
-
-                    console.log("\n--- 步骤8: 开始游戏 ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var startGameBtn = getFixedCoordinate(
-                        "startGameBtn",
-                        1020, 800, 1340, 870
-                    );
-                    if (!humanClick(startGameBtn, "开始游戏按钮")) {
-                        throw new Error("步骤8失败: 开始游戏");
-                    }
-
-                } else {
-                    // 主界面未显示，从步骤1开始
-                    console.log("主界面未显示，从步骤1开始执行");
-
-                    console.log("\n--- 步骤1: 点击返回按钮 ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var backBtn = getFixedCoordinate(
-                        "backBtn",
-                        80, 30, 240, 70
-                    );
-                    if (!humanClick(backBtn, "返回按钮")) {
-                        throw new Error("步骤1失败: 点击返回按钮");
-                    }
-                    humanDelay(config.delays.returnToLobby);
-
-                    console.log("\n--- 步骤2: 确认返回大厅 ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var confirmLobby = getFixedCoordinate(
-                        "confirmLobby",
-                        1260, 730, 1500, 780
-                    );
-                    if (!humanClick(confirmLobby, "确认返回大厅")) {
-                        throw new Error("步骤2失败: 确认返回大厅");
-                    }
-
-                    // 使用OCR检测主界面（检测"背包"文字）
-                    console.log("等待主界面加载（检测\"背包\"文字）...");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var detected = waitForText("mainScreen", "背包", config.delays.detectTimeout);
-                    if (!detected) {
-                        throw new Error("步骤2超时: 未检测到主界面");
-                    }
-
-                    console.log("\n--- 步骤3: 点击设置 ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var settingsBtn = getFixedCoordinate(
-                        "settingsBtn",
-                        2100, 30, 2140, 70
-                    );
-                    if (!humanClick(settingsBtn, "设置按钮")) {
-                        throw new Error("步骤3失败: 点击设置");
-                    }
-                    humanDelay(config.delays.exitGame);
-
-                    console.log("\n--- 步骤4: 退出游戏 ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var exitGameBtn = getFixedCoordinate(
-                        "exitGameBtn",
-                        1730, 900, 2000, 940
-                    );
-                    if (!humanClick(exitGameBtn, "退出游戏按钮")) {
-                        throw new Error("步骤4失败: 退出游戏");
-                    }
-                    humanDelay(config.delays.confirmExit);
-
-                    console.log("\n--- 步骤5: 确认退出 ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var confirmExitBtn = getFixedCoordinate(
-                        "confirmExitBtn",
-                        1250, 730, 1500, 790
-                    );
-                    if (!humanClick(confirmExitBtn, "确认退出按钮")) {
-                        throw new Error("步骤5失败: 确认退出");
-                    }
-
-                    // 使用OCR检测服务器选择界面（检测"开始游戏"文字）
-                    console.log("等待服务器选择界面加载（检测\"开始游戏\"文字）...");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var detectedStart = waitForText("startGame", "开始游戏", config.delays.detectTimeout);
-                    if (!detectedStart) {
-                        throw new Error("步骤5超时: 未检测到开始游戏按钮");
-                    }
-
-                    console.log("\n--- 步骤6: 确认换区 ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var confirmChangeServer = getFixedCoordinate(
-                        "confirmChangeServer",
-                        1000, 710, 1450, 740
-                    );
-                    if (!humanClick(confirmChangeServer, "确认换区按钮")) {
-                        throw new Error("步骤6失败: 确认换区");
-                    }
-                    humanDelay(config.delays.toNextServer);
-
-                    console.log("\n--- 步骤7: 选择服务器 " + nextIndex + " ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var nextServerPos = getServerPosition(nextIndex);
-                    if (!nextServerPos) {
-                        throw new Error("步骤7失败: 获取服务器 " + nextIndex + " 位置");
-                    }
-
-                    if (!humanClick(nextServerPos, "服务器 " + nextIndex + " (" + config.serverList[nextIndex] + ")")) {
-                        throw new Error("步骤7失败: 点击服务器 " + nextIndex);
-                    }
-
-                    config.currentIndex = nextIndex;
-                    humanDelay(config.delays.toStartGame);
-
-                    console.log("\n--- 步骤8: 开始游戏 ---");
-                    if (stopSwitch || isExiting) {
-                        throw new Error("切换被用户中断");
-                    }
-                    var startGameBtn = getFixedCoordinate(
-                        "startGameBtn",
-                        1020, 800, 1340, 870
-                    );
-                    if (!humanClick(startGameBtn, "开始游戏按钮")) {
-                        throw new Error("步骤8失败: 开始游戏");
-                    }
-                }
+            // ========== 步骤8: 点击开始游戏 ==========
+            console.log("\n--- 步骤8: 开始游戏 ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var startGameBtn = getFixedCoordinate(
+                "startGameBtn",
+                1020, 800, 1340, 870
+            );
+            if (!humanClick(startGameBtn, "开始游戏按钮")) {
+                throw new Error("步骤8失败: 开始游戏");
             }
 
             console.log("\n========================================");
-            console.log("服务器切换完成: " + config.serverList[config.currentIndex]);
-            console.log("总点击次数: " + clickCount);
+            console.log("农切 - 切换完成: " + config.serverList[config.currentIndex]);
             console.log("========================================\n");
 
             toast("切换完成: " + config.serverList[config.currentIndex]);
@@ -1195,7 +983,170 @@ function executeServerSwitch() {
             } else {
                 console.error("\n========================================");
                 console.error("切换失败: " + e.message);
-                console.error("失败时的点击计数: " + clickCount);
+                console.error("========================================\n");
+                toast("切换失败: " + e.message);
+            }
+        } finally {
+            isSwitching = false;
+            stopSwitch = false;
+            updateAllUI();
+        }
+    });
+}
+
+// ==================== 切换服务器逻辑（主切 - 从步骤3开始） ====================
+function executeSwitch2() {
+    if (isSwitching) {
+        console.log("用户点击停止切换");
+        stopSwitch = true;
+        toast("正在停止切换...");
+        return;
+    }
+
+    if (isWatering) {
+        toast("正在浇水，无法切换服务器");
+        return;
+    }
+
+    if (isMoving) {
+        toast("正在自动移动，无法切换服务器");
+        return;
+    }
+
+    if (auto.service === null) {
+        console.log("无障碍服务未开启，尝试启动...");
+        toast("无障碍服务未开启，请先开启");
+        auto.waitFor();
+        sleep(1000);
+        if (auto.service === null) {
+            console.error("无法开启无障碍服务");
+            toast("无法开启无障碍服务");
+            return;
+        }
+    }
+
+    stopSwitch = false;
+    isSwitching = true;
+    updateAllUI();
+
+    var currentIndex = config.currentIndex;
+    var nextIndex = currentIndex + 1;
+
+    if (nextIndex > 6) {
+        nextIndex = 1;
+    }
+
+    console.log("========================================");
+    console.log("主切 - 从步骤3开始执行");
+    console.log("当前序号: " + currentIndex + " (" + config.serverList[currentIndex] +
+        ") -> 下一个: " + nextIndex + " (" + config.serverList[nextIndex] + ")");
+    console.log("========================================");
+
+    var stepDelays = getStepDelays();
+
+    switchThread = threads.start(function() {
+        try {
+            // ========== 步骤3: 点击设置 ==========
+            console.log("\n--- 步骤3: 点击设置 ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var settingsBtn = getFixedCoordinate(
+                "settingsBtn",
+                2100, 30, 2140, 70
+            );
+            if (!humanClick(settingsBtn, "设置按钮")) {
+                throw new Error("步骤3失败: 点击设置");
+            }
+            humanDelay(stepDelays.afterSettings);
+
+            // ========== 步骤4: 点击退出游戏 ==========
+            console.log("\n--- 步骤4: 退出游戏 ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var exitGameBtn = getFixedCoordinate(
+                "exitGameBtn",
+                1730, 900, 2000, 940
+            );
+            if (!humanClick(exitGameBtn, "退出游戏按钮")) {
+                throw new Error("步骤4失败: 退出游戏");
+            }
+            humanDelay(stepDelays.afterExitGame);
+
+            // ========== 步骤5: 点击确认退出 ==========
+            console.log("\n--- 步骤5: 确认退出 ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var confirmExitBtn = getFixedCoordinate(
+                "confirmExitBtn",
+                1250, 730, 1500, 790
+            );
+            if (!humanClick(confirmExitBtn, "确认退出按钮")) {
+                throw new Error("步骤5失败: 确认退出");
+            }
+            humanDelay(stepDelays.afterConfirmExit);
+
+            // ========== 步骤6: 确认换区 ==========
+            console.log("\n--- 步骤6: 确认换区 ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var confirmChangeServer = getFixedCoordinate(
+                "confirmChangeServer",
+                1000, 710, 1450, 740
+            );
+            if (!humanClick(confirmChangeServer, "确认换区按钮")) {
+                throw new Error("步骤6失败: 确认换区");
+            }
+            humanDelay(stepDelays.afterChangeServer);
+
+            // ========== 步骤7: 点击下一个服务器 ==========
+            console.log("\n--- 步骤7: 选择服务器 " + nextIndex + " ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var nextServerPos = getServerPosition(nextIndex);
+            if (!nextServerPos) {
+                throw new Error("步骤7失败: 获取服务器 " + nextIndex + " 位置");
+            }
+
+            if (!humanClick(nextServerPos, "服务器 " + nextIndex + " (" + config.serverList[nextIndex] + ")")) {
+                throw new Error("步骤7失败: 点击服务器 " + nextIndex);
+            }
+
+            config.currentIndex = nextIndex;
+            humanDelay(stepDelays.afterSelectServer);
+
+            // ========== 步骤8: 点击开始游戏 ==========
+            console.log("\n--- 步骤8: 开始游戏 ---");
+            if (stopSwitch || isExiting) {
+                throw new Error("切换被用户中断");
+            }
+            var startGameBtn = getFixedCoordinate(
+                "startGameBtn",
+                1020, 800, 1340, 870
+            );
+            if (!humanClick(startGameBtn, "开始游戏按钮")) {
+                throw new Error("步骤8失败: 开始游戏");
+            }
+
+            console.log("\n========================================");
+            console.log("主切 - 切换完成: " + config.serverList[config.currentIndex]);
+            console.log("========================================\n");
+
+            toast("切换完成: " + config.serverList[config.currentIndex]);
+
+        } catch (e) {
+            if (e.message && e.message.indexOf("被用户中断") >= 0) {
+                console.log("\n========================================");
+                console.log("切换被用户中断");
+                console.log("========================================\n");
+                toast("切换已停止");
+            } else {
+                console.error("\n========================================");
+                console.error("切换失败: " + e.message);
                 console.error("========================================\n");
                 toast("切换失败: " + e.message);
             }
@@ -1261,49 +1212,68 @@ function updateAllUI() {
                     }
                 }
 
-                if (controlWindow.nextBtn) {
+                if (controlWindow.nongQieBtn) {
                     if (isSwitching) {
-                        controlWindow.nextBtn.setText("切换中");
-                        controlWindow.nextBtn.setBackgroundColor(colors.parseColor("#FF9800"));
-                        controlWindow.nextBtn.setTextColor(colors.parseColor("#FFFFFF"));
-                        controlWindow.nextBtn.setClickable(true);
+                        controlWindow.nongQieBtn.setText("切换中");
+                        controlWindow.nongQieBtn.setBackgroundColor(colors.parseColor("#FF9800"));
+                        controlWindow.nongQieBtn.setTextColor(colors.parseColor("#FFFFFF"));
+                        controlWindow.nongQieBtn.setClickable(true);
                     } else if (!isWatering && !isMoving) {
-                        controlWindow.nextBtn.setText("▶");
-                        controlWindow.nextBtn.setBackgroundColor(colors.parseColor("#4CAF50"));
-                        controlWindow.nextBtn.setTextColor(colors.parseColor("#FFFFFF"));
-                        controlWindow.nextBtn.setClickable(true);
+                        controlWindow.nongQieBtn.setText("农切");
+                        controlWindow.nongQieBtn.setBackgroundColor(colors.parseColor("#4CAF50"));
+                        controlWindow.nongQieBtn.setTextColor(colors.parseColor("#FFFFFF"));
+                        controlWindow.nongQieBtn.setClickable(true);
                     } else {
-                        controlWindow.nextBtn.setText(isWatering ? "浇水" : "移动");
-                        controlWindow.nextBtn.setBackgroundColor(colors.parseColor("#CCCCCC"));
-                        controlWindow.nextBtn.setTextColor(colors.parseColor("#666666"));
-                        controlWindow.nextBtn.setClickable(false);
+                        controlWindow.nongQieBtn.setText(isWatering ? "浇水" : "移动");
+                        controlWindow.nongQieBtn.setBackgroundColor(colors.parseColor("#CCCCCC"));
+                        controlWindow.nongQieBtn.setTextColor(colors.parseColor("#666666"));
+                        controlWindow.nongQieBtn.setClickable(false);
                     }
                 }
 
-                if (controlWindow.water1Btn) {
-                    if (!isSwitching && !isWatering && !isMoving) {
-                        controlWindow.water1Btn.setText("浇1");
-                        controlWindow.water1Btn.setBackgroundColor(colors.parseColor("#4CAF50"));
-                        controlWindow.water1Btn.setTextColor(colors.parseColor("#FFFFFF"));
+                if (controlWindow.zhuQieBtn) {
+                    if (isSwitching) {
+                        controlWindow.zhuQieBtn.setText("切换中");
+                        controlWindow.zhuQieBtn.setBackgroundColor(colors.parseColor("#FF9800"));
+                        controlWindow.zhuQieBtn.setTextColor(colors.parseColor("#FFFFFF"));
+                        controlWindow.zhuQieBtn.setClickable(true);
+                    } else if (!isWatering && !isMoving) {
+                        controlWindow.zhuQieBtn.setText("主切");
+                        controlWindow.zhuQieBtn.setBackgroundColor(colors.parseColor("#2196F3"));
+                        controlWindow.zhuQieBtn.setTextColor(colors.parseColor("#FFFFFF"));
+                        controlWindow.zhuQieBtn.setClickable(true);
                     } else {
-                        controlWindow.water1Btn.setText(isSwitching ? "切换" : (isMoving ? "移动" : "浇水中"));
-                        controlWindow.water1Btn.setBackgroundColor(colors.parseColor("#FF9800"));
-                        controlWindow.water1Btn.setTextColor(colors.parseColor("#FFFFFF"));
+                        controlWindow.zhuQieBtn.setText(isWatering ? "浇水" : "移动");
+                        controlWindow.zhuQieBtn.setBackgroundColor(colors.parseColor("#CCCCCC"));
+                        controlWindow.zhuQieBtn.setTextColor(colors.parseColor("#666666"));
+                        controlWindow.zhuQieBtn.setClickable(false);
                     }
-                    controlWindow.water1Btn.setClickable(!isSwitching && !isWatering && !isMoving);
                 }
 
-                if (controlWindow.water2Btn) {
+                if (controlWindow.nongJiaoBtn) {
                     if (!isSwitching && !isWatering && !isMoving) {
-                        controlWindow.water2Btn.setText("浇2");
-                        controlWindow.water2Btn.setBackgroundColor(colors.parseColor("#2196F3"));
-                        controlWindow.water2Btn.setTextColor(colors.parseColor("#FFFFFF"));
+                        controlWindow.nongJiaoBtn.setText("农浇");
+                        controlWindow.nongJiaoBtn.setBackgroundColor(colors.parseColor("#4CAF50"));
+                        controlWindow.nongJiaoBtn.setTextColor(colors.parseColor("#FFFFFF"));
                     } else {
-                        controlWindow.water2Btn.setText(isSwitching ? "切换" : (isMoving ? "移动" : "浇水中"));
-                        controlWindow.water2Btn.setBackgroundColor(colors.parseColor("#FF9800"));
-                        controlWindow.water2Btn.setTextColor(colors.parseColor("#FFFFFF"));
+                        controlWindow.nongJiaoBtn.setText(isSwitching ? "切换" : (isMoving ? "移动" : "浇水中"));
+                        controlWindow.nongJiaoBtn.setBackgroundColor(colors.parseColor("#FF9800"));
+                        controlWindow.nongJiaoBtn.setTextColor(colors.parseColor("#FFFFFF"));
                     }
-                    controlWindow.water2Btn.setClickable(!isSwitching && !isWatering && !isMoving);
+                    controlWindow.nongJiaoBtn.setClickable(!isSwitching && !isWatering && !isMoving);
+                }
+
+                if (controlWindow.zhuJiaoBtn) {
+                    if (!isSwitching && !isWatering && !isMoving) {
+                        controlWindow.zhuJiaoBtn.setText("主浇");
+                        controlWindow.zhuJiaoBtn.setBackgroundColor(colors.parseColor("#2196F3"));
+                        controlWindow.zhuJiaoBtn.setTextColor(colors.parseColor("#FFFFFF"));
+                    } else {
+                        controlWindow.zhuJiaoBtn.setText(isSwitching ? "切换" : (isMoving ? "移动" : "浇水中"));
+                        controlWindow.zhuJiaoBtn.setBackgroundColor(colors.parseColor("#FF9800"));
+                        controlWindow.zhuJiaoBtn.setTextColor(colors.parseColor("#FFFFFF"));
+                    }
+                    controlWindow.zhuJiaoBtn.setClickable(!isSwitching && !isWatering && !isMoving);
                 }
 
                 if (controlWindow.moveBtn) {
@@ -1366,30 +1336,38 @@ function createControlWindow() {
                                 textColor="#1976D2"
                                 textSize="12"
                                 marginBottom="4"/>
-                        <button id="nextBtn"
-                                text="▶"
-                                w="30"
+                        <button id="nongQieBtn"
+                                text="农切"
+                                w="32"
                                 h="32"
                                 bg="#4CAF50"
                                 textColor="#FFFFFF"
-                                textSize="12"
+                                textSize="10"
                                 marginLeft="4"/>
-                    </horizontal>
-                    <horizontal marginTop="3">
-                        <button id="water1Btn"
-                                text="浇1"
-                                w="30"
-                                h="32"
-                                bg="#4CAF50"
-                                textColor="#FFFFFF"
-                                textSize="12"/>
-                        <button id="water2Btn"
-                                text="浇2"
-                                w="30"
+                        <button id="zhuQieBtn"
+                                text="主切"
+                                w="32"
                                 h="32"
                                 bg="#2196F3"
                                 textColor="#FFFFFF"
-                                textSize="12"
+                                textSize="10"
+                                marginLeft="4"/>
+                    </horizontal>
+                    <horizontal marginTop="3">
+                        <button id="nongJiaoBtn"
+                                text="农浇"
+                                w="32"
+                                h="32"
+                                bg="#4CAF50"
+                                textColor="#FFFFFF"
+                                textSize="10"/>
+                        <button id="zhuJiaoBtn"
+                                text="主浇"
+                                w="32"
+                                h="32"
+                                bg="#2196F3"
+                                textColor="#FFFFFF"
+                                textSize="10"
                                 marginLeft="3"/>
                     </horizontal>
                     <horizontal marginTop="3" gravity="center">
@@ -1399,7 +1377,7 @@ function createControlWindow() {
                                 h="32"
                                 bg="#9C27B0"
                                 textColor="#FFFFFF"
-                                textSize="12"/>
+                                textSize="10"/>
                     </horizontal>
                 </vertical>
             </frame>
@@ -1416,11 +1394,12 @@ function createControlWindow() {
             showServerDropdown();
         });
 
-        controlWindow.nextBtn.on("click", function() {
-            console.log("用户点击下一个按钮，当前状态: isSwitching=" + isSwitching);
+        // 农切按钮 - 完整流程
+        controlWindow.nongQieBtn.on("click", function() {
+            console.log("用户点击农切按钮");
             if (!isSwitching && !isWatering && !isMoving) {
-                console.log("启动切换服务器");
-                executeServerSwitch();
+                console.log("启动农切 - 完整切换流程");
+                executeSwitch1();
             } else if (isSwitching) {
                 console.log("点击停止切换");
                 stopSwitch = true;
@@ -1430,7 +1409,8 @@ function createControlWindow() {
             }
         });
 
-        controlWindow.nextBtn.on("long-click", function() {
+        // 农切长按重置
+        controlWindow.nongQieBtn.on("long-click", function() {
             if (!isSwitching && !isWatering && !isMoving) {
                 console.log("用户长按重置按钮");
                 config.currentIndex = 1;
@@ -1440,18 +1420,33 @@ function createControlWindow() {
             return true;
         });
 
-        controlWindow.water1Btn.on("click", function() {
+        // 主切按钮 - 从步骤3开始
+        controlWindow.zhuQieBtn.on("click", function() {
+            console.log("用户点击主切按钮");
+            if (!isSwitching && !isWatering && !isMoving) {
+                console.log("启动主切 - 从步骤3开始");
+                executeSwitch2();
+            } else if (isSwitching) {
+                console.log("点击停止切换");
+                stopSwitch = true;
+                toast("正在停止切换...");
+            } else {
+                toast(isWatering ? "正在浇水" : "正在自动移动");
+            }
+        });
+
+        controlWindow.nongJiaoBtn.on("click", function() {
             if (!isWatering && !isSwitching && !isMoving) {
-                console.log("用户点击浇1按钮（不进入农村）");
+                console.log("用户点击农浇按钮（不进入农村）");
                 executeWater1();
             } else {
                 toast(isSwitching ? "正在切换服务器" : (isWatering ? "正在浇水" : "正在自动移动"));
             }
         });
 
-        controlWindow.water2Btn.on("click", function() {
+        controlWindow.zhuJiaoBtn.on("click", function() {
             if (!isWatering && !isSwitching && !isMoving) {
-                console.log("用户点击浇2按钮（进入农村）");
+                console.log("用户点击主浇按钮（进入农村）");
                 executeWater2();
             } else {
                 toast(isSwitching ? "正在切换服务器" : (isWatering ? "正在浇水" : "正在自动移动"));
@@ -1500,7 +1495,6 @@ function cleanup() {
 
     console.log("\n========================================");
     console.log("脚本退出清理");
-    console.log("总点击次数: " + clickCount);
     console.log("最终服务器: " + config.currentIndex + " (" + config.serverList[config.currentIndex] + ")");
     console.log("========================================");
 
@@ -1538,21 +1532,25 @@ if (config.coordFix[phoneInfo.model]) {
     console.log("  - 坐标修正: 未配置，使用默认缩放");
 }
 
-console.log("  - 检测区域 (OCR):");
-console.log("    * 主界面(背包): (" + config.detectAreas.mainScreen.left + "," +
-    config.detectAreas.mainScreen.top + "," + config.detectAreas.mainScreen.right + "," +
-    config.detectAreas.mainScreen.bottom + ")");
-console.log("    * 开始游戏: (" + config.detectAreas.startGame.left + "," +
-    config.detectAreas.startGame.top + "," + config.detectAreas.startGame.right + "," +
-    config.detectAreas.startGame.bottom + ")");
-console.log("    * 农场名称: (" + config.detectAreas.farmName.left + "," +
-    config.detectAreas.farmName.top + "," + config.detectAreas.farmName.right + "," +
-    config.detectAreas.farmName.bottom + ")");
-console.log("  - 移动持续时间机型配置:");
-for (var key in config.moveDurationByDevice) {
-    console.log("    * " + key + ": " + config.moveDurationByDevice[key] + "ms");
-}
-console.log("  - 特殊说明: 序号0表示从步骤6(确认换区)开始执行");
+console.log("  - 步骤间隔配置:");
+var stepDelays = getStepDelays();
+console.log("    * 点击返回后: " + stepDelays.afterBack + "ms");
+console.log("    * 确认返回大厅后: " + stepDelays.afterConfirmLobby + "ms");
+console.log("    * 点击设置后: " + stepDelays.afterSettings + "ms");
+console.log("    * 退出游戏后: " + stepDelays.afterExitGame + "ms");
+console.log("    * 确认退出后: " + stepDelays.afterConfirmExit + "ms");
+console.log("    * 换区后: " + stepDelays.afterChangeServer + "ms");
+console.log("    * 选择服务器后: " + stepDelays.afterSelectServer + "ms");
+
+console.log("  - 浇水等待配置:");
+var waterDelays = getWaterDelays();
+console.log("    * 进入农村后等待: " + waterDelays.enterVillageWait + "ms");
+
+console.log("  - 按钮说明:");
+console.log("    * 农切: 完整切换流程(从步骤1开始)");
+console.log("    * 主切: 从步骤3(点击设置)开始执行");
+console.log("    * 农浇: 不进入农村，直接浇水");
+console.log("    * 主浇: 进入农村后浇水");
 console.log("========================================\n");
 
 createControlWindow();
