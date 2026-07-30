@@ -8,12 +8,6 @@ if (auto.service === null) {
     sleep(1000);
 }
 
-// 请求屏幕截图权限
-if (!requestScreenCapture()) {
-    toastLog('请求截图权限失败');
-    exit();
-}
-
 let currentEngine = engines.myEngine();
 let runningEngines = engines.all();
 let currentSource = currentEngine.getSource() + '';
@@ -105,7 +99,8 @@ var config = {
             afterExitGame: 500,      // 点击退出游戏后等待
             afterConfirmExit: 7000,  // 点击确认退出后等待（进入服务器选择界面）
             afterChangeServer: 500,  // 点击换区后等待
-            afterSelectServer: 1000  // 选择服务器后等待
+            afterSelectServer: 1000, // 选择服务器后等待
+            enterFarmWait: 7000      // 点击进入农场后等待时间
         },
         //小米 红米k60
         "23113RKC6C": {
@@ -119,7 +114,8 @@ var config = {
             afterExitGame: 500,
             afterConfirmExit: 13000,
             afterChangeServer: 500,
-            afterSelectServer: 1000
+            afterSelectServer: 1000,
+            enterFarmWait: 13000
         },
         // 华为 Mate 10 Pro
         "ALP-TL00": {
@@ -129,23 +125,8 @@ var config = {
             afterExitGame: 500,
             afterConfirmExit: 8000,
             afterChangeServer: 500,
-            afterSelectServer: 1000
-        }
-    },
-
-    // ========== 浇水等待时间配置（毫秒） ==========
-    waterDelays: {
-        // 默认值
-        "default": {
-            enterFarmWait: 7000   // 点击进入农场后等待时间
-        },
-        // 华为 nova 2s
-        "HWI-AL00": {
+            afterSelectServer: 1000,
             enterFarmWait: 10000
-        },
-        // 华为 Mate 10 Pro
-        "ALP-TL00": {
-            enterFarmWait: 8000
         }
     },
 
@@ -176,7 +157,8 @@ var config = {
         "ALP-TL00": {
             settingsBtn: [1740, 30, 1780, 70],
             exitGameBtn: [1500, 900, 1760, 940],
-            enterFarmBtn: [350, 780, 550, 860]
+            enterFarmBtn: [350, 780, 550, 860],
+            waterBtn: [1240, 600, 1310, 650]
         },
         // 华为 P50 Pro
         "JAD-AL00": {
@@ -224,6 +206,8 @@ var config = {
 
 // ==================== 全局变量 ====================
 var controlWindow = null;
+var toggleWindow = null;        // 独立开关窗口
+var toggleBtn = null;           // 开关按钮引用
 var isSwitching = false;
 var isWatering = false;
 var isMoving = false;
@@ -233,6 +217,7 @@ var stopAutoMove = false;
 var moveThread = null;
 var switchThread = null;
 var stopSwitch = false;
+var isHidden = false;           // 主窗口是否隐藏
 
 // ==================== 获取当前机型的步骤间隔时间（支持部分覆盖） ====================
 function getStepDelays() {
@@ -272,50 +257,6 @@ function getStepDelays() {
 
     // 没有机型配置，使用默认配置
     console.log("当前机型 [" + model + "] 使用默认步骤间隔配置:");
-    for (var key in defaultDelays) {
-        console.log("  - " + key + ": " + defaultDelays[key] + "ms");
-    }
-    return defaultDelays;
-}
-
-// ==================== 获取当前机型的浇水等待时间（支持部分覆盖） ====================
-function getWaterDelays() {
-    var model = phoneInfo.model;
-
-    // 获取默认配置
-    var defaultDelays = config.waterDelays["default"];
-    if (!defaultDelays) {
-        console.error("未找到默认浇水等待配置");
-        return null;
-    }
-
-    // 获取机型配置
-    var modelDelays = config.waterDelays[model];
-
-    // 如果有机型配置，进行合并（部分覆盖）
-    if (modelDelays) {
-        console.log("当前机型 [" + model + "] 使用部分覆盖浇水等待配置:");
-        var merged = {};
-        // 先复制默认配置
-        for (var key in defaultDelays) {
-            merged[key] = defaultDelays[key];
-        }
-        // 再用机型配置覆盖
-        for (var key in modelDelays) {
-            merged[key] = modelDelays[key];
-            console.log("  - " + key + ": " + merged[key] + "ms (覆盖)");
-        }
-        // 打印未覆盖的配置
-        for (var key in defaultDelays) {
-            if (!modelDelays[key]) {
-                console.log("  - " + key + ": " + merged[key] + "ms (默认)");
-            }
-        }
-        return merged;
-    }
-
-    // 没有机型配置，使用默认配置
-    console.log("当前机型 [" + model + "] 使用默认浇水等待配置:");
     for (var key in defaultDelays) {
         console.log("  - " + key + ": " + defaultDelays[key] + "ms");
     }
@@ -789,8 +730,8 @@ function executeWater2() {
             console.log("开始浇水操作（主浇 - 进入农场）");
             console.log("========================================");
 
-            // 获取浇水等待配置
-            var waterDelays = getWaterDelays();
+            // 获取步骤间隔配置（包含enterFarmWait）
+            var stepDelays = getStepDelays();
 
             // ========== 步骤1: 点击进入农场按钮 ==========
             console.log("\n--- 步骤1: 点击进入农场按钮 ---");
@@ -807,8 +748,8 @@ function executeWater2() {
             }
 
             // ========== 步骤2: 固定等待进入农场 ==========
-            console.log("\n--- 步骤2: 等待进入农场 (" + waterDelays.enterFarmWait + "ms) ---");
-            humanDelay(waterDelays.enterFarmWait);
+            console.log("\n--- 步骤2: 等待进入农场 (" + stepDelays.enterFarmWait + "ms) ---");
+            humanDelay(stepDelays.enterFarmWait);
             console.log("等待完成，继续执行浇水操作");
 
             // 等待500ms后再执行移动
@@ -1253,6 +1194,85 @@ function showServerDropdown() {
     }
 }
 
+// ==================== 切换窗口隐藏状态 ====================
+function toggleHide() {
+    isHidden = !isHidden;
+
+    if (controlWindow) {
+        try {
+            if (isHidden) {
+                // 使用 setVisible 替代 setVisibility
+                if (controlWindow.setVisible) {
+                    controlWindow.setVisible(false);
+                } else {
+                    // 备用方案：调整窗口位置到屏幕外
+                    controlWindow.setPosition(-1000, -1000);
+                }
+                if (toggleBtn) {
+                    toggleBtn.setText("展");
+                }
+                console.log("主窗口已隐藏");
+            } else {
+                if (controlWindow.setVisible) {
+                    controlWindow.setVisible(true);
+                } else {
+                    // 恢复窗口位置
+                    controlWindow.setPosition(30, 120);
+                }
+                if (toggleBtn) {
+                    toggleBtn.setText("隐");
+                }
+                console.log("主窗口已恢复");
+            }
+        } catch(e) {
+            console.log("切换窗口状态失败: " + e.message);
+        }
+    }
+}
+
+// ==================== 创建独立开关窗口 ====================
+function createToggleWindow() {
+    if (toggleWindow != null) {
+        try { toggleWindow.close(); } catch (e) { }
+    }
+
+    console.log("创建开关窗口");
+
+    try {
+        toggleWindow = floaty.window(
+            <button id="btnToggle"
+                    text="隐"
+                    w="30"
+                    h="30"
+                    bg="#4CAF50"
+                    textColor="#FFFFFF"
+                    textSize="10"/>
+        );
+
+        // 获取按钮引用并存储到全局变量
+        toggleBtn = toggleWindow.btnToggle;
+
+        // 设置位置（右上角）
+        var x = 450;
+        var y = 120;
+
+        console.log("开关窗口位置: (" + x + ", " + y + ")");
+        toggleWindow.setPosition(x, y);
+
+        // 按钮点击事件
+        toggleBtn.on("click", function() {
+            console.log("用户点击开关按钮，当前状态: " + (isHidden ? "隐藏" : "显示"));
+            toggleHide();
+        });
+
+        console.log("开关窗口创建成功");
+
+    } catch (e) {
+        console.log("创建开关窗口失败: " + e.message);
+        toast("创建开关窗口失败: " + e.message);
+    }
+}
+
 // ==================== 统一更新所有UI ====================
 function updateAllUI() {
     ui.run(function() {
@@ -1383,70 +1403,69 @@ function createControlWindow() {
 
     try {
         controlWindow = floaty.window(
-            <frame>
-                <vertical bg="#E8F5E9" padding="8">
-                    <horizontal>
-                        <button id="serverBtn"
-                                text="1"
-                                w="30"
-                                h="32"
-                                bg="#FFFFFF"
-                                textColor="#1976D2"
-                                textSize="12"
-                                marginBottom="4"/>
-                        <button id="nongQieBtn"
-                                text="农切"
-                                w="32"
-                                h="32"
-                                bg="#4CAF50"
-                                textColor="#FFFFFF"
-                                textSize="10"
-                                marginLeft="4"/>
-                        <button id="zhuQieBtn"
-                                text="主切"
-                                w="32"
-                                h="32"
-                                bg="#2196F3"
-                                textColor="#FFFFFF"
-                                textSize="10"
-                                marginLeft="4"/>
-                    </horizontal>
-                    <horizontal marginTop="3">
-                        <button id="nongJiaoBtn"
-                                text="农浇"
-                                w="32"
-                                h="32"
-                                bg="#4CAF50"
-                                textColor="#FFFFFF"
-                                textSize="10"/>
-                        <button id="zhuJiaoBtn"
-                                text="主浇"
-                                w="32"
-                                h="32"
-                                bg="#2196F3"
-                                textColor="#FFFFFF"
-                                textSize="10"
-                                marginLeft="3"/>
-                    </horizontal>
-                    <horizontal marginTop="3" gravity="center">
-                        <button id="moveBtn"
-                                text="移"
-                                w="64"
-                                h="32"
-                                bg="#9C27B0"
-                                textColor="#FFFFFF"
-                                textSize="10"/>
-                    </horizontal>
-                </vertical>
-            </frame>
+            <vertical bg="#E8F5E9" padding="6" layout_width="wrap_content" layout_height="wrap_content">
+                <horizontal>
+                    <button id="serverBtn"
+                            text="1"
+                            w="30"
+                            h="30"
+                            bg="#FFFFFF"
+                            textColor="#1976D2"
+                            textSize="8"
+                            marginBottom="2"/>
+                    <button id="nongQieBtn"
+                            text="农切"
+                            w="30"
+                            h="30"
+                            bg="#4CAF50"
+                            textColor="#FFFFFF"
+                            textSize="8"
+                            marginLeft="2"/>
+                    <button id="zhuQieBtn"
+                            text="主切"
+                            w="30"
+                            h="30"
+                            bg="#2196F3"
+                            textColor="#FFFFFF"
+                            textSize="8"
+                            marginLeft="2"/>
+                </horizontal>
+                <horizontal marginTop="2">
+                    <button id="nongJiaoBtn"
+                            text="农浇"
+                            w="30"
+                            h="30"
+                            bg="#4CAF50"
+                            textColor="#FFFFFF"
+                            textSize="8"/>
+                    <button id="zhuJiaoBtn"
+                            text="主浇"
+                            w="30"
+                            h="30"
+                            bg="#2196F3"
+                            textColor="#FFFFFF"
+                            textSize="8"
+                            marginLeft="2"/>
+                    <button id="moveBtn"
+                            text="移"
+                            w="30"
+                            h="30"
+                            bg="#9C27B0"
+                            textColor="#FFFFFF"
+                            textSize="8"
+                            marginLeft="2"/>
+                </horizontal>
+            </vertical>
         );
 
+        // 设置窗口位置（左边）
         var x = 30;
         var y = 120;
 
         console.log("控制窗口位置: (" + x + ", " + y + ")");
         controlWindow.setPosition(x, y);
 
+        // 服务器按钮点击事件
         controlWindow.serverBtn.on("click", function() {
             console.log("用户点击服务器选择按钮");
             showServerDropdown();
@@ -1493,6 +1512,7 @@ function createControlWindow() {
             }
         });
 
+        // 农浇按钮 - 不进入农场
         controlWindow.nongJiaoBtn.on("click", function() {
             if (!isWatering && !isSwitching && !isMoving) {
                 console.log("用户点击农浇按钮（不进入农场）");
@@ -1502,6 +1522,7 @@ function createControlWindow() {
             }
         });
 
+        // 主浇按钮 - 进入农场
         controlWindow.zhuJiaoBtn.on("click", function() {
             if (!isWatering && !isSwitching && !isMoving) {
                 console.log("用户点击主浇按钮（进入农场）");
@@ -1511,6 +1532,7 @@ function createControlWindow() {
             }
         });
 
+        // 移动按钮
         controlWindow.moveBtn.on("click", function() {
             console.log("用户点击移动按钮，当前状态: isMoving=" + isMoving +
                 ", isSwitching=" + isSwitching + ", isWatering=" + isWatering);
@@ -1559,6 +1581,9 @@ function cleanup() {
     if (controlWindow != null) {
         try { controlWindow.close(); } catch (e) { }
     }
+    if (toggleWindow != null) {
+        try { toggleWindow.close(); } catch (e) { }
+    }
 }
 
 // ==================== 主程序 ====================
@@ -1599,19 +1624,20 @@ console.log("    * 退出游戏后: " + stepDelays.afterExitGame + "ms");
 console.log("    * 确认退出后: " + stepDelays.afterConfirmExit + "ms");
 console.log("    * 换区后: " + stepDelays.afterChangeServer + "ms");
 console.log("    * 选择服务器后: " + stepDelays.afterSelectServer + "ms");
-
-console.log("  - 浇水等待配置:");
-var waterDelays = getWaterDelays();
-console.log("    * 进入农场后等待: " + waterDelays.enterFarmWait + "ms");
+console.log("    * 进入农场后等待: " + stepDelays.enterFarmWait + "ms");
 
 console.log("  - 按钮说明:");
 console.log("    * 农切: 完整切换流程(从步骤1开始)");
 console.log("    * 主切: 从步骤3(点击设置)开始执行");
 console.log("    * 农浇: 不进入农场，直接浇水");
 console.log("    * 主浇: 进入农场后浇水");
+console.log("  - 窗口操作:");
+console.log("    * 点击右上角 \"隐\" 按钮隐藏主窗口");
+console.log("    * 点击 \"展\" 按钮恢复主窗口");
 console.log("========================================\n");
 
 createControlWindow();
+createToggleWindow();
 
 setInterval(function() {
     if (!isExiting) {
