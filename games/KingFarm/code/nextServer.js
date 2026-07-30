@@ -117,7 +117,7 @@ var config = {
             afterConfirmLobby: 5000,
             afterSettings: 1200,
             afterExitGame: 500,
-            afterConfirmExit: 10000,
+            afterConfirmExit: 13000,
             afterChangeServer: 500,
             afterSelectServer: 1000
         },
@@ -137,15 +137,15 @@ var config = {
     waterDelays: {
         // 默认值
         "default": {
-            enterVillageWait: 7000   // 点击进入农村后等待时间
+            enterFarmWait: 7000   // 点击进入农场后等待时间
         },
         // 华为 nova 2s
         "HWI-AL00": {
-            enterVillageWait: 10000
+            enterFarmWait: 10000
         },
         // 华为 Mate 10 Pro
         "ALP-TL00": {
-            enterVillageWait: 8000
+            enterFarmWait: 8000
         }
     },
 
@@ -158,7 +158,7 @@ var config = {
      * confirmExitBtn - 确认退出按钮
      * confirmChangeServer - 确认换区按钮
      * startGameBtn - 开始游戏按钮
-     * enterVillageBtn - 进入农村按钮
+     * enterFarmBtn - 进入农场按钮
      * waterBtn - 浇水按钮
      */
     coordFix: {
@@ -170,13 +170,13 @@ var config = {
         "HWI-AL00": {
             backBtn: [30, 40, 150, 80],
             settingsBtn: [1980, 40, 2020, 80],
-            exitGameBtn: [1500, 900, 1760, 940]
+            exitGameBtn: [1610, 900, 1860, 940]
         },
         // 华为 Mate 10 Pro
         "ALP-TL00": {
             settingsBtn: [1740, 30, 1780, 70],
             exitGameBtn: [1500, 900, 1760, 940],
-            enterVillageBtn: [350, 780, 550, 860]
+            enterFarmBtn: [350, 780, 550, 860]
         },
         // 华为 P50 Pro
         "JAD-AL00": {
@@ -196,8 +196,8 @@ var config = {
 
     // ========== 浇水功能配置 ==========
     water: {
-        // 进入农村按钮区域 (左, 上, 右, 下) - 设计分辨率坐标
-        enterVillageBtn: { left: 640, top: 780, right: 780, bottom: 840 },
+        // 进入农场按钮区域 (左, 上, 右, 下) - 设计分辨率坐标
+        enterFarmBtn: { left: 640, top: 780, right: 780, bottom: 840 },
         // 轮盘区域 (左, 上, 右, 下) - 设计分辨率坐标
         joystick: { left: 300, top: 600, right: 600, bottom: 850 },
         // 浇水按钮区域 (左, 上, 右, 下) - 设计分辨率坐标
@@ -234,34 +234,92 @@ var moveThread = null;
 var switchThread = null;
 var stopSwitch = false;
 
-// ==================== 获取当前机型的步骤间隔时间 ====================
+// ==================== 获取当前机型的步骤间隔时间（支持部分覆盖） ====================
 function getStepDelays() {
     var model = phoneInfo.model;
-    var delays = config.stepDelays[model];
-    if (delays === undefined) {
-        delays = config.stepDelays["default"];
+
+    // 获取默认配置
+    var defaultDelays = config.stepDelays["default"];
+    if (!defaultDelays) {
+        console.error("未找到默认步骤间隔配置");
+        return null;
     }
-    console.log("当前机型 [" + model + "] 步骤间隔配置:");
-    console.log("  - afterBack: " + delays.afterBack + "ms");
-    console.log("  - afterConfirmLobby: " + delays.afterConfirmLobby + "ms");
-    console.log("  - afterSettings: " + delays.afterSettings + "ms");
-    console.log("  - afterExitGame: " + delays.afterExitGame + "ms");
-    console.log("  - afterConfirmExit: " + delays.afterConfirmExit + "ms");
-    console.log("  - afterChangeServer: " + delays.afterChangeServer + "ms");
-    console.log("  - afterSelectServer: " + delays.afterSelectServer + "ms");
-    return delays;
+
+    // 获取机型配置
+    var modelDelays = config.stepDelays[model];
+
+    // 如果有机型配置，进行合并（部分覆盖）
+    if (modelDelays) {
+        console.log("当前机型 [" + model + "] 使用部分覆盖配置:");
+        var merged = {};
+        // 先复制默认配置
+        for (var key in defaultDelays) {
+            merged[key] = defaultDelays[key];
+        }
+        // 再用机型配置覆盖
+        for (var key in modelDelays) {
+            merged[key] = modelDelays[key];
+            console.log("  - " + key + ": " + merged[key] + "ms (覆盖)");
+        }
+        // 打印未覆盖的配置
+        for (var key in defaultDelays) {
+            if (!modelDelays[key]) {
+                console.log("  - " + key + ": " + merged[key] + "ms (默认)");
+            }
+        }
+        return merged;
+    }
+
+    // 没有机型配置，使用默认配置
+    console.log("当前机型 [" + model + "] 使用默认步骤间隔配置:");
+    for (var key in defaultDelays) {
+        console.log("  - " + key + ": " + defaultDelays[key] + "ms");
+    }
+    return defaultDelays;
 }
 
-// ==================== 获取当前机型的浇水等待时间 ====================
+// ==================== 获取当前机型的浇水等待时间（支持部分覆盖） ====================
 function getWaterDelays() {
     var model = phoneInfo.model;
-    var delays = config.waterDelays[model];
-    if (delays === undefined) {
-        delays = config.waterDelays["default"];
+
+    // 获取默认配置
+    var defaultDelays = config.waterDelays["default"];
+    if (!defaultDelays) {
+        console.error("未找到默认浇水等待配置");
+        return null;
     }
-    console.log("当前机型 [" + model + "] 浇水等待配置:");
-    console.log("  - enterVillageWait: " + delays.enterVillageWait + "ms");
-    return delays;
+
+    // 获取机型配置
+    var modelDelays = config.waterDelays[model];
+
+    // 如果有机型配置，进行合并（部分覆盖）
+    if (modelDelays) {
+        console.log("当前机型 [" + model + "] 使用部分覆盖浇水等待配置:");
+        var merged = {};
+        // 先复制默认配置
+        for (var key in defaultDelays) {
+            merged[key] = defaultDelays[key];
+        }
+        // 再用机型配置覆盖
+        for (var key in modelDelays) {
+            merged[key] = modelDelays[key];
+            console.log("  - " + key + ": " + merged[key] + "ms (覆盖)");
+        }
+        // 打印未覆盖的配置
+        for (var key in defaultDelays) {
+            if (!modelDelays[key]) {
+                console.log("  - " + key + ": " + merged[key] + "ms (默认)");
+            }
+        }
+        return merged;
+    }
+
+    // 没有机型配置，使用默认配置
+    console.log("当前机型 [" + model + "] 使用默认浇水等待配置:");
+    for (var key in defaultDelays) {
+        console.log("  - " + key + ": " + defaultDelays[key] + "ms");
+    }
+    return defaultDelays;
 }
 
 // ==================== 坐标转换函数（支持机型修正） ====================
@@ -612,7 +670,7 @@ function stopAutoMoveFunction() {
     updateAllUI();
 }
 
-// ==================== 浇水功能1（不点击进入农村） ====================
+// ==================== 浇水功能1（不点击进入农场） ====================
 function executeWater1() {
     if (isWatering) {
         toast("正在浇水，请稍候...");
@@ -648,7 +706,7 @@ function executeWater1() {
     threads.start(function() {
         try {
             console.log("========================================");
-            console.log("开始浇水操作（农浇 - 不进入农村）");
+            console.log("开始浇水操作（农浇 - 不进入农场）");
             console.log("========================================");
 
             console.log("\n--- 步骤1: 操作轮盘向西北方向移动 ---");
@@ -692,7 +750,7 @@ function executeWater1() {
     });
 }
 
-// ==================== 浇水功能2（点击进入农村 + 固定等待） ====================
+// ==================== 浇水功能2（点击进入农场 + 固定等待） ====================
 function executeWater2() {
     if (isWatering) {
         toast("正在浇水，请稍候...");
@@ -728,29 +786,29 @@ function executeWater2() {
     threads.start(function() {
         try {
             console.log("========================================");
-            console.log("开始浇水操作（主浇 - 进入农村）");
+            console.log("开始浇水操作（主浇 - 进入农场）");
             console.log("========================================");
 
             // 获取浇水等待配置
             var waterDelays = getWaterDelays();
 
-            // ========== 步骤1: 点击进入农村按钮 ==========
-            console.log("\n--- 步骤1: 点击进入农村按钮 ---");
-            var enterVillageArea = getFixedCoordinate(
-                "enterVillageBtn",
-                config.water.enterVillageBtn.left,
-                config.water.enterVillageBtn.top,
-                config.water.enterVillageBtn.right,
-                config.water.enterVillageBtn.bottom
+            // ========== 步骤1: 点击进入农场按钮 ==========
+            console.log("\n--- 步骤1: 点击进入农场按钮 ---");
+            var enterFarmArea = getFixedCoordinate(
+                "enterFarmBtn",
+                config.water.enterFarmBtn.left,
+                config.water.enterFarmBtn.top,
+                config.water.enterFarmBtn.right,
+                config.water.enterFarmBtn.bottom
             );
 
-            if (!humanClick(enterVillageArea, "进入农村按钮")) {
-                throw new Error("步骤1失败: 点击进入农村按钮");
+            if (!humanClick(enterFarmArea, "进入农场按钮")) {
+                throw new Error("步骤1失败: 点击进入农场按钮");
             }
 
-            // ========== 步骤2: 固定等待进入农村 ==========
-            console.log("\n--- 步骤2: 等待进入农村 (" + waterDelays.enterVillageWait + "ms) ---");
-            humanDelay(waterDelays.enterVillageWait);
+            // ========== 步骤2: 固定等待进入农场 ==========
+            console.log("\n--- 步骤2: 等待进入农场 (" + waterDelays.enterFarmWait + "ms) ---");
+            humanDelay(waterDelays.enterFarmWait);
             console.log("等待完成，继续执行浇水操作");
 
             // 等待500ms后再执行移动
@@ -1437,7 +1495,7 @@ function createControlWindow() {
 
         controlWindow.nongJiaoBtn.on("click", function() {
             if (!isWatering && !isSwitching && !isMoving) {
-                console.log("用户点击农浇按钮（不进入农村）");
+                console.log("用户点击农浇按钮（不进入农场）");
                 executeWater1();
             } else {
                 toast(isSwitching ? "正在切换服务器" : (isWatering ? "正在浇水" : "正在自动移动"));
@@ -1446,7 +1504,7 @@ function createControlWindow() {
 
         controlWindow.zhuJiaoBtn.on("click", function() {
             if (!isWatering && !isSwitching && !isMoving) {
-                console.log("用户点击主浇按钮（进入农村）");
+                console.log("用户点击主浇按钮（进入农场）");
                 executeWater2();
             } else {
                 toast(isSwitching ? "正在切换服务器" : (isWatering ? "正在浇水" : "正在自动移动"));
@@ -1544,13 +1602,13 @@ console.log("    * 选择服务器后: " + stepDelays.afterSelectServer + "ms");
 
 console.log("  - 浇水等待配置:");
 var waterDelays = getWaterDelays();
-console.log("    * 进入农村后等待: " + waterDelays.enterVillageWait + "ms");
+console.log("    * 进入农场后等待: " + waterDelays.enterFarmWait + "ms");
 
 console.log("  - 按钮说明:");
 console.log("    * 农切: 完整切换流程(从步骤1开始)");
 console.log("    * 主切: 从步骤3(点击设置)开始执行");
-console.log("    * 农浇: 不进入农村，直接浇水");
-console.log("    * 主浇: 进入农村后浇水");
+console.log("    * 农浇: 不进入农场，直接浇水");
+console.log("    * 主浇: 进入农场后浇水");
 console.log("========================================\n");
 
 createControlWindow();
