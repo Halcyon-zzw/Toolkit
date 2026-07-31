@@ -12,12 +12,18 @@ function parseDirection(dir) {
     }
 }
 
-// ==================== 执行偷菜路径 ====================
-function executeStealPath(config, startX, startY, path, stepDistance, moveDuration, waitAfterMove, waitAfterSteal, stealArea, setters) {
-    var currentX = startX;
-    var currentY = startY;
+// ==================== 执行偷菜路径（每次从轮盘中心移动） ====================
+function executeStealPath(config, centerX, centerY, path, stepDistance, moveDuration, waitAfterMove, waitAfterSteal, stealArea, setters) {
+    // 先点击一次偷菜按钮
+    if (stealArea) {
+        common.humanClick(stealArea, "偷菜按钮");
+        if (waitAfterSteal > 0) {
+            sleep(waitAfterSteal);
+        }
+    }
 
     for (var i = 0; i < path.length; i++) {
+        // 检查停止标志
         if (setters.getStopSteal && setters.getStopSteal()) {
             console.log("偷菜被中断");
             return false;
@@ -30,38 +36,41 @@ function executeStealPath(config, startX, startY, path, stepDistance, moveDurati
         var dir = path.charAt(i);
         var direction = parseDirection(dir);
 
-        var targetX = currentX + direction.dx * stepDistance;
-        var targetY = currentY + direction.dy * stepDistance;
+        // 每次都是从轮盘中心向目标方向移动
+        var targetX = centerX + direction.dx * stepDistance;
+        var targetY = centerY + direction.dy * stepDistance;
 
         targetX = Math.max(0, Math.min(targetX, config.screenWidth));
         targetY = Math.max(0, Math.min(targetY, config.screenHeight));
 
-        console.log("  移动 " + dir + ": (" + currentX + "," + currentY + ") -> (" + targetX + "," + targetY + ")");
+        console.log("  移动 " + dir + ": 从中心(" + centerX + "," + centerY + ") -> (" + targetX + "," + targetY + ")");
 
         try {
-            swipe(currentX, currentY, targetX, targetY, moveDuration);
+            // 从轮盘中心向目标方向滑动
+            swipe(centerX, centerY, targetX, targetY, moveDuration);
         } catch (e) {
             console.error("滑动失败: " + e.message);
             return false;
         }
 
-        currentX = targetX;
-        currentY = targetY;
-
+        // 检查停止标志
         if (setters.getStopSteal && setters.getStopSteal()) {
             console.log("偷菜被中断");
             return false;
         }
 
+        // 移动后等待
         if (waitAfterMove > 0) {
             sleep(waitAfterMove);
         }
 
+        // 检查停止标志
         if (setters.getStopSteal && setters.getStopSteal()) {
             console.log("偷菜被中断");
             return false;
         }
 
+        // 点击偷菜按钮
         if (stealArea) {
             common.humanClick(stealArea, "偷菜按钮");
             if (waitAfterSteal > 0) {
@@ -69,6 +78,7 @@ function executeStealPath(config, startX, startY, path, stepDistance, moveDurati
             }
         }
 
+        // 检查停止标志
         if (setters.getStopSteal && setters.getStopSteal()) {
             console.log("偷菜被中断");
             return false;
@@ -135,15 +145,16 @@ function executeSteal(config, phoneInfo, setters) {
     var stealConfig = config.steal;
     var stealArea = common.getFixedCoordinate(config, phoneInfo, "stealBtn");
     var joystick = common.getJoystickCenter(config, phoneInfo);
-    var startX = joystick.x;
-    var startY = joystick.y;
+    var centerX = joystick.x;
+    var centerY = joystick.y;
 
-    console.log("轮盘中心: (" + startX + "," + startY + ")");
+    console.log("轮盘中心: (" + centerX + "," + centerY + ")");
     console.log("左半区路径: " + stealConfig.leftPath);
     console.log("右半区路径: " + stealConfig.rightPath);
 
     threads.start(function() {
         try {
+            // ========== 步骤1: 偷左半区 ==========
             console.log("\n--- 步骤1: 偷左半区 ---");
             if (setters.getStopSteal && setters.getStopSteal()) {
                 throw new Error("操作被用户中断");
@@ -152,7 +163,7 @@ function executeSteal(config, phoneInfo, setters) {
             var leftPath = stealConfig.leftPath;
             var result = executeStealPath(
                 config,
-                startX, startY,
+                centerX, centerY,      // 轮盘中心
                 leftPath,
                 stealConfig.stepDistance,
                 stealConfig.moveDuration,
@@ -166,39 +177,46 @@ function executeSteal(config, phoneInfo, setters) {
                 throw new Error("左半区偷菜失败或被中断");
             }
 
+            // 检查停止标志
             if (setters.getStopSteal && setters.getStopSteal()) {
                 throw new Error("操作被用户中断");
             }
 
+            // ========== 步骤2: 移动到右半区 ==========
             console.log("\n--- 步骤2: 移动到右半区 ---");
-            var targetX = Math.min(config.screenWidth, startX + 300);
-            console.log("  向右移动: (" + startX + "," + startY + ") -> (" + targetX + "," + startY + ")");
+            var targetX = Math.min(config.screenWidth, centerX + 300);
+            console.log("  向右移动: (" + centerX + "," + centerY + ") -> (" + targetX + "," + centerY + ")");
             try {
-                swipe(startX, startY, targetX, startY, stealConfig.rightMoveDuration);
+                swipe(centerX, centerY, targetX, centerY, stealConfig.rightMoveDuration);
             } catch (e) {
                 console.error("右移失败: " + e.message);
                 throw new Error("移动到右半区失败");
             }
 
+            // 检查停止标志
             if (setters.getStopSteal && setters.getStopSteal()) {
                 throw new Error("操作被用户中断");
             }
 
+            // 等待0.5s
             sleep(stealConfig.waitAfterMove);
 
+            // 检查停止标志
             if (setters.getStopSteal && setters.getStopSteal()) {
                 throw new Error("操作被用户中断");
             }
 
+            // ========== 步骤3: 偷右半区 ==========
             console.log("\n--- 步骤3: 偷右半区 ---");
-            var currentPos = common.getJoystickCenter(config, phoneInfo);
-            var rightStartX = currentPos.x;
-            var rightStartY = currentPos.y;
+            // 右半区使用新的轮盘中心
+            var rightCenter = common.getJoystickCenter(config, phoneInfo);
+            var rightCenterX = rightCenter.x;
+            var rightCenterY = rightCenter.y;
 
             var rightPath = stealConfig.rightPath;
             var result2 = executeStealPath(
                 config,
-                rightStartX, rightStartY,
+                rightCenterX, rightCenterY,  // 右半区轮盘中心
                 rightPath,
                 stealConfig.stepDistance,
                 stealConfig.moveDuration,
