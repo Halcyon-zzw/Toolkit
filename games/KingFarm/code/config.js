@@ -72,9 +72,9 @@ module.exports = {
         // 不同机型可以配置不同的间隔时间，支持部分覆盖（只配置需要修改的项）
         stepDelays: {
 
-            leastDelays: 500,   //最小延迟，用于点击后几乎无延迟的地方。
             // ----- 默认配置 -----
             "default": {
+                leastDelays: 500,   //最小延迟，用于点击后几乎无延迟的地方。
                 afterBack: 500,             // 点击返回按钮后等待时间（毫秒）
                 afterConfirmLobby: 3000,    // 点击确认返回大厅后等待时间（毫秒）
                 afterSettings: 1000,        // 点击设置按钮后等待时间（毫秒）
