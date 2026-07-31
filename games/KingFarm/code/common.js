@@ -145,11 +145,11 @@ function getServerPosition(config, index) {
     console.log("获取服务器 " + index + " 的位置");
 
     var positions = {
-        1: { x: 430, y: 240, width: 1230, height: 320 },
+        1: { x: 800, y: 240, width: 1230, height: 320 },
         2: { x: 1380, y: 240, width: 2170, height: 320 },
-        3: { x: 430, y: 370, width: 1230, height: 450 },
+        3: { x: 800, y: 370, width: 1230, height: 450 },
         4: { x: 1380, y: 370, width: 2170, height: 450 },
-        5: { x: 430, y: 500, width: 1230, height: 580 },
+        5: { x: 800, y: 500, width: 1230, height: 580 },
         6: { x: 1380, y: 500, width: 2170, height: 580 }
     };
 

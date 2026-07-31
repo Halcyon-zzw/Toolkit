@@ -155,7 +155,13 @@ module.exports = {
             "HWI-AL00": {
                 farmBackBtn: { left: 30, top: 40, right: 150, bottom: 80 },
                 settingsBtn: { left: 1980, top: 40, right: 2020, bottom: 80 },
-                exitGameBtn: { left: 1610, top: 900, right: 1860, bottom: 940 }
+                exitGameBtn: { left: 1610, top: 900, right: 1860, bottom: 940 },
+
+                // ===== 功能2/3：浇水相关坐标 =====
+                enterFarmBtn: { left: 470, top: 780, right: 680, bottom: 840 },
+
+                // ===== 功能5：领取农场奖励相关坐标 =====
+                farmRewardBtn: { left: 1650, top: 30, right: 1700, bottom: 70 },         // 农场奖励按钮
             },
             // 华为 Mate 10 Pro
             "ALP-TL00": {
