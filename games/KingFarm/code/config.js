@@ -140,6 +140,8 @@ module.exports = {
                 // ===== 功能5：领取农场奖励相关坐标 =====
                 farmRewardBtn: { left: 1760, top: 30, right: 1810, bottom: 70 },         // 农场奖励按钮
                 claimFarmRewardBtn: { left: 1100, top: 700, right: 1300, bottom: 760 },  // 领取奖励按钮
+                claimFarmRewardBtn1: { left: 660, top: 700, right: 930, bottom: 760 },   // 领取奖励按钮1（周末模式）
+                claimFarmRewardBtn2: { left: 1500, top: 700, right: 1700, bottom: 760 }, // 领取奖励按钮2（周末模式）
                 farmRewardBlankArea: { left: 1200, top: 860, right: 1300, bottom: 900 }, // 农场奖励空白区域点击
 
                 // ===== 功能6：偷菜相关坐标 =====
