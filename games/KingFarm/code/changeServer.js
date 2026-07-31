@@ -2,10 +2,10 @@
 var common = require("./common.js");
 
 // ==================== 农切 - 完整流程 ====================
-function executeSwitch1(config, phoneInfo, setters) {
-    if (setters.isSwitching && setters.isSwitching()) {
+function executeSwitch1(config, phoneInfo, api) {
+    if (api.isSwitching && api.isSwitching()) {
         console.log("用户点击停止切换");
-        setters.setStopSwitch(true);
+        api.setStopSwitch(true);
         toast("正在停止切换...");
         return;
     }
@@ -21,9 +21,9 @@ function executeSwitch1(config, phoneInfo, setters) {
         }
     }
 
-    setters.setStopSwitch(false);
-    setters.setSwitching(true);
-    setters.updateUI();
+    api.setStopSwitch(false);
+    api.setSwitching(true);
+    api.updateUI();
 
     var currentIndex = config.currentIndex;
     var nextIndex = currentIndex + 1;
@@ -43,7 +43,7 @@ function executeSwitch1(config, phoneInfo, setters) {
     threads.start(function() {
         try {
             console.log("\n--- 步骤1: 点击返回按钮 ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var backArea = common.getFixedCoordinate(config, phoneInfo, "farmBackBtn");
@@ -51,7 +51,7 @@ function executeSwitch1(config, phoneInfo, setters) {
             common.humanDelay(stepDelays.afterBack);
 
             console.log("\n--- 步骤2: 确认返回大厅 ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var farmReturnLobbyArea = common.getFixedCoordinate(config, phoneInfo, "farmReturnLobbyBtn");
@@ -59,7 +59,7 @@ function executeSwitch1(config, phoneInfo, setters) {
             common.humanDelay(stepDelays.afterConfirmLobby);
 
             console.log("\n--- 步骤3: 点击设置 ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var settingsArea = common.getFixedCoordinate(config, phoneInfo, "settingsBtn");
@@ -67,7 +67,7 @@ function executeSwitch1(config, phoneInfo, setters) {
             common.humanDelay(stepDelays.afterSettings);
 
             console.log("\n--- 步骤4: 退出游戏 ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var exitGameArea = common.getFixedCoordinate(config, phoneInfo, "exitGameBtn");
@@ -75,7 +75,7 @@ function executeSwitch1(config, phoneInfo, setters) {
             common.humanDelay(stepDelays.afterExitGame);
 
             console.log("\n--- 步骤5: 确认退出 ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var confirmExitArea = common.getFixedCoordinate(config, phoneInfo, "confirmExitBtn");
@@ -83,7 +83,7 @@ function executeSwitch1(config, phoneInfo, setters) {
             common.humanDelay(stepDelays.afterConfirmExit);
 
             console.log("\n--- 步骤6: 确认换区 ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var confirmChangeArea = common.getFixedCoordinate(config, phoneInfo, "changeServer");
@@ -91,7 +91,7 @@ function executeSwitch1(config, phoneInfo, setters) {
             common.humanDelay(stepDelays.afterChangeServer);
 
             console.log("\n--- 步骤7: 选择服务器 " + nextIndex + " ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var nextServerPos = common.getServerPosition(config, nextIndex);
@@ -101,7 +101,7 @@ function executeSwitch1(config, phoneInfo, setters) {
             common.humanDelay(stepDelays.afterSelectServer);
 
             console.log("\n--- 步骤8: 开始游戏 ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var startGameArea = common.getFixedCoordinate(config, phoneInfo, "startGameBtn");
@@ -122,18 +122,18 @@ function executeSwitch1(config, phoneInfo, setters) {
                 toast("切换失败: " + e.message);
             }
         } finally {
-            setters.setSwitching(false);
-            setters.setStopSwitch(false);
-            setters.updateUI();
+            api.setSwitching(false);
+            api.setStopSwitch(false);
+            api.updateUI();
         }
     });
 }
 
 // ==================== 主切 - 从步骤3开始 ====================
-function executeSwitch2(config, phoneInfo, setters) {
-    if (setters.isSwitching && setters.isSwitching()) {
+function executeSwitch2(config, phoneInfo, api) {
+    if (api.isSwitching && api.isSwitching()) {
         console.log("用户点击停止切换");
-        setters.setStopSwitch(true);
+        api.setStopSwitch(true);
         toast("正在停止切换...");
         return;
     }
@@ -149,9 +149,9 @@ function executeSwitch2(config, phoneInfo, setters) {
         }
     }
 
-    setters.setStopSwitch(false);
-    setters.setSwitching(true);
-    setters.updateUI();
+    api.setStopSwitch(false);
+    api.setSwitching(true);
+    api.updateUI();
 
     var currentIndex = config.currentIndex;
     var nextIndex = currentIndex + 1;
@@ -171,7 +171,7 @@ function executeSwitch2(config, phoneInfo, setters) {
     threads.start(function() {
         try {
             console.log("\n--- 步骤3: 点击设置 ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var settingsArea = common.getFixedCoordinate(config, phoneInfo, "settingsBtn");
@@ -179,7 +179,7 @@ function executeSwitch2(config, phoneInfo, setters) {
             common.humanDelay(stepDelays.afterSettings);
 
             console.log("\n--- 步骤4: 退出游戏 ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var exitGameArea = common.getFixedCoordinate(config, phoneInfo, "exitGameBtn");
@@ -187,7 +187,7 @@ function executeSwitch2(config, phoneInfo, setters) {
             common.humanDelay(stepDelays.afterExitGame);
 
             console.log("\n--- 步骤5: 确认退出 ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var confirmExitArea = common.getFixedCoordinate(config, phoneInfo, "confirmExitBtn");
@@ -195,7 +195,7 @@ function executeSwitch2(config, phoneInfo, setters) {
             common.humanDelay(stepDelays.afterConfirmExit);
 
             console.log("\n--- 步骤6: 确认换区 ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var confirmChangeArea = common.getFixedCoordinate(config, phoneInfo, "changeServer");
@@ -203,7 +203,7 @@ function executeSwitch2(config, phoneInfo, setters) {
             common.humanDelay(stepDelays.afterChangeServer);
 
             console.log("\n--- 步骤7: 选择服务器 " + nextIndex + " ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var nextServerPos = common.getServerPosition(config, nextIndex);
@@ -213,7 +213,7 @@ function executeSwitch2(config, phoneInfo, setters) {
             common.humanDelay(stepDelays.afterSelectServer);
 
             console.log("\n--- 步骤8: 开始游戏 ---");
-            if (setters.getStopSwitch && setters.getStopSwitch()) {
+            if (api.getStopSwitch && api.getStopSwitch()) {
                 throw new Error("切换被用户中断");
             }
             var startGameArea = common.getFixedCoordinate(config, phoneInfo, "startGameBtn");
@@ -234,9 +234,9 @@ function executeSwitch2(config, phoneInfo, setters) {
                 toast("切换失败: " + e.message);
             }
         } finally {
-            setters.setSwitching(false);
-            setters.setStopSwitch(false);
-            setters.updateUI();
+            api.setSwitching(false);
+            api.setStopSwitch(false);
+            api.updateUI();
         }
     });
 }

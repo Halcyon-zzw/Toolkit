@@ -20,28 +20,28 @@ function getRandomDirection(config) {
     };
 }
 
-function executeAutoMove(config, phoneInfo, setters) {
-    if (setters.isMoving && setters.isMoving()) {
+function executeAutoMove(config, phoneInfo, api) {
+    if (api.isMoving && api.isMoving()) {
         toast("正在移动中...");
         return;
     }
-    if (setters.isSwitching && setters.isSwitching()) {
+    if (api.isSwitching && api.isSwitching()) {
         toast("正在切换服务器，无法移动");
         return;
     }
-    if (setters.isWatering && setters.isWatering()) {
+    if (api.isWatering && api.isWatering()) {
         toast("正在浇水，无法移动");
         return;
     }
-    if (setters.isSettling && setters.isSettling()) {
+    if (api.isSettling && api.isSettling()) {
         toast("正在结算返回，无法移动");
         return;
     }
-    if (setters.isFarming && setters.isFarming()) {
+    if (api.isFarming && api.isFarming()) {
         toast("正在领取农场奖励，无法移动");
         return;
     }
-    if (setters.isStealing && setters.isStealing()) {
+    if (api.isStealing && api.isStealing()) {
         toast("正在偷菜，无法移动");
         return;
     }
@@ -58,9 +58,11 @@ function executeAutoMove(config, phoneInfo, setters) {
         }
     }
 
-    setters.setStopAutoMove(false);
-    setters.setMoving(true);
-    setters.updateUI();
+    if (api.setStopAutoMove) {
+        api.setStopAutoMove(false);
+    }
+    api.setMoving(true);
+    api.updateUI();
 
     console.log("========================================");
     console.log("开始自动移动");
@@ -69,9 +71,20 @@ function executeAutoMove(config, phoneInfo, setters) {
     var center = common.getJoystickCenter(config, phoneInfo);
     console.log("轮盘中心: (" + center.x + "," + center.y + ")");
 
+    var s = api;
+
     threads.start(function() {
         try {
-            while (setters.isMoving && setters.isMoving() && !setters.getStopAutoMove && !setters.getStopAutoMove()) {
+            while (s.isMoving && s.isMoving()) {
+                var shouldStop = false;
+                if (s.getStopAutoMove) {
+                    shouldStop = s.getStopAutoMove();
+                }
+                if (shouldStop) {
+                    console.log("检测到停止标志，退出移动循环");
+                    break;
+                }
+
                 var direction = getRandomDirection(config);
                 var distance = config.autoMove.distance;
                 var moveDuration = config.autoMove.moveDuration;
@@ -88,8 +101,12 @@ function executeAutoMove(config, phoneInfo, setters) {
                     console.error("滑动执行失败: " + e.message);
                 }
 
-                if (setters.getStopAutoMove && setters.getStopAutoMove()) {
+                if (s.getStopAutoMove && s.getStopAutoMove()) {
                     console.log("检测到停止标志，退出移动循环");
+                    break;
+                }
+                if (!s.isMoving || !s.isMoving()) {
+                    console.log("移动已停止，退出循环");
                     break;
                 }
 
@@ -97,21 +114,22 @@ function executeAutoMove(config, phoneInfo, setters) {
                 var sleepDuration = config.autoMove.sleepDuration;
 
                 while (Date.now() - sleepStart < sleepDuration) {
-                    if (setters.getStopAutoMove && setters.getStopAutoMove()) {
+                    if (s.getStopAutoMove && s.getStopAutoMove()) {
                         console.log("检测到停止标志，中断休眠");
                         break;
                     }
-                    if (!setters.isMoving || !setters.isMoving()) {
+                    if (!s.isMoving || !s.isMoving()) {
                         console.log("移动已停止，退出循环");
                         break;
                     }
                     sleep(100);
                 }
-                if (setters.getStopAutoMove && setters.getStopAutoMove()) {
+
+                if (s.getStopAutoMove && s.getStopAutoMove()) {
                     console.log("检测到停止标志，退出移动循环");
                     break;
                 }
-                if (!setters.isMoving || !setters.isMoving()) {
+                if (!s.isMoving || !s.isMoving()) {
                     console.log("移动已停止，退出循环");
                     break;
                 }
@@ -125,17 +143,22 @@ function executeAutoMove(config, phoneInfo, setters) {
                 press(center2.x, center2.y, 50);
             } catch(e) {}
 
-            setters.setMoving(false);
-            setters.updateUI();
+            s.setMoving(false);
+            if (s.setStopAutoMove) {
+                s.setStopAutoMove(false);
+            }
+            s.updateUI();
         }
     });
 }
 
-function stopAutoMoveFunction(setters) {
+function stopAutoMoveFunction(api) {
     console.log("请求停止自动移动");
-    setters.setStopAutoMove(true);
-    setters.setMoving(false);
-    setters.updateUI();
+    if (api.setStopAutoMove) {
+        api.setStopAutoMove(true);
+    }
+    api.setMoving(false);
+    api.updateUI();
 }
 
 module.exports = {
