@@ -189,6 +189,7 @@ module.exports = {
 
                 // ===== 功能8：领取商城相关坐标 =====
                 mallGiftBtn: { left: 710, top: 40, right: 750, bottom: 80 },             // 商城礼包按钮
+                mallGiftReceiveBtn: { left: 1040, top: 720, right: 1260, bottom: 770 }, // 商城礼包领取按钮
 
                 // ===== 功能9：送金币相关坐标 =====
                 mailboxBtn: { left: 1880, top: 40, right: 1920, bottom: 80 }             // 邮箱按钮
@@ -225,7 +226,6 @@ module.exports = {
 
                 // ===== 功能8：领取商城相关坐标 =====
                 mallGiftBtn: { left: 930, top: 40, right: 980, bottom: 80 },             // 商城礼包按钮
-                //TODO
                 mallGiftReceiveBtn: { left: 1280, top: 810, right: 1580, bottom: 880 }, // 商城礼包领取按钮
 
                 // ===== 功能9：送金币相关坐标 =====
