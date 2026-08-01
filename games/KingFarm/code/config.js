@@ -74,7 +74,7 @@ module.exports = {
 
             // ----- 默认配置 -----
             "default": {
-                leastDelays: 500,   //最小延迟，用于点击后几乎无延迟的地方。
+                leastDelays: 500,   // 最小延迟，用于点击后几乎无延迟的地方。
                 afterBack: 500,             // 点击返回按钮后等待时间（毫秒）
                 afterConfirmLobby: 3000,    // 点击确认返回大厅后等待时间（毫秒）
                 afterSettings: 1000,        // 点击设置按钮后等待时间（毫秒）
@@ -82,7 +82,12 @@ module.exports = {
                 afterConfirmExit: 7000,     // 点击确认退出后等待时间（进入服务器选择界面）（毫秒）
                 afterChangeServer: 500,     // 点击换区后等待时间（毫秒）
                 afterSelectServer: 1000,    // 选择服务器后等待时间（毫秒）
-                enterFarmWait: 7000         // 点击进入农场后等待时间（毫秒）
+                enterFarmWait: 7000,        // 点击进入农场后等待时间（毫秒）
+
+                // ----- 功能7：送金币相关延时 -----
+                afterMailboxBtn: 3000,      // 点击邮箱按钮后等待时间（毫秒）
+                afterMailboxReceive: 4000,  // 点击快速领取后等待时间（毫秒）
+                afterMailboxGive: 2000      // 点击快速赠送后等待时间（毫秒）
             },
             // ----- 小米 Redmi K60 -----
             "23113RKC6C": {
@@ -97,7 +102,8 @@ module.exports = {
                 afterConfirmExit: 13000,
                 afterChangeServer: 500,
                 afterSelectServer: 1000,
-                enterFarmWait: 13000
+                enterFarmWait: 13000,
+                afterMailboxReceive: 7000   // 点击快速领取后等待时间（毫秒）
             },
             // ----- 华为 Mate 10 Pro -----
             "ALP-TL00": {
@@ -120,7 +126,7 @@ module.exports = {
             // ----- 默认坐标配置（设计分辨率 2400x1080） -----
             "default": {
                 // ===== 功能1：切换服务器相关坐标 =====
-                farmBackBtn: { left: 80, top: 30, right: 240, bottom: 70 },              // 返回按钮（农场界面）
+                farmBackBtn: { left: 180, top: 30, right: 270, bottom: 70 },              // 返回按钮（农场界面）
                 farmReturnLobbyBtn: { left: 1260, top: 730, right: 1500, bottom: 780 },   // 农场确认返回大厅按钮
                 settingsBtn: { left: 2100, top: 30, right: 2140, bottom: 70 },           // 设置按钮
                 exitGameBtn: { left: 1730, top: 900, right: 2000, bottom: 940 },         // 退出游戏按钮
@@ -145,7 +151,21 @@ module.exports = {
                 farmRewardBlankArea: { left: 1200, top: 860, right: 1300, bottom: 900 }, // 农场奖励空白区域点击
 
                 // ===== 功能6：偷菜相关坐标 =====
-                stealBtn: { left: 1930, top: 800, right: 2050, bottom: 900 }            // 偷菜按钮
+                stealBtn: { left: 1930, top: 800, right: 2050, bottom: 900 },            // 偷菜按钮
+
+                // ===== 功能7：关闭广告相关坐标 =====
+                adNotPopBtn: { left: 1760, top: 940, right: 1780, bottom: 960 },         // 不再弹出按钮
+                closeAdBtn: { left: 2010, top: 140, right: 2030, bottom: 160 },          // 关闭广告按钮
+
+                // ===== 功能8：领取商城相关坐标 =====
+                mallBtn: { left: 2000, top: 150, right: 2200, bottom: 240 },             // 商城按钮
+                mallGiftBtn: { left: 830, top: 40, right: 880, bottom: 80 },             // 商城礼包按钮
+                mallGiftReceiveBtn: { left: 1150, top: 720, right: 1390, bottom: 770 }, // 商城礼包领取按钮
+                blankMidBottomArea: { left: 1150, top: 950, right: 1250, bottom: 970 },  // 中底部空白区域
+
+                // ===== 功能9：送金币相关坐标 =====
+                mailboxBtn: { left: 2000, top: 40, right: 2040, bottom: 80 },            // 邮箱按钮
+                mailboxReceiveBtn: { left: 1950, top: 960, right: 2170, bottom: 1000 }   // 快速领取/赠送按钮
             },
 
             // ===== 机型修正配置（覆盖默认坐标） =====
@@ -153,7 +173,7 @@ module.exports = {
             "23113RKC6C": {},
             // 华为 nova 2s
             "HWI-AL00": {
-                farmBackBtn: { left: 30, top: 40, right: 150, bottom: 80 },
+                farmBackBtn: { left: 60, top: 40, right: 150, bottom: 80 },
                 settingsBtn: { left: 1980, top: 40, right: 2020, bottom: 80 },
                 exitGameBtn: { left: 1610, top: 900, right: 1860, bottom: 940 },
 
@@ -162,6 +182,16 @@ module.exports = {
 
                 // ===== 功能5：领取农场奖励相关坐标 =====
                 farmRewardBtn: { left: 1650, top: 30, right: 1700, bottom: 70 },         // 农场奖励按钮
+
+                // ===== 功能7：关闭广告相关坐标 =====
+                adNotPopBtn: { left: 1640, top: 940, right: 1670, bottom: 960 },         // 不再弹出按钮
+                closeAdBtn: { left: 1890, top: 140, right: 1910, bottom: 160 },          // 关闭广告按钮
+
+                // ===== 功能8：领取商城相关坐标 =====
+                mallGiftBtn: { left: 710, top: 40, right: 750, bottom: 80 },             // 商城礼包按钮
+
+                // ===== 功能9：送金币相关坐标 =====
+                mailboxBtn: { left: 1880, top: 40, right: 1920, bottom: 80 }             // 邮箱按钮
             },
             // 华为 Mate 10 Pro
             "ALP-TL00": {
@@ -174,10 +204,32 @@ module.exports = {
                 // ===== 功能5：领取农场奖励相关坐标 =====
                 claimFarmRewardBtn1: { left: 400, top: 710, right: 660, bottom: 760 },   // 领取奖励按钮1（周末模式）
                 claimFarmRewardBtn2: { left: 1260, top: 710, right: 1500, bottom: 760 }, // 领取奖励按钮2（周末模式）
+
+                // ===== 功能7：关闭广告相关坐标 =====
+                adNotPopBtn: { left: 1520, top: 940, right: 1540, bottom: 960 },         // 不再弹出按钮
+                closeAdBtn: { left: 1770, top: 140, right: 1790, bottom: 160 },          // 关闭广告按钮
+
+                // ===== 功能8：领取商城相关坐标 =====
+                mallGiftBtn: { left: 710, top: 40, right: 750, bottom: 80 },             // 商城礼包按钮
+
+                // ===== 功能9：送金币相关坐标 =====
+                mailboxBtn: { left: 1640, top: 40, right: 1680, bottom: 80 }             // 邮箱按钮
             },
-            // 华为 P50 Pro（暂未配置修正）
+            // 华为 P50 Pro
             "JAD-AL00": {
-                farmBackBtn: { left: 30, top: 40, right: 150, bottom: 80 }
+                farmBackBtn: { left: 200, top: 40, right: 300, bottom: 80 },
+
+                // ===== 功能7：关闭广告相关坐标 =====
+                adNotPopBtn: { left: 1980, top: 1060, right: 2020, bottom: 1100 },        // 不再弹出按钮
+                closeAdBtn: { left: 2270, top: 160, right: 2290, bottom: 180 },          // 关闭广告按钮
+
+                // ===== 功能8：领取商城相关坐标 =====
+                mallGiftBtn: { left: 930, top: 40, right: 980, bottom: 80 },             // 商城礼包按钮
+                //TODO
+                mallGiftReceiveBtn: { left: 1280, top: 810, right: 1580, bottom: 880 }, // 商城礼包领取按钮
+
+                // ===== 功能9：送金币相关坐标 =====
+                mailboxBtn: { left: 2260, top: 40, right: 2300, bottom: 80 }             // 邮箱按钮
             }
         },
 
