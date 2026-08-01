@@ -169,10 +169,16 @@ module.exports = {
                 settingsBtn: { left: 1740, top: 30, right: 1780, bottom: 70 },
                 exitGameBtn: { left: 1500, top: 900, right: 1760, bottom: 940 },
                 enterFarmBtn: { left: 350, top: 780, right: 550, bottom: 860 },
-                waterBtn: { left: 1240, top: 600, right: 1310, bottom: 650 }
+                waterBtn: { left: 1240, top: 600, right: 1310, bottom: 650 },
+
+                // ===== 功能5：领取农场奖励相关坐标 =====
+                claimFarmRewardBtn1: { left: 400, top: 710, right: 660, bottom: 760 },   // 领取奖励按钮1（周末模式）
+                claimFarmRewardBtn2: { left: 1260, top: 710, right: 1500, bottom: 760 }, // 领取奖励按钮2（周末模式）
             },
             // 华为 P50 Pro（暂未配置修正）
-            "JAD-AL00": {}
+            "JAD-AL00": {
+                farmBackBtn: { left: 30, top: 40, right: 150, bottom: 80 }
+            }
         },
 
         // ========== 移动持续时间机型配置（毫秒） ==========
