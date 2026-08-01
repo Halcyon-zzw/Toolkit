@@ -121,8 +121,6 @@ function humanClick(area, description) {
     try {
         var x = random(area.left, area.right);
         var y = random(area.top, area.bottom);
-        x += random(-2, 2);
-        y += random(-2, 2);
         var pressTime = random(30, 80);
 
         console.log("点击: " + description);
