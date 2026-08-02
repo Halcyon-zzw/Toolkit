@@ -155,7 +155,7 @@ module.exports = {
 
                 // ===== 功能7：关闭广告相关坐标 =====
                 adNotPopBtn: { left: 1760, top: 940, right: 1780, bottom: 960 },         // 不再弹出按钮
-                closeAdBtn: { left: 2010, top: 140, right: 2030, bottom: 160 },          // 关闭广告按钮
+                closeAdBtn: { left: 2015, top: 142, right: 2025, bottom: 158 },          // 关闭广告按钮
 
                 // ===== 功能8：领取商城相关坐标 =====
                 mallBtn: { left: 2000, top: 150, right: 2200, bottom: 240 },             // 商城按钮
@@ -182,10 +182,12 @@ module.exports = {
 
                 // ===== 功能5：领取农场奖励相关坐标 =====
                 farmRewardBtn: { left: 1650, top: 30, right: 1700, bottom: 70 },         // 农场奖励按钮
+                claimFarmRewardBtn1: { left: 560, top: 710, right: 790, bottom: 760 },   // 领取奖励按钮1（周末模式）
+                claimFarmRewardBtn2: { left: 1390, top: 710, right: 1600, bottom: 760 }, // 领取奖励按钮2（周末模式）
 
                 // ===== 功能7：关闭广告相关坐标 =====
                 adNotPopBtn: { left: 1640, top: 940, right: 1670, bottom: 960 },         // 不再弹出按钮
-                closeAdBtn: { left: 1890, top: 140, right: 1910, bottom: 160 },          // 关闭广告按钮
+                closeAdBtn: { left: 1895, top: 140, right: 1910, bottom: 160 },          // 关闭广告按钮
 
                 // ===== 功能8：领取商城相关坐标 =====
                 mallGiftBtn: { left: 710, top: 40, right: 750, bottom: 80 },             // 商城礼包按钮
@@ -208,7 +210,7 @@ module.exports = {
 
                 // ===== 功能7：关闭广告相关坐标 =====
                 adNotPopBtn: { left: 1520, top: 940, right: 1540, bottom: 960 },         // 不再弹出按钮
-                closeAdBtn: { left: 1770, top: 140, right: 1790, bottom: 160 },          // 关闭广告按钮
+                closeAdBtn: { left: 1775, top: 145, right: 1780, bottom: 155 },          // 关闭广告按钮
 
                 // ===== 功能8：领取商城相关坐标 =====
                 mallGiftBtn: { left: 710, top: 40, right: 750, bottom: 80 },             // 商城礼包按钮
@@ -222,7 +224,7 @@ module.exports = {
 
                 // ===== 功能7：关闭广告相关坐标 =====
                 adNotPopBtn: { left: 1980, top: 1060, right: 2020, bottom: 1100 },        // 不再弹出按钮
-                closeAdBtn: { left: 2270, top: 160, right: 2290, bottom: 180 },          // 关闭广告按钮
+                closeAdBtn: { left: 2280, top: 165, right: 2290, bottom: 175 },          // 关闭广告按钮
 
                 // ===== 功能8：领取商城相关坐标 =====
                 mallGiftBtn: { left: 930, top: 40, right: 980, bottom: 80 },             // 商城礼包按钮
@@ -287,6 +289,8 @@ module.exports = {
             rightMoveDuration: 1500,     // 向右移动到右半区的持续时间（毫秒）
             leftPath: "左左左上上右下右上右下",  // 左半区移动路径（每个字符代表一个方向：上、下、左、右）
             rightPath: "下右上右下右上上左左左"   // 右半区移动路径（每个字符代表一个方向：上、下、左、右）
+
+
         }
     }
 };
