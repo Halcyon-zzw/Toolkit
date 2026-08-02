@@ -82,7 +82,7 @@ module.exports = {
                 afterConfirmExit: 7000,     // 点击确认退出后等待时间（进入服务器选择界面）（毫秒）
                 afterChangeServer: 500,     // 点击换区后等待时间（毫秒）
                 afterSelectServer: 1000,    // 选择服务器后等待时间（毫秒）
-                enterFarmWait: 7000,        // 点击进入农场后等待时间（毫秒）
+                enterFarmWait: 10000,        // 点击进入农场后等待时间（毫秒）
 
                 // ----- 功能7：送金币相关延时 -----
                 afterMailboxBtn: 3000,      // 点击邮箱按钮后等待时间（毫秒）
@@ -102,7 +102,7 @@ module.exports = {
                 afterConfirmExit: 13000,
                 afterChangeServer: 500,
                 afterSelectServer: 1000,
-                enterFarmWait: 13000,
+                enterFarmWait: 15000,
                 afterMailboxReceive: 7000   // 点击快速领取后等待时间（毫秒）
             },
             // ----- 华为 Mate 10 Pro -----
@@ -114,7 +114,7 @@ module.exports = {
                 afterConfirmExit: 8000,
                 afterChangeServer: 500,
                 afterSelectServer: 1000,
-                enterFarmWait: 10000
+                enterFarmWait: 13000
             }
         },
 
@@ -165,7 +165,11 @@ module.exports = {
 
                 // ===== 功能9：送金币相关坐标 =====
                 mailboxBtn: { left: 2000, top: 40, right: 2040, bottom: 80 },            // 邮箱按钮
-                mailboxReceiveBtn: { left: 1950, top: 960, right: 2170, bottom: 1000 }   // 快速领取/赠送按钮
+                mailboxReceiveBtn: { left: 1950, top: 960, right: 2170, bottom: 1000 },   // 快速领取/赠送按钮
+
+                // ===== 功能10：领取礼册相关坐标 =====
+                giftBookBtn: { left: 2000, top: 670, right: 2200, bottom: 730 },        // 礼册按钮
+                receiveGiftBookBtn: { left: 2080, top: 510, right: 2170, bottom: 540 }, // 领取礼册按钮
             },
 
             // ===== 机型修正配置（覆盖默认坐标） =====
@@ -194,7 +198,11 @@ module.exports = {
                 mallGiftReceiveBtn: { left: 1040, top: 720, right: 1260, bottom: 770 }, // 商城礼包领取按钮
 
                 // ===== 功能9：送金币相关坐标 =====
-                mailboxBtn: { left: 1880, top: 40, right: 1920, bottom: 80 }             // 邮箱按钮
+                mailboxBtn: { left: 1880, top: 40, right: 1920, bottom: 80 },           // 邮箱按钮
+
+                // ===== 功能10：领取礼册相关坐标 =====
+                giftBookBtn: { left: 1870, top: 670, right: 2000, bottom: 730 },
+                receiveGiftBookBtn: { left: 1960, top: 510, right: 2050, bottom: 540 }
             },
             // 华为 Mate 10 Pro
             "ALP-TL00": {
@@ -216,7 +224,11 @@ module.exports = {
                 mallGiftBtn: { left: 710, top: 40, right: 750, bottom: 80 },             // 商城礼包按钮
 
                 // ===== 功能9：送金币相关坐标 =====
-                mailboxBtn: { left: 1640, top: 40, right: 1680, bottom: 80 }             // 邮箱按钮
+                mailboxBtn: { left: 1640, top: 40, right: 1680, bottom: 80 },             // 邮箱按钮
+
+                // ===== 功能10：领取礼册相关坐标 =====
+                giftBookBtn: { left: 1620, top: 670, right: 1850, bottom: 730 },
+                receiveGiftBookBtn: { left: 1720, top: 510, right: 1820, bottom: 540 }
             },
             // 华为 P50 Pro
             "JAD-AL00": {
@@ -231,7 +243,11 @@ module.exports = {
                 mallGiftReceiveBtn: { left: 1280, top: 810, right: 1580, bottom: 880 }, // 商城礼包领取按钮
 
                 // ===== 功能9：送金币相关坐标 =====
-                mailboxBtn: { left: 2260, top: 40, right: 2300, bottom: 80 }             // 邮箱按钮
+                mailboxBtn: { left: 2260, top: 40, right: 2300, bottom: 80 },             // 邮箱按钮
+
+                // ===== 功能10：领取礼册相关坐标 =====
+                giftBookBtn: { left: 2250, top: 760, right: 2500, bottom: 830 },
+                receiveGiftBookBtn: { left: 2350, top: 580, right: 2450, bottom: 620 }
             }
         },
 
@@ -280,17 +296,38 @@ module.exports = {
             waitAfterBack: 500       // 点击返回后等待时间（毫秒）
         },
 
-        // ========== 功能6 - 偷菜配置 ==========
+        // ========== 功能6 - 偷菜配置（支持按机型覆盖） ==========
         steal: {
-            stepDistance: 100,           // 每次移动步长（像素）
-            moveDuration: 1500,          // 每次移动持续时间（毫秒）
-            waitAfterMove: 500,          // 移动后等待时间（毫秒）
-            waitAfterSteal: 1200,        // 偷菜后等待时间（毫秒）
-            rightMoveDuration: 1500,     // 向右移动到右半区的持续时间（毫秒）
-            leftPath: "左左左上上右下右上右下",  // 左半区移动路径（每个字符代表一个方向：上、下、左、右）
-            rightPath: "下右上右下右上上左左左"   // 右半区移动路径（每个字符代表一个方向：上、下、左、右）
-
-
+            // ----- 默认配置 -----
+            "default": {
+                stepDistance: 100,           // 每次移动步长（像素）
+                moveDuration: 1500,          // 每次移动持续时间（毫秒）
+                waitAfterMove: 500,          // 移动后等待时间（毫秒）
+                waitAfterSteal: 1200,        // 偷菜后等待时间（毫秒）
+                rightMoveDuration: 1500,     // 向右移动到右半区的持续时间（毫秒）
+                leftPath: "左左左上上右下右上右下",  // 左半区移动路径
+                rightPath: "下右上右下右上上左左左"   // 右半区移动路径
+            },
+            // ----- 小米 Redmi K60 -----
+            "23113RKC6C": {
+                // 暂未配置，使用默认
+            },
+            // ----- 华为 nova 2s -----
+            "HWI-AL00": {
+                stepDistance: 100,
+                moveDuration: 1700
+            },
+            // ----- 华为 Mate 10 Pro -----
+            "ALP-TL00": {
+                stepDistance: 120,
+                moveDuration: 2000,
+                rightMoveDuration: 2000
+            },
+            // ----- 华为 P50 Pro -----
+            "JAD-AL00": {
+                stepDistance: 90,
+                waitAfterSteal: 1500
+            }
         }
     }
 };

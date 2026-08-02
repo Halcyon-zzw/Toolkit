@@ -1,6 +1,42 @@
 // ==================== 功能6 - 偷菜 ====================
 var common = require("./common.js");
 
+// ==================== 获取当前机型的偷菜配置（支持部分覆盖） ====================
+function getStealConfig(config, phoneInfo) {
+    var model = phoneInfo.model;
+    var defaultConfig = config.steal["default"];
+    if (!defaultConfig) {
+        console.error("未找到默认偷菜配置");
+        return null;
+    }
+    var modelConfig = config.steal[model];
+    if (modelConfig) {
+        console.log("当前机型 [" + model + "] 使用部分覆盖偷菜配置:");
+        var merged = {};
+        // 先复制默认配置
+        for (var key in defaultConfig) {
+            merged[key] = defaultConfig[key];
+        }
+        // 再用机型配置覆盖
+        for (var key in modelConfig) {
+            merged[key] = modelConfig[key];
+            console.log("  - " + key + ": " + merged[key] + " (覆盖)");
+        }
+        // 打印未覆盖的配置
+        for (var key in defaultConfig) {
+            if (!modelConfig[key]) {
+                console.log("  - " + key + ": " + merged[key] + " (默认)");
+            }
+        }
+        return merged;
+    }
+    console.log("当前机型 [" + model + "] 使用默认偷菜配置:");
+    for (var key in defaultConfig) {
+        console.log("  - " + key + ": " + defaultConfig[key]);
+    }
+    return defaultConfig;
+}
+
 // ==================== 解析方向 ====================
 function parseDirection(dir) {
     switch(dir) {
@@ -142,7 +178,8 @@ function executeSteal(config, phoneInfo, setters) {
     console.log("开始偷菜操作");
     console.log("========================================");
 
-    var stealConfig = config.steal;
+    // 获取当前机型的偷菜配置
+    var stealConfig = getStealConfig(config, phoneInfo);
     var stealArea = common.getFixedCoordinate(config, phoneInfo, "stealBtn");
     var joystick = common.getJoystickCenter(config, phoneInfo);
     var centerX = joystick.x;
@@ -163,7 +200,7 @@ function executeSteal(config, phoneInfo, setters) {
             var leftPath = stealConfig.leftPath;
             var result = executeStealPath(
                 config,
-                centerX, centerY,      // 轮盘中心
+                centerX, centerY,
                 leftPath,
                 stealConfig.stepDistance,
                 stealConfig.moveDuration,
@@ -216,7 +253,7 @@ function executeSteal(config, phoneInfo, setters) {
             var rightPath = stealConfig.rightPath;
             var result2 = executeStealPath(
                 config,
-                rightCenterX, rightCenterY,  // 右半区轮盘中心
+                rightCenterX, rightCenterY,
                 rightPath,
                 stealConfig.stepDistance,
                 stealConfig.moveDuration,
